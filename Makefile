@@ -2,9 +2,9 @@ TARGET=cot
 CC=gcc
 CFLAGS=-std=c99 -Wpedantic -Wconversion -Wall -Werror
 LDFLAGS=-lm
-SRCS=$(wildcard ../src/*.c)
-OBJS=$(patsubst ../src/%.c, %.o, $(SRCS))
-HEADERS=$(wildcard ../hdr/*.h)
+SRCS=$(wildcard src/*.c)
+OBJS=$(patsubst %.c, %.o, $(SRCS))
+HEADERS=$(wildcard hdr/*.h)
 .DEFAULT_GOAL := all
 
 .PHONY: help
@@ -16,8 +16,8 @@ help:
 
 .PHONY: all
 all: ## -> opção geral, i.e., quando se executa 'make' ou 'make all' no terminal
-	CFLAGS+= -O3
-	$(TARGET)
+all: CFLAGS+=-O3
+all: $(TARGET)
 
 $(TARGET): $(OBJS) Makefile
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
@@ -27,9 +27,9 @@ $(TARGET): $(OBJS) Makefile
 
 .PHONY: clean
 clean: ## -> opção CLEAN para limpar os object files et al. (destroi o executável); uso -> 'make clean'
-	rm -f *.o $(TARGET)
+	rm -f ./src/*.o $(TARGET)
 
 .PHONY: debug
 debug: ## -> opção DEBUG, acrescenta a flag de debug ao compilador; uso -> 'make debug'
-	CFLAGS+= -ggdb -Wextra
-	$(TARGET)
+debug: CFLAGS+=-ggdb -Wextra
+debug: $(TARGET)
