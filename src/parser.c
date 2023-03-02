@@ -21,22 +21,22 @@ void init_uip(user_args **uip) {
 }
 
 int check_PORT(char *src) {
-    char *end = NULL;
-    long PORT = strtol(src, &end, 10);
-    if ((end == src) || (*end != '\0')) {
-        exit(EXIT_FAILURE);
-    }
+  char *end = NULL;
+  long PORT = strtol(src, &end, 10);
+  if ((end == src) || (*end != '\0')) {
+    exit(EXIT_FAILURE);
+  }
 
-    if (PORT < 0 || PORT > MAXPORT) {
-        /*out of range*/ exit(EXIT_FAILURE);
-    }
+  if (PORT < 0 || PORT > MAXPORT) {
+    /*out of range*/ exit(EXIT_FAILURE);
+  }
 
-    return (int) PORT;
+  return (int)PORT;
 }
 
 int check_IP_address(char *src) {
-    struct sockaddr_in sa;
-    return inet_pton(AF_INET, src, &(sa.sin_addr));
+  struct sockaddr_in sa;
+  return inet_pton(AF_INET, src, &(sa.sin_addr));
 }
 
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
@@ -44,14 +44,14 @@ int check_input_integrity(int argc, char *argv[], user_args **uip) {
   if (check_IP_address(argv[1]) != 1) {
     /*error*/ exit(EXIT_FAILURE);
   }
-  (*uip)->IP = argv[1]; // Atribui o IP validado
+  (*uip)->IP = argv[1];              // Atribui o IP validado
   (*uip)->TCP = check_PORT(argv[2]); // Atribui a porta validada
 
   if (argc == 5) {
-    if (check_IP_address(argv[3])) {
+    if (check_IP_address(argv[3]) != 1) {
       /*error*/ exit(EXIT_FAILURE);
     }
-    (*uip)->regIP = argv[3]; // Atribui o IP validado
+    (*uip)->regIP = argv[3];              // Atribui o IP validado
     (*uip)->regUDP = check_PORT(argv[4]); // Atribui a porta validade
   }
 
@@ -60,7 +60,6 @@ int check_input_integrity(int argc, char *argv[], user_args **uip) {
 
 user_args *parser(int argc, char *argv[]) {
   int input_ok = 0;
-  printf("argc = %d\n\n", argc);
 
   /* Verifica se o número mínimo ou máximo de parâmetros
    * introduzidos pelo utilizador na invocação do programa
@@ -69,22 +68,12 @@ user_args *parser(int argc, char *argv[]) {
     /*error*/ exit(EXIT_FAILURE);
   }
 
-  for (int i = 0; i < argc; i++) {
-    printf("argv[%d]: %s\n", i, argv[i]);
-  }
-  printf("\n");
-
   /* Inicialização da estrutura do tipo user_input */
   user_args *uip = calloc(1, sizeof(user_args));
   if (uip == NULL) {
     /*error*/ exit(EXIT_FAILURE);
   }
   init_uip(&uip);
-
-  printf("%s\n", uip->IP);
-  printf("%d\n", uip->TCP);
-  printf("%s\n", uip->regIP);
-  printf("%d\n", uip->regUDP);
 
   /* Verificar a integridade dos parâmetros introduzidos pelo
    * utilizador na invocação do programa: IP TCP (regIP regTCP)
@@ -94,10 +83,5 @@ user_args *parser(int argc, char *argv[]) {
     /*error*/ exit(EXIT_FAILURE);
   }
 
-  printf("\n");
-  printf("%s\n", uip->IP);
-  printf("%d\n", uip->TCP);
-  printf("%s\n", uip->regIP);
-  printf("%d\n", uip->regUDP);
   return uip;
 }
