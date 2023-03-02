@@ -1,14 +1,16 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-typedef struct {
+typedef struct
+{
   char *IP;
   int TCP;
   char *regIP;
   int regUDP;
 } user_args;
 
-typedef struct node {
+typedef struct node
+{
   int ID;
   int fd;
   char *IP;
@@ -17,9 +19,9 @@ typedef struct node {
   struct node *next;
 } node;
 
-typedef struct {
-  user_args* uip;
-  int UDP_fd;
+typedef struct
+{
+  user_args *uip;
 
   node *ext;
   node *bck;
