@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdio.h>
-
 #define MAXREQUESTS 99
 
 int create_listen_socket(user_args *uip) {
