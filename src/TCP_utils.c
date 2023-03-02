@@ -24,11 +24,11 @@ int create_listen_socket(user_args *uip) {
 
   if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     /*error*/ exit(EXIT_FAILURE);
-  };
+  }
 
   if (listen(fd, MAXREQUESTS) < 0) {
     /*error*/ exit(EXIT_FAILURE);
-  };
+  }
 
   return fd;
 }

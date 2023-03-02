@@ -2,6 +2,7 @@
 #include "../hdr/parser.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
 
   clear();
   for (;;) {
+    printf("<USER> ");
     fflush(stdout);
     FD_ZERO(&readfds);
     FD_SET(STDIN_FILENO, &readfds);
@@ -33,11 +35,12 @@ int main(int argc, char *argv[]) {
            (struct timeval *)NULL);
 
     if (FD_ISSET(STDIN_FILENO, &readfds)) {
+      memset(&buffer, 0, BUFFER_SIZE);
       if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == -1) {
         /*error*/ exit(EXIT_FAILURE);
       }
       /* Ver se funciona, remover mais tarde */
-      printf("Ler do teclado -> buffer: %s\n", buffer);
+      printf("buffer: %s\n", buffer);
     }
 
     if (FD_ISSET(fd, &readfds)) {
