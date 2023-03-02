@@ -12,6 +12,9 @@
 #define clear() printf("\033[H\033[J")
 #define BUFFER_SIZE 128
 
+#define GREEN "\x1B[32m"
+#define RESET "\x1B[0m"
+
 int main(int argc, char *argv[]) {
   user_args *uip = NULL;
   uip = parser(argc, argv);
@@ -25,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   clear();
   for (;;) {
-    printf("<USER> ");
+    printf(GREEN "<USER> " RESET);
     fflush(stdout);
     FD_ZERO(&readfds);
     FD_SET(STDIN_FILENO, &readfds);
