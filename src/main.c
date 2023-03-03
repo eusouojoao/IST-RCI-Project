@@ -1,5 +1,6 @@
 #include "../hdr/TCP_utils.h"
 #include "../hdr/parser.h"
+#include "../hdr/user_interface.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
          * @todo parser que verifica o input do teclado e chama as funcões de
          * acordo com o pedido pelo utilizador, ou processa o erro
          */
+        check_stdin_input(buffer);
         FD_CLR(STDIN_FILENO, &readfds);
       }
 
