@@ -59,7 +59,8 @@ void process_stdin_input(char *buffer) {
     break;
   case UNDEF:
   default:
-    /*error*/ exit(EXIT_FAILURE);
+    /*error*/ // exit(EXIT_FAILURE);
+    break;
   }
 
   return;
