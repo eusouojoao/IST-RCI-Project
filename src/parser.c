@@ -79,7 +79,7 @@ user_args *parser(int argc, char *argv[]) {
    * utilizador na invocação do programa: IP TCP (regIP regTCP)
    * e atribui, caso se verifique, os valores à estrutura user_input */
   input_ok = check_input_integrity(argc, argv, &uip);
-  if (input_ok != 0) {
+  if (input_ok != EXIT_SUCCESS) {
     /*error*/ exit(EXIT_FAILURE);
   }
 

@@ -11,7 +11,7 @@
 
 #define max(A, B) ((A) >= (B) ? (A) : (B))
 #define clear() printf("\033[H\033[J")
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 256
 
 #define GREEN "\x1B[32m"
 #define RESET "\x1B[0m"

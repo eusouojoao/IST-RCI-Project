@@ -1,12 +1,12 @@
 #include "../hdr/UDP_utils.h"
-#include <unistd.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
-void send_user_message_UDP (user_args *uip, char *msg) {
+void send_user_message_UDP(user_args *uip, char *msg) {
   int fd = -1;
   struct sockaddr_in addr;
 
@@ -24,6 +24,9 @@ void send_user_message_UDP (user_args *uip, char *msg) {
   addr.sin_port = htons((in_port_t)uip->regUDP);
 
   // sendto(...);
+
+  /*! TODO: Tratamento de timeout, caso a mensagem se perca, ou o servidor não
+   * responda */
 
   // recvfrom(...);
 
