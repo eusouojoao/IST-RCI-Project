@@ -16,14 +16,22 @@ typedef struct node {
 
   struct node *next;
 } node;
+typedef struct names {
+  char name[100];
+
+  struct names *next;
+} names;
 
 typedef struct host {
+  int ID;
+  int tab_expedicao[100];
   user_args *uip;
 
   node *ext;
   node *bck;
   node *node_list; // lista dos nós vizinhos, i.e., internos e externos
 
+  names *names_list;
 } host;
 
 #endif // !STRUCTS_H
