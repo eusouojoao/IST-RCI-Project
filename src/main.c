@@ -17,32 +17,45 @@
 #define RESET "\x1B[0m"
 
 int main(int argc, char *argv[]) {
+  /* User arguments */
   user_args *uip = NULL;
   uip = parser(argc, argv);
-  fd_set readfds;
-  int fd = create_listen_socket(uip);
 
-  int newfd = -1, maxfd = -1, counter = 0;
-  char buffer[BUFFER_SIZE] = "";
-  struct sockaddr incomming_addr;
-  socklen_t incomming_addrlen;
+  /* File descriptors e counter do select() */
+  int listen_fd = create_listen_socket(uip);
+  int newfd = -1, maxfd = listen_fd, counter = 0;
+  /* Inicializar o master fd_set */
+  fd_set master_set, working_set;
+  FD_ZERO(&master_set);
+  FD_SET(listen_fd, &master_set);
+  FD_SET(STDIN_FILENO, &master_set);
+
+  /* Working buffer */
+  char buffer[BUFFER_SIZE];
+  memset(&buffer, 0, BUFFER_SIZE);
+
+  struct sockaddr in_addr;
+  socklen_t in_addrlen;
+
+  /* Inicializar a estrutura timeval para o timeout */
+  struct timeval timeout;
+  timeout.tv_sec = 300; // 5min = 5 * 60s = 300s
+  timeout.tv_usec = 0;
 
   clear();
-  for (;;) {
+  for (/* for */; /* ever */; /* ! */) {
     printf(GREEN "<USER> " RESET);
     fflush(stdout);
-    FD_ZERO(&readfds);
-    FD_SET(STDIN_FILENO, &readfds);
-    FD_SET(fd, &readfds);
-    maxfd = fd;
-    counter = select(maxfd + 1, &readfds, (fd_set *)NULL, (fd_set *)NULL,
-                     (struct timeval *)NULL);
+    memcpy(&working_set, &master_set, sizeof(master_set));
+    maxfd = max(listen_fd, /* MUDAR */ 0);
+    counter = select(maxfd + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
+                     (struct timeval *)&timeout);
     if (counter <= 0) {
       /*error*/ exit(EXIT_FAILURE);
     }
 
-    for (/*  */; counter > 0; counter--) {
-      if (FD_ISSET(STDIN_FILENO, &readfds)) {
+    for (/* X */; counter > 0; counter--) {
+      if (FD_ISSET(STDIN_FILENO, &working_set)) {
         memset(&buffer, 0, BUFFER_SIZE);
         if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == -1) {
           /*error*/ exit(EXIT_FAILURE);
@@ -51,11 +64,11 @@ int main(int argc, char *argv[]) {
         printf("buffer: %s\n", buffer);
 
         process_stdin_input(buffer);
-        FD_CLR(STDIN_FILENO, &readfds);
+        FD_CLR(STDIN_FILENO, &working_set);
       }
 
-      else if (FD_ISSET(fd, &readfds)) {
-        if ((newfd = accept(fd, &incomming_addr, &incomming_addrlen)) == -1) {
+      else if (FD_ISSET(listen_fd, &working_set)) {
+        if ((newfd = accept(listen_fd, &in_addr, &in_addrlen)) == -1) {
           /*error*/ exit(EXIT_FAILURE);
         }
 
@@ -68,18 +81,19 @@ int main(int argc, char *argv[]) {
          * @todo Guardar o file descriptor da ligação criada com o nó interno na
          * lista de nós vizinhos, e interagir com a mensagem recebida.
          */
-        FD_CLR(fd, &readfds);
+
+        FD_CLR(listen_fd, &working_set);
       }
 
-      else if (/* FD_ISSET(fd_guardado, &readfds) */ 0) {
+      else if (/* FD_ISSET(fd_guardado, &working_set) */ 0) {
         ;
         /*! TODO: Ver mais tarde
          *
          * @todo Tratamento da mensagem de uma socket de um vizinhos (interno e
          * externo). Primeiro ver como iterar sobre os vizinhos ativos no array
-         * de flags readfds
+         * de flags working_set
          */
-        // FD_CLR(fd_guardado, &readfds);
+        // FD_CLR(fd_guardado, &working_set);
       }
     }
   }

@@ -1,4 +1,5 @@
 #include "../hdr/parser.h"
+#include "../hdr/error_handling.h"
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,11 +25,13 @@ int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);
   if ((end == src) || (*end != '\0')) {
-    exit(EXIT_FAILURE);
+    user_input_error("Bad port format", src,
+                     "must be an integer within 0 and 65535.");
   }
 
   if (PORT < 0 || PORT > MAXPORT) {
-    /*out of range*/ exit(EXIT_FAILURE);
+    user_input_error("Port out of range", src,
+                     "does not lie within 0 and 65535.");
   }
 
   return (int)PORT;
@@ -42,14 +45,18 @@ int check_IP_address(char *src) {
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
 
   if (check_IP_address(argv[1]) != 1) {
-    /*error*/ exit(EXIT_FAILURE);
+    user_input_error("Invalid IPv4", argv[1],
+                     "the IP format must be X.X.X.X, where X must be a "
+                     "decimal value between 0 and 255 (octet).");
   }
   (*uip)->IP = argv[1];              // Atribui o IP validado
   (*uip)->TCP = check_PORT(argv[2]); // Atribui a porta validada
 
   if (argc == 5) {
     if (check_IP_address(argv[3]) != 1) {
-      /*error*/ exit(EXIT_FAILURE);
+      user_input_error("Invalid IPv4", argv[3],
+                       "the IP format must be X.X.X.X, where X must be a "
+                       "decimal value between 0 and 255 (octet).");
     }
     (*uip)->regIP = argv[3];              // Atribui o IP validado
     (*uip)->regUDP = check_PORT(argv[4]); // Atribui a porta validade
@@ -65,13 +72,14 @@ user_args *parser(int argc, char *argv[]) {
    * introduzidos pelo utilizador na invocação do programa
    * viola as especificações enunciadas */
   if (argc != 3 && argc != 5) {
-    /*error*/ exit(EXIT_FAILURE);
+    /*error*/ usage(argv[0]);
+    exit(EXIT_FAILURE);
   }
 
   /* Inicialização da estrutura do tipo user_input */
   user_args *uip = calloc(1, sizeof(user_args));
   if (uip == NULL) {
-    /*error*/ exit(EXIT_FAILURE);
+    /*error*/ system_error("In parser.c > parser() >> calloc(): ");
   }
   init_uip(&uip);
 
@@ -80,7 +88,8 @@ user_args *parser(int argc, char *argv[]) {
    * e atribui, caso se verifique, os valores à estrutura user_input */
   input_ok = check_input_integrity(argc, argv, &uip);
   if (input_ok != EXIT_SUCCESS) {
-    /*error*/ exit(EXIT_FAILURE);
+    /*error*/ usage(argv[0]);
+    exit(EXIT_FAILURE);
   }
 
   return uip;
