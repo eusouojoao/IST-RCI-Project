@@ -50,12 +50,7 @@ int main(int argc, char *argv[]) {
         /* Ver se funciona, remover mais tarde */
         printf("buffer: %s\n", buffer);
 
-        /*! TODO: Implementar parser para o input de teclado
-         *
-         * @todo parser que verifica o input do teclado e chama as funcões de
-         * acordo com o pedido pelo utilizador, ou processa o erro
-         */
-        check_stdin_input(buffer);
+        process_stdin_input(buffer);
         FD_CLR(STDIN_FILENO, &readfds);
       }
 

@@ -18,7 +18,6 @@ typedef struct node
 
   struct node *next;
 } node;
-
 typedef struct names
 {
   char name[100];
