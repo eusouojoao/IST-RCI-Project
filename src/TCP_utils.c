@@ -1,4 +1,6 @@
 #include "../hdr/TCP_utils.h"
+#include "../hdr/error_handling.h"
+
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,10 +25,12 @@ int create_listen_socket(user_args *uip) {
   addr.sin_port = htons((in_port_t)uip->TCP);
 
   if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    system_error("In create_listen_socket() ->" RED " bind() failed");
     /*error*/ exit(EXIT_FAILURE);
   }
 
   if (listen(fd, MAXREQUESTS) < 0) {
+    system_error("In create_listen_socket() ->" RED " listen() failed");
     /*error*/ exit(EXIT_FAILURE);
   }
 

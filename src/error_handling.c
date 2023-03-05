@@ -1,11 +1,6 @@
-#include <stdio.h>
-
 #include "../hdr/error_handling.h"
 
-#define clear() fprintf(stderr, "\033[H\033[J")
-#define RED "\x1B[31m"
-#define BLUE "\x1B[34m"
-#define RESET "\x1B[0m"
+#include <stdio.h>
 
 void usage(char *target) {
   fprintf(stderr,

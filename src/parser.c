@@ -1,6 +1,8 @@
 #include "../hdr/parser.h"
 #include "../hdr/error_handling.h"
+
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +21,15 @@ void init_uip(user_args **uip) {
   (*uip)->regUDP = 59000;
 
   return;
+}
+
+int check_if_number(char *src) {
+  for (int i = 0; i < strlen(src); i++) {
+    if (!isdigit(src[i])) {
+      return 0;
+    }
+  }
+  return 1;
 }
 
 int check_PORT(char *src) {
