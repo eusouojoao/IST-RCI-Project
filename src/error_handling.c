@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "../hdr/error_handling.h"
 
@@ -29,11 +28,9 @@ void user_input_error(char *msg, char *input, char *detail) {
   fputs(" -> ", stderr);
   fputs(detail, stderr);
   fputs("\n", stderr);
-  exit(EXIT_FAILURE);
 }
 
 void system_error(char *msg) {
   fputs(RED "(!) " RESET, stderr);
   perror(msg);
-  exit(EXIT_FAILURE);
 }

@@ -27,11 +27,13 @@ int check_PORT(char *src) {
   if ((end == src) || (*end != '\0')) {
     user_input_error("Bad port format", src,
                      "must be an integer within 0 and 65535.");
+    exit(EXIT_FAILURE);
   }
 
   if (PORT < 0 || PORT > MAXPORT) {
     user_input_error("Port out of range", src,
                      "does not lie within 0 and 65535.");
+    exit(EXIT_FAILURE);
   }
 
   return (int)PORT;
@@ -79,7 +81,8 @@ user_args *parser(int argc, char *argv[]) {
   /* Inicialização da estrutura do tipo user_input */
   user_args *uip = calloc(1, sizeof(user_args));
   if (uip == NULL) {
-    /*error*/ system_error("In parser.c > parser() >> calloc(): ");
+    /*error*/ system_error("In parser() -> calloc() failed: ");
+    exit(EXIT_FAILURE);
   }
   init_uip(&uip);
 
