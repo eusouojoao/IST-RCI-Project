@@ -2,6 +2,7 @@
 #include "../hdr/error_handling.h"
 #include "../hdr/parser.h"
 #include "../hdr/user_interface.h"
+#include "../hdr/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,8 @@ int main(int argc, char *argv[]) {
   /* User arguments */
   user_args *uip = NULL;
   uip = parser(argc, argv);
+
+  host *host = init_host(uip);
 
   /* File descriptors e counter do select() */
   int listen_fd = create_listen_socket(uip);
@@ -64,7 +67,7 @@ int main(int argc, char *argv[]) {
         /* Ver se funciona, remover mais tarde */
         printf("buffer: %s\n", buffer);
 
-        process_stdin_input(buffer, (host **)NULL);
+        process_stdin_input(buffer, &host);
         FD_CLR(STDIN_FILENO, &working_set);
       }
 

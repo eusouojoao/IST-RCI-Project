@@ -24,7 +24,7 @@ void init_uip(user_args **uip) {
 }
 
 int check_if_number(char *src) {
-  for (int i = 0; i < strlen(src); i++) {
+  for (int i = 0; i < (int)strlen(src); i++) {
     if (!isdigit(src[i])) {
       return 0;
     }
@@ -42,8 +42,7 @@ int check_PORT(char *src) {
   }
 
   if (PORT < 0 || PORT > MAXPORT) {
-    user_input_error("Port out of range", src,
-                     "does not lie within 0 and 65535.");
+    user_input_error("Port out of range", src, "does not lie within 0 and 65535.");
     exit(EXIT_FAILURE);
   }
 

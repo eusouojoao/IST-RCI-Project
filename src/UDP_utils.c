@@ -51,8 +51,7 @@ char *send_user_message_UDP(user_args *uip, char *msg) {
   }
 
   socklen_t addrlen = sizeof(addr);
-  n = recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr,
-               &addrlen);
+  n = recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &addrlen);
   if (n == -1) {
     system_error("In send_user_message_UDP() ->" RED " recvfrom() failed");
     return NULL;

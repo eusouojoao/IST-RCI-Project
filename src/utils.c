@@ -4,22 +4,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if 0
+#if 1
 /**
  * @brief  inicializa host
  * @note   quando se cria o nó (host) bck e o exp é o proprio nó (representado
  * por NULL)
- * @param  ID: ID do host
  * @param  *uip: argumentos do utilizador
  * @retval apontador para o próprio host criado
  */
-host *hostInit(int ID, user_args *uip) {
+host *init_host(user_args *uip) {
   host *newH = (host *)malloc(sizeof(struct host));
   if (newH == NULL) {
     /*error*/ exit(0);
   }
 
-  newH->ID = ID;
+  newH->ID = NULL;
   newH->uip = uip;
   newH->bck = NULL; // NULL representa que o proprio nó é o backup
   newH->ext = NULL; // ... e vizinho externo
@@ -40,20 +39,24 @@ host *hostInit(int ID, user_args *uip) {
  * @param  *next: apontador para o proximo elemento da lista de nodes
  * @retval apontador para a própria node criada
  */
-node *newNode(int ID, int fd, char *IP, int TCP, node *next) {
+node *new_node(char *ID, int fd, char *IP, int TCP, node *next) {
   node *newN = (node *)malloc(sizeof(struct node));
   if (newN == NULL) {
     /*error*/ exit(0);
   }
-  newN->ID = ID;
+  newN->ID = (char *)malloc((strlen(ID) + 1) * sizeof(char));
+  if (newN->ID == NULL) {
+    /*error*/ exit(0);
+  }
+  strcpy(newN->ID, ID);
+
   newN->fd = fd;
   newN->TCP = TCP;
   newN->IP = (char *)malloc((strlen(IP) + 1) * sizeof(char));
   if (newN->IP == NULL) {
     /*error*/ exit(0);
   }
-
-  strcpy(IP, newN->IP);
+  strcpy(newN->IP, IP);
   newN->next = next; // novo node passa a ser o 1º da lista
 
   return newN;
@@ -65,7 +68,7 @@ node *newNode(int ID, int fd, char *IP, int TCP, node *next) {
  * @param  *myH: struct host a ser apagada
  * @retval None
  */
-void deleteHost(host *myH) {
+void delete_host(host *myH) {
   node *del = NULL;
   node *aux = NULL;
   names *del2 = NULL;
@@ -98,9 +101,9 @@ void deleteHost(host *myH) {
  * @param  *myH: struct host onde está a lista de nodes
  * @retval None
  */
-void insertNode(int ID, int fd, char *IP, int TCP, host *myH) {
+void insert_node(char *ID, int fd, char *IP, int TCP, host *myH) {
   node *firstN = myH->node_list;
-  node *newN = newNode(ID, fd, IP, TCP, firstN);
+  node *newN = new_node(ID, fd, IP, TCP, firstN);
   myH->node_list = newN;
   if (myH->ext ==
       NULL) // caso o host tenha acabado de entrar na rede ou perdido o externo
@@ -154,7 +157,7 @@ void removeRote_tab(int eraseN, host *myH) {
  * @param  *myH: struct host com a lista de nodes
  * @retval None
  */
-void deleteNode(int ID, host *myH) {
+void delete_node(char *ID, host *myH) {
   node *nodeList = myH->node_list;
   node *previous_pointer = NULL;
   if (myH->ext->ID == ID) // vai perder nó externo
@@ -169,7 +172,7 @@ void deleteNode(int ID, host *myH) {
       else
         previous_pointer->next = nodeList->next;
       free(nodeList);
-      removeRote_tab(ID, myH); // atualizar tabela de expedição
+      removeRote_tab(atoi(ID), myH); // atualizar tabela de expedição
       return;
     }
     previous_pointer = nodeList;
@@ -186,7 +189,7 @@ void deleteNode(int ID, host *myH) {
  * @param  *myH: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promoteVItoVE(host *myH) {
+node *promoteIntr_to_Ext(host *myH) {
   myH->ext = myH->node_list;
   return myH->ext; // poderá fazer return NULL caso nao hajam nós internos
 }
@@ -197,7 +200,7 @@ node *promoteVItoVE(host *myH) {
  * @param  *myH: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promoteBcktoVE(host *myH) {
+node *promoteBck_to_Ext(host *myH) {
   myH->ext = myH->bck;
   myH->bck = NULL;
   return myH->ext; // poderá fazer return NULL caso nao haja backup
@@ -210,12 +213,12 @@ node *promoteBcktoVE(host *myH) {
  * @param  *next: apontador pro proximo conteudo
  * @retval apontador para conteudo novo
  */
-names *newNames(char *name, names *next) {
+names *new_names(char *name, names *next) {
   names *newName = (names *)malloc(sizeof(struct names));
   if (newName == NULL) {
     /*error*/ exit(0);
   }
-  strcpy(name, newName->name);
+  strcpy(newName->name, name);
   newName->next = next; // novo name passa a ser o 1º da lista
 
   return newName;
@@ -230,18 +233,18 @@ names *newNames(char *name, names *next) {
  *         0 Falha, já existia um name com esse nome
  *         -1 Falha, name demasiado longo
  */
-int writeName(char *name, host *myH) {
+int write_name(char *name, host *myH) {
   names *list_pointer = myH->names_list;
   if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
                               // sizeof(list_pointer->name)
-    return -1; // Falha, name demasiado longo
+    return -1;                // Falha, name demasiado longo
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, name) == 0)
       return 0; // Falha, já existia um name com esse nome
     else
       list_pointer = list_pointer->next;
   }
-  names *newName = newNames(name, myH->names_list);
+  names *newName = new_names(name, myH->names_list);
   myH->names_list = newName;
   return 1; // Sucesso
 }
@@ -256,7 +259,7 @@ int writeName(char *name, host *myH) {
  *         -1 Falha, name a apagar demasiado longo (logo não poderia tar na
  * lista)
  */
-int deleteName(char *delname, host *myH) {
+int delete_name(char *delname, host *myH) {
   names *list_pointer = myH->names_list;
   names *previous_pointer = NULL;
   if (strlen(delname) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
@@ -289,7 +292,7 @@ int deleteName(char *delname, host *myH) {
  *         -1 Falha, name a procurar demasiado longo (logo não poderia tar na
  * lista)
  */
-int findName(
+int find_name(
     char *name,
     host *myH) { // APAGAR- não sei se é suposto devolver o conteúdo caso seja
                  // encontrado ou apenas uma msg a dizer q o conteudo existe

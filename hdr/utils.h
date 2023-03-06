@@ -3,18 +3,18 @@
 
 #include "struct.h"
 
-host *hostInit(int ID, user_args *uip);
-node *newNode(int ID, int fd, char *IP, int TCP, node *next);
-void deleteHost(host *myH);
-void insertNode(int ID, int fd, char *IP, int TCP, host *myH);
+host *init_host(user_args *uip);
+node *new_node(char *ID, int fd, char *IP, int TCP, node *next);
+void delete_host(host *myH);
+void insert_node(char *ID, int fd, char *IP, int TCP, host *myH);
+void delete_node(char *ID, host *myH);
 void addRote_tab(int destino, int vizinho, host *myH);
 void removeRote_tab(int eraseN, host *myH);
-void deleteNode(int ID, host *myH);
-names *newNames(char *name, names *next);
-int writeName(char *name, host *myH);
-int deleteName(char *delname, host *myH);
-int findName(char *name, host *myH);
-node *promoteVItoVE(host *myH);
-node *promoteBcktoVE(host *myH);
+names *new_names(char *name, names *next);
+int write_name(char *name, host *myH);
+int delete_name(char *delname, host *myH);
+int find_name(char *name, host *myH);
+node *promote_Intr_to_Ext(host *myH);
+node *promote_Bck_to_Ext(host *myH);
 
 #endif

@@ -27,7 +27,7 @@ bin/%.o: src/%.c $(HEADERS) Makefile
 
 .PHONY: clean
 clean: ## -> opção CLEAN para limpar os object files e o executável; uso -> 'make clean'
-	rm -rf bin/ $(TARGET)
+	rm -rf bin/ $(TARGET) vgcore*
 
 .PHONY: debug
 debug: ## -> opção DEBUG, acrescenta a flag de debug ao compilador; uso -> 'make debug'

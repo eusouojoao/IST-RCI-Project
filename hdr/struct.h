@@ -9,7 +9,7 @@ typedef struct user_args {
 } user_args;
 
 typedef struct node {
-  int ID;
+  char *ID;
   int fd;
   char *IP;
   int TCP;
@@ -24,7 +24,7 @@ typedef struct names {
 } names;
 
 typedef struct host {
-  int ID, net;
+  char *ID, *net;
   int tab_expedicao[100];
   user_args *uip;
 

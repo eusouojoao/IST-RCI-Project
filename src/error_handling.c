@@ -6,10 +6,9 @@ void usage(char *target) {
   fprintf(stderr,
           RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET,
           target);
-  fprintf(stderr,
-          BLUE ">NOTE:" RESET
-               " The arguments [regIP] & [regTCP] are optional, defaulting\n"
-               "to 193.136.138.142 & 59000 respectively.\n");
+  fprintf(stderr, BLUE ">NOTE:" RESET
+                       " The arguments [regIP] & [regTCP] are optional, defaulting\n"
+                       "to 193.136.138.142 & 59000 respectively.\n");
   return;
 }
 
