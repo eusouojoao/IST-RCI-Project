@@ -2,8 +2,6 @@
 #include "../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
-#include <asm-generic/socket.h>
-#include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>

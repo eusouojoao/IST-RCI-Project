@@ -1,13 +1,8 @@
-#include "parser.h"
+#include "arguments_parser.h"
+#include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
 
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
-#define MAXPORT 65535
 
 /* Inicializa uma estrutura do tipo user_input alocada
  * dinamicamente (e passada por referência), com o intuito
@@ -21,36 +16,6 @@ void init_uip(user_args **uip) {
   (*uip)->regUDP = 59000;
 
   return;
-}
-
-int check_if_number(char *src) {
-  for (int i = 0; i < (int)strlen(src); i++) {
-    if (!isdigit(src[i])) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
-int check_PORT(char *src) {
-  char *end = NULL;
-  long PORT = strtol(src, &end, 10);
-  if ((end == src) || (*end != '\0')) {
-    user_input_error("Bad port format", src, "must be an integer within 0 and 65535.");
-    exit(EXIT_FAILURE);
-  }
-
-  if (PORT < 0 || PORT > MAXPORT) {
-    user_input_error("Port out of range", src, "does not lie within 0 and 65535.");
-    exit(EXIT_FAILURE);
-  }
-
-  return (int)PORT;
-}
-
-int check_IP_address(char *src) {
-  struct sockaddr_in sa;
-  return inet_pton(AF_INET, src, &(sa.sin_addr));
 }
 
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
