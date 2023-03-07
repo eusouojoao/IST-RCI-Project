@@ -10,12 +10,14 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #define max(A, B) ((A) >= (B) ? (A) : (B))
 #define BUFFER_SIZE 256
 
 int main(int argc, char *argv[]) {
+  srand((unsigned int)time(NULL)); // seed the rand function
   /* User arguments */
   user_args *uip = NULL;
   uip = parser(argc, argv);
@@ -67,7 +69,7 @@ int main(int argc, char *argv[]) {
         /* Ver se funciona, remover mais tarde */
         printf("buffer: %s\n", buffer);
 
-        process_stdin_input(buffer, &host);
+        process_stdin_input(buffer, host);
         FD_CLR(STDIN_FILENO, &working_set);
       }
 

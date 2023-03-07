@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NETSIZE 3
+#define IDSIZE 2
+
 #if 1
 /**
  * @brief  inicializa host
@@ -13,20 +16,39 @@
  * @retval apontador para o próprio host criado
  */
 host *init_host(user_args *uip) {
-  host *newH = (host *)malloc(sizeof(struct host));
-  if (newH == NULL) {
-    /*error*/ exit(0);
+  host *new_host = (host *)malloc(sizeof(host));
+  if (new_host == NULL) {
+    /*error*/ exit(EXIT_FAILURE);
+  }
+  new_host->ID = NULL;
+  new_host->net = NULL;
+  new_host->uip = uip;
+  new_host->bck = NULL; // NULL representa que o proprio nó é o backup
+  new_host->ext = NULL; // ... e neighbour externo
+  new_host->node_list = NULL;
+  new_host->names_list = NULL;
+  memset(new_host->tab_expedicao, -1, sizeof(new_host->tab_expedicao));
+
+  return new_host;
+}
+
+void assign_ID_and_net(host *host, char *ID, char *net) {
+  host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
+  if (host->ID == NULL) {
+    /*error*/ exit(EXIT_FAILURE);
+  }
+  host->net = (char *)malloc((IDSIZE + 1) * sizeof(char));
+  if (host->ID == NULL) {
+    /*error*/ exit(EXIT_FAILURE);
+  }
+  if (sprintf(host->ID, "%2s", ID) < IDSIZE) {
+    /*error*/ exit(EXIT_FAILURE);
+  }
+  if (sprintf(host->net, "%3s", net) < NETSIZE) {
+    /*error*/ exit(EXIT_FAILURE);
   }
 
-  newH->ID = NULL;
-  newH->uip = uip;
-  newH->bck = NULL; // NULL representa que o proprio nó é o backup
-  newH->ext = NULL; // ... e vizinho externo
-  newH->node_list = NULL;
-  newH->names_list = NULL;
-  memset(newH->tab_expedicao, -1, sizeof(newH->tab_expedicao));
-
-  return newH;
+  return;
 }
 
 /**
@@ -39,42 +61,42 @@ host *init_host(user_args *uip) {
  * @param  *next: apontador para o proximo elemento da lista de nodes
  * @retval apontador para a própria node criada
  */
-node *new_node(char *ID, int fd, char *IP, int TCP, node *next) {
-  node *newN = (node *)malloc(sizeof(struct node));
-  if (newN == NULL) {
+node *create_new_node(char *ID, int fd, char *IP, int TCP, node *next) {
+  node *new_node = (node *)malloc(sizeof(struct node));
+  if (new_node == NULL) {
     /*error*/ exit(0);
   }
-  newN->ID = (char *)malloc((strlen(ID) + 1) * sizeof(char));
-  if (newN->ID == NULL) {
+  new_node->ID = (char *)malloc((strlen(ID) + 1) * sizeof(char));
+  if (new_node->ID == NULL) {
     /*error*/ exit(0);
   }
-  strcpy(newN->ID, ID);
+  strcpy(new_node->ID, ID);
 
-  newN->fd = fd;
-  newN->TCP = TCP;
-  newN->IP = (char *)malloc((strlen(IP) + 1) * sizeof(char));
-  if (newN->IP == NULL) {
+  new_node->fd = fd;
+  new_node->TCP = TCP;
+  new_node->IP = (char *)malloc((strlen(IP) + 1) * sizeof(char));
+  if (new_node->IP == NULL) {
     /*error*/ exit(0);
   }
-  strcpy(newN->IP, IP);
-  newN->next = next; // novo node passa a ser o 1º da lista
+  strcpy(new_node->IP, IP);
+  new_node->next = next; // novo node passa a ser o 1º da lista
 
-  return newN;
+  return new_node;
 }
 
 /**
  * @brief  apaga completamente o host
  * @note
- * @param  *myH: struct host a ser apagada
+ * @param  *host: struct host a ser apagada
  * @retval None
  */
-void delete_host(host *myH) {
+void delete_host(host *host) {
   node *del = NULL;
   node *aux = NULL;
   names *del2 = NULL;
   names *aux2 = NULL;
-  aux = myH->node_list;
-  aux2 = myH->names_list;
+  aux = host->node_list;
+  aux2 = host->names_list;
   while (aux != NULL) // delete node_list
   {
     del = aux;
@@ -87,8 +109,8 @@ void delete_host(host *myH) {
     aux2 = aux2->next;
     free(del2);
   }
-  free(myH->uip); // delete user_args
-  free(myH);      // delete host
+  free(host->uip); // delete user_args
+  free(host);      // delete host
 }
 
 /**
@@ -98,38 +120,38 @@ void delete_host(host *myH) {
  * @param  fd: fd assoaciado ao node a ser inserido
  * @param  *IP: endereço do node a ser inserido
  * @param  TCP: porto do node a ser inserido
- * @param  *myH: struct host onde está a lista de nodes
+ * @param  *host: struct host onde está a lista de nodes
  * @retval None
  */
-void insert_node(char *ID, int fd, char *IP, int TCP, host *myH) {
-  node *firstN = myH->node_list;
-  node *newN = new_node(ID, fd, IP, TCP, firstN);
-  myH->node_list = newN;
-  if (myH->ext ==
+void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
+  node *first_node = host->node_list;
+  node *new_node = create_new_node(ID, fd, IP, TCP, first_node);
+  host->node_list = new_node;
+  if (host->ext ==
       NULL) // caso o host tenha acabado de entrar na rede ou perdido o externo
-    myH->ext = newN;
+    host->ext = new_node;
   // APAGAR!!
   // podia se logo atualizar a tabela de expedição (mas n sei se é o pretendido)
-  // myH->tab_expedicao[ID] = ID;
+  // host->tab_expedicao[ID] = ID;
 }
 
 /**
  * @brief  adiciona uma nova rota à tabela de expedição
  * @note
- * @param  destino: node de destino
- * @param  vizinho: node que tem de se enviar mensagem para chegar ao destino
- * @param  *myH: struct host (guarda toda a informação)
+ * @param  dest: node de dest
+ * @param  neighbour: node que tem de se enviar mensagem para chegar ao dest
+ * @param  *host: struct host (guarda toda a informação)
  * @retval None
  */
-void addRote_tab(int destino, int vizinho, host *myH) {
+void add_route_tab(int dest, int neighbour, host *host) {
   // APAGAR!!
-  if (myH->tab_expedicao[destino] ==
+  if (host->tab_expedicao[dest] ==
       -1) // apenas para testar se as tabelas estão a ser corretamente apagadas
   {
     printf("ERROR, tabela populada a ser repopulada!");
     exit(1);
   }
-  myH->tab_expedicao[destino] = vizinho;
+  host->tab_expedicao[dest] = neighbour;
 }
 
 /**
@@ -137,15 +159,15 @@ void addRote_tab(int destino, int vizinho, host *myH) {
  * eraseN
  * @note
  * @param  eraseN: node a apagar as rotas
- * @param  *myH: struct host que contém a tabela de expedição
+ * @param  *host: struct host que contém a tabela de expedição
  * @retval None
  */
-void removeRote_tab(int eraseN, host *myH) {
+void remove_route_tab(int eraseN, host *host) {
   int i;
-  myH->tab_expedicao[eraseN] = -1; // remove rote to deleted node
+  host->tab_expedicao[eraseN] = -1; // remove rote to deleted node
   for (i = 0; i < 100; i++) {
-    if (myH->tab_expedicao[i] == eraseN)
-      myH->tab_expedicao[i] =
+    if (host->tab_expedicao[i] == eraseN)
+      host->tab_expedicao[i] =
           -1; // remove rote to a node when the destiny is the deleted node
   }
 }
@@ -154,25 +176,25 @@ void removeRote_tab(int eraseN, host *myH) {
  * @brief  apaga uma node específica dada pelo seu ID da lista de nodes
  * @note   atualiza também a tabela de expedição
  * @param  ID: ID da node a ser eliminada
- * @param  *myH: struct host com a lista de nodes
+ * @param  *host: struct host com a lista de nodes
  * @retval None
  */
-void delete_node(char *ID, host *myH) {
-  node *nodeList = myH->node_list;
+void delete_node(char *ID, host *host) {
+  node *nodeList = host->node_list;
   node *previous_pointer = NULL;
-  if (myH->ext->ID == ID) // vai perder nó externo
-    myH->ext = NULL;
-  if (myH->bck->ID == ID) // vai perder nó backup
-    myH->bck = NULL;
+  if (host->ext->ID == ID) // vai perder nó externo
+    host->ext = NULL;
+  if (host->bck->ID == ID) // vai perder nó backup
+    host->bck = NULL;
   while (nodeList != NULL) {
     if (nodeList->ID == ID) {
 
       if (previous_pointer == NULL)
-        myH->node_list = nodeList->next;
+        host->node_list = nodeList->next;
       else
         previous_pointer->next = nodeList->next;
       free(nodeList);
-      removeRote_tab(atoi(ID), myH); // atualizar tabela de expedição
+      remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
       return;
     }
     previous_pointer = nodeList;
@@ -186,24 +208,24 @@ void delete_node(char *ID, host *myH) {
 /**
  * @brief  promove um vertice interno a externo
  * @note   return poderá fazer return NULL caso nao hajam nós internos
- * @param  *myH: struct com a informação dos vertíces
+ * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promoteIntr_to_Ext(host *myH) {
-  myH->ext = myH->node_list;
-  return myH->ext; // poderá fazer return NULL caso nao hajam nós internos
+node *promote_intr_to_ext(host *host) {
+  host->ext = host->node_list;
+  return host->ext; // poderá fazer return NULL caso nao hajam nós internos
 }
 
 /**
  * @brief  promove um vertice de backup a vertice externo
  * @note   return poderá fazer return NULL caso nao haja backup
- * @param  *myH: struct com a informação dos vertíces
+ * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promoteBck_to_Ext(host *myH) {
-  myH->ext = myH->bck;
-  myH->bck = NULL;
-  return myH->ext; // poderá fazer return NULL caso nao haja backup
+node *promote_bck_to_ext(host *host) {
+  host->ext = host->bck;
+  host->bck = NULL;
+  return host->ext; // poderá fazer return NULL caso nao haja backup
 }
 
 /**
@@ -214,27 +236,27 @@ node *promoteBck_to_Ext(host *myH) {
  * @retval apontador para conteudo novo
  */
 names *new_names(char *name, names *next) {
-  names *newName = (names *)malloc(sizeof(struct names));
-  if (newName == NULL) {
+  names *new_nodeame = (names *)malloc(sizeof(struct names));
+  if (new_nodeame == NULL) {
     /*error*/ exit(0);
   }
-  strcpy(newName->name, name);
-  newName->next = next; // novo name passa a ser o 1º da lista
+  strcpy(new_nodeame->name, name);
+  new_nodeame->next = next; // novo name passa a ser o 1º da lista
 
-  return newName;
+  return new_nodeame;
 }
 
 /**
  * @brief  insere um novo conteudo na lista de conteudos
  * @note   inserção no inicio da names list
  * @param  *name: conteudo a ser inserido
- * @param  *myH: struct host com a lista de conteudos
+ * @param  *host: struct host com a lista de conteudos
  * @retval 1 Sucesso
  *         0 Falha, já existia um name com esse nome
  *         -1 Falha, name demasiado longo
  */
-int write_name(char *name, host *myH) {
-  names *list_pointer = myH->names_list;
+int write_name(char *name, host *host) {
+  names *list_pointer = host->names_list;
   if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
                               // sizeof(list_pointer->name)
     return -1;                // Falha, name demasiado longo
@@ -244,8 +266,8 @@ int write_name(char *name, host *myH) {
     else
       list_pointer = list_pointer->next;
   }
-  names *newName = new_names(name, myH->names_list);
-  myH->names_list = newName;
+  names *new_nodeame = new_names(name, host->names_list);
+  host->names_list = new_nodeame;
   return 1; // Sucesso
 }
 
@@ -253,14 +275,14 @@ int write_name(char *name, host *myH) {
  * @brief  apaga um conteudo especifico da lista de conteudos
  * @note
  * @param  *delname: nome a ser apagado
- * @param  *myH: struct host com a lista de names
+ * @param  *host: struct host com a lista de names
  * @retval 1 Sucesso
  *         0 Falha, não existia name com tal nome
  *         -1 Falha, name a apagar demasiado longo (logo não poderia tar na
  * lista)
  */
-int delete_name(char *delname, host *myH) {
-  names *list_pointer = myH->names_list;
+int delete_name(char *delname, host *host) {
+  names *list_pointer = host->names_list;
   names *previous_pointer = NULL;
   if (strlen(delname) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
                                  // sizeof(list_pointer->name)
@@ -269,7 +291,7 @@ int delete_name(char *delname, host *myH) {
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, delname) == 0) {
       if (previous_pointer == NULL)
-        myH->names_list = list_pointer->next;
+        host->names_list = list_pointer->next;
       else
         previous_pointer->next = list_pointer->next;
       free(list_pointer);
@@ -286,18 +308,17 @@ int delete_name(char *delname, host *myH) {
  * @brief  encontrar se um conteudo especido existe
  * @note
  * @param  *name: conteudo que se procura
- * @param  *myH: struct host com a lista de names
+ * @param  *host: struct host com a lista de names
  * @retval 1 Sucesso, conteudo encontrado
  *         0 Falha, não existia conteudo com tal nome
  *         -1 Falha, name a procurar demasiado longo (logo não poderia tar na
  * lista)
  */
-int find_name(
-    char *name,
-    host *myH) { // APAGAR- não sei se é suposto devolver o conteúdo caso seja
-                 // encontrado ou apenas uma msg a dizer q o conteudo existe
+int find_name(char *name,
+              host *host) { // APAGAR- não sei se é suposto devolver o conteúdo caso seja
+                            // encontrado ou apenas uma msg a dizer q o conteudo existe
   // const char *FindName()
-  names *list_pointer = myH->names_list;
+  names *list_pointer = host->names_list;
   if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
                               // sizeof(list_pointer->name)
     return -1; // Falha, name a procurar demasiado longo (logo não poderia tar

@@ -12,7 +12,7 @@
 
 #define BUFFER_SIZE 128
 
-char *send_user_message_UDP(user_args *uip, char *msg) {
+char *send_message_UDP(user_args *uip, char *msg) {
   int fd = -1;
   ssize_t n = 0;
   char buffer[BUFFER_SIZE] = "";
@@ -28,6 +28,7 @@ char *send_user_message_UDP(user_args *uip, char *msg) {
   memset(&addr, 0, sizeof(addr));
   if (inet_pton(AF_INET, uip->regIP, &(addr.sin_addr)) != 1) {
     system_error("In send_user_message_UDP() ->" RED " inet_pton() failed");
+    close(fd);
     return NULL;
   }
 
@@ -37,6 +38,7 @@ char *send_user_message_UDP(user_args *uip, char *msg) {
   n = sendto(fd, msg, strlen(msg), 0, (struct sockaddr *)&addr, sizeof(addr));
   if (n == -1) {
     system_error("In send_user_message_UDP() ->" RED " sendto() failed");
+    close(fd);
     return NULL;
   }
 
@@ -47,6 +49,7 @@ char *send_user_message_UDP(user_args *uip, char *msg) {
 
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     system_error("In send_user_message_UDP() ->" RED " setsockopt() failed");
+    close(fd);
     return NULL;
   }
 
@@ -54,6 +57,7 @@ char *send_user_message_UDP(user_args *uip, char *msg) {
   n = recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &addrlen);
   if (n == -1) {
     system_error("In send_user_message_UDP() ->" RED " recvfrom() failed");
+    close(fd);
     return NULL;
   }
 
