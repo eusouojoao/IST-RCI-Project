@@ -12,6 +12,10 @@
 #define MAXNODES 99
 
 void djoin(char *buffer, host *host, int flag) {
+  if (host->ext != NULL) {
+    return;
+  }
+
   char msg_to_send[128] = {'\0'}, *received_ext_msg = NULL;
   char net[128] = {'\0'}, ID[128] = {'\0'};
   char bootID[128] = {'\0'}, bootIP[128] = {'\0'}, bootTCP[128] = {'\0'};
@@ -34,10 +38,7 @@ void djoin(char *buffer, host *host, int flag) {
     return;
   }
 
-  if (host->ext == NULL) {
-    host->ext = create_new_node(bootID, -1, bootIP, atoi(bootTCP), NULL);
-    host->node_list = host->ext;
-  }
+  insert_node(bootID, -1, bootIP, atoi(bootTCP), host);
 
   /* Message exchange between the host and the extern node */
   sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
@@ -51,7 +52,7 @@ void djoin(char *buffer, host *host, int flag) {
   assign_ID_and_net(host, ID, net);
 
   sscanf(received_ext_msg, "EXTERN %s %s %s", bootID, bootIP, bootTCP);
-  host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP), NULL);
+  host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP));
 
   return;
 }
@@ -139,6 +140,8 @@ void join(char *buffer, host *host) {
     if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
       djoin(msg_to_send, host, JOIN); // connects to the ext node in the network
+    } else {
+      assign_ID_and_net(host, ID, net);
     }
   } else {
     /* ??? */;

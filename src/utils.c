@@ -22,9 +22,11 @@ host *init_host(user_args *uip) {
   }
   new_host->ID = NULL;
   new_host->net = NULL;
+
   new_host->uip = uip;
   new_host->bck = NULL; // NULL representa que o proprio nó é o backup
   new_host->ext = NULL; // ... e neighbour externo
+
   new_host->node_list = NULL;
   new_host->names_list = NULL;
   memset(new_host->tab_expedicao, -1, sizeof(new_host->tab_expedicao));
@@ -58,10 +60,9 @@ void assign_ID_and_net(host *host, char *ID, char *net) {
  * @param  fd: fd associado à ligação com o novo node
  * @param  *IP: endereço do novo node
  * @param  TCP: porto do novo node
- * @param  *next: apontador para o proximo elemento da lista de nodes
  * @retval apontador para a própria node criada
  */
-node *create_new_node(char *ID, int fd, char *IP, int TCP, node *next) {
+node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   node *new_node = (node *)malloc(sizeof(struct node));
   if (new_node == NULL) {
     /*error*/ exit(0);
@@ -79,7 +80,7 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP, node *next) {
     /*error*/ exit(0);
   }
   strcpy(new_node->IP, IP);
-  new_node->next = next; // novo node passa a ser o 1º da lista
+  new_node->next = NULL;
 
   return new_node;
 }
@@ -125,8 +126,11 @@ void delete_host(host *host) {
  */
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   node *first_node = host->node_list;
-  node *new_node = create_new_node(ID, fd, IP, TCP, first_node);
+  node *new_node = create_new_node(ID, fd, IP, TCP);
+
+  new_node->next = first_node;
   host->node_list = new_node;
+
   if (host->ext ==
       NULL) // caso o host tenha acabado de entrar na rede ou perdido o externo
     host->ext = new_node;
@@ -182,10 +186,12 @@ void remove_route_tab(int eraseN, host *host) {
 void delete_node(char *ID, host *host) {
   node *nodeList = host->node_list;
   node *previous_pointer = NULL;
+
   if (host->ext->ID == ID) // vai perder nó externo
     host->ext = NULL;
   if (host->bck->ID == ID) // vai perder nó backup
     host->bck = NULL;
+
   while (nodeList != NULL) {
     if (nodeList->ID == ID) {
 
@@ -193,6 +199,7 @@ void delete_node(char *ID, host *host) {
         host->node_list = nodeList->next;
       else
         previous_pointer->next = nodeList->next;
+
       free(nodeList);
       remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
       return;
@@ -211,10 +218,7 @@ void delete_node(char *ID, host *host) {
  * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promote_intr_to_ext(host *host) {
-  host->ext = host->node_list;
-  return host->ext; // poderá fazer return NULL caso nao hajam nós internos
-}
+void promote_intr_to_ext(host *host) { host->ext = host->node_list; }
 
 /**
  * @brief  promove um vertice de backup a vertice externo
@@ -222,10 +226,9 @@ node *promote_intr_to_ext(host *host) {
  * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-node *promote_bck_to_ext(host *host) {
+void promote_bck_to_ext(host *host) {
   host->ext = host->bck;
   host->bck = NULL;
-  return host->ext; // poderá fazer return NULL caso nao haja backup
 }
 
 /**
@@ -255,7 +258,7 @@ names *new_names(char *name, names *next) {
  *         0 Falha, já existia um name com esse nome
  *         -1 Falha, name demasiado longo
  */
-int write_name(char *name, host *host) {
+int insert_name(char *name, host *host) {
   names *list_pointer = host->names_list;
   if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
                               // sizeof(list_pointer->name)
