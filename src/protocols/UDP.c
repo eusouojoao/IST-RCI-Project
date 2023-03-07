@@ -1,5 +1,5 @@
-#include "../hdr/UDP_utils.h"
-#include "../hdr/error_handling.h"
+#include "UDP.h"
+#include "../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
@@ -10,7 +10,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 1024
 
 char *send_message_UDP(user_args *uip, char *msg) {
   int fd = -1;

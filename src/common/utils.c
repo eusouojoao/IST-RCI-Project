@@ -1,4 +1,4 @@
-#include "../hdr/utils.h"
+#include "utils.h"
 
 #include <stdio.h> //APAGAR!!
 #include <stdlib.h>

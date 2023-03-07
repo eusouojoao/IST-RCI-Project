@@ -1,10 +1,9 @@
-#include "../hdr/error_handling.h"
+#include "error_messages.h"
 
 #include <stdio.h>
 
 void usage(char *target) {
-  fprintf(stderr,
-          RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET,
+  fprintf(stderr, RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET,
           target);
   fprintf(stderr, BLUE ">NOTE:" RESET
                        " The arguments [regIP] & [regTCP] are optional, defaulting\n"

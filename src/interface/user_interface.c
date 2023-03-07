@@ -1,24 +1,82 @@
-#include "../hdr/user_interface.h"
-#include "../hdr/TCP_utils.h"
-#include "../hdr/UDP_utils.h"
-#include "../hdr/error_handling.h"
-#include "../hdr/parser.h"
-#include "../hdr/utils.h"
+#include "user_interface.h"
+#include "../common/parser.h"
+#include "../common/utils.h"
+#include "../error_handling/error_messages.h"
+#include "../protocols/TCP.h"
+#include "../protocols/UDP.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define MAXPORT 65535
 #define MAXNODES 99
+#define SIZE 128
+
+int number_of_command_arguments(char *str, char delim) {
+  int n = 0;
+  for (int i = 0; str[i]; i++) {
+    n += (str[i] == delim);
+  }
+  return n;
+}
+
+int check_boot_parameters(char *bootID, char *bootIP, char *bootTCP) {
+  if (strlen(bootID) != 2) {
+    /*error*/ printf("strlen\n");
+    return EXIT_FAILURE;
+  }
+
+  if (!(check_if_number(bootID) && check_if_number(bootTCP)) ||
+      (check_IP_address(bootIP) != 1)) {
+    /*error*/ printf("not a number\n");
+    return EXIT_FAILURE;
+  }
+
+  int int_id = atoi(bootID), int_tcp = atoi(bootTCP);
+  printf("int_net = %d, int_id = %d\n", int_id, int_tcp);
+  if ((int_id < 0 || int_id > 99) || (int_tcp < 0 || int_tcp > MAXPORT)) {
+    /*error*/ printf("out of range\n");
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+int check_net_and_id(char *net, char *id) {
+  if (strlen(net) != 3 || strlen(id) != 2) {
+    /*error*/ printf("strlen\n");
+    return EXIT_FAILURE;
+  }
+
+  if (!(check_if_number(net) && check_if_number(id))) {
+    /*error*/ printf("not a number\n");
+    return EXIT_FAILURE;
+  }
+
+  int int_net = atoi(net), int_id = atoi(id);
+  printf("int_net = %d, int_id = %d\n", int_net, int_id);
+  if ((int_net < 0 || int_net > 999) || (int_id < 0 || int_id > 99)) {
+    /*error*/ printf("out of range\n");
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS; // valores dentro do range
+}
 
 void djoin(char *buffer, host *host, int flag) {
   if (host->ext != NULL) {
     return;
   }
 
-  char msg_to_send[128] = {'\0'}, *received_ext_msg = NULL;
-  char net[128] = {'\0'}, ID[128] = {'\0'};
-  char bootID[128] = {'\0'}, bootIP[128] = {'\0'}, bootTCP[128] = {'\0'};
+  if (number_of_command_arguments(buffer, ' ') > 5) {
+    /*! TODO: Treat error: invalid user input */
+    return;
+  }
+
+  char msg_to_send[SIZE] = {'\0'}, *received_ext_msg = NULL;
+  char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
+  char bootID[SIZE] = {'\0'}, bootIP[SIZE] = {'\0'}, bootTCP[SIZE] = {'\0'};
 
   if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, bootID, bootIP, bootTCP) < 5) {
     /*! TODO: Treat error: invalid user input or function failure */
@@ -30,6 +88,11 @@ void djoin(char *buffer, host *host, int flag) {
    * have all it's arguments verified */
   if (flag == DJOIN) {
     /*! TODO: Verify input buffer */
+    if (check_net_and_id(net, ID) == EXIT_FAILURE ||
+        check_boot_parameters(bootID, bootIP, bootTCP) == EXIT_FAILURE) {
+      /*error*/ printf("Invalid djoin call\n");
+      return;
+    }
   }
 
   /* Single node in the network */
@@ -75,30 +138,15 @@ char *fetch_extern_from_nodelist(char *nodelist) {
   return str;
 }
 
-int check_net_and_id(char *net, char *id) {
-  if (strlen(net) != 3 || strlen(id) != 2) {
-    /*error*/ printf("Enrro! join() args 1\n");
-    return EXIT_FAILURE;
-  }
-
-  if (!(check_if_number(net) && check_if_number(id))) {
-    /*error*/ printf("Enrro! join() args 2\n");
-    return EXIT_FAILURE;
-  }
-
-  int int_net = atoi(net), int_id = atoi(id);
-  printf("int_net = %d, int_id = %d\n", int_net, int_id);
-  if ((int_net < 0 || int_net > 999) || (int_id < 0 || int_id > 99)) {
-    /*error*/ printf("Enrro! join() args 3\n");
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS; // valores dentro do range
-}
-
 void join(char *buffer, host *host) {
+  if (number_of_command_arguments(buffer, ' ') > 2) {
+    /*! TODO: Treat error: invalid user input */
+    return;
+  }
+
   char *received_reg_msg = NULL, *received_nodeslist = NULL, *ext_node = NULL;
-  char msg_to_send[128] = {'\0'}, net[128] = {'\0'}, ID[128] = {'\0'};
+  char msg_to_send[SIZE] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
+
   if (sscanf(buffer, "join %s %s", net, ID) < 2) {
     system_error("In join() ->" RED " sscanf() failed");
     return;
@@ -211,6 +259,7 @@ void process_stdin_input(char *buffer, host *host) {
   case CLEAR:
     CLEAR_STDIN();
     printf(BLUE "\tUser interface [" GREEN "ON" BLUE "]\n" RESET);
+    break;
   case UNDEF:
   default:
     /*error*/ // exit(EXIT_FAILURE);

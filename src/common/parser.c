@@ -1,5 +1,5 @@
-#include "../hdr/parser.h"
-#include "../hdr/error_handling.h"
+#include "parser.h"
+#include "../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -36,8 +36,7 @@ int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);
   if ((end == src) || (*end != '\0')) {
-    user_input_error("Bad port format", src,
-                     "must be an integer within 0 and 65535.");
+    user_input_error("Bad port format", src, "must be an integer within 0 and 65535.");
     exit(EXIT_FAILURE);
   }
 

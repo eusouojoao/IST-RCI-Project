@@ -1,8 +1,8 @@
-#include "../hdr/TCP_utils.h"
-#include "../hdr/error_handling.h"
-#include "../hdr/parser.h"
-#include "../hdr/user_interface.h"
-#include "../hdr/utils.h"
+#include "common/parser.h"
+#include "common/utils.h"
+#include "error_handling/error_messages.h"
+#include "interface/user_interface.h"
+#include "protocols/TCP.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #define max(A, B) ((A) >= (B) ? (A) : (B))
-#define BUFFER_SIZE 256
+#define SIZE 256
 
 int main(int argc, char *argv[]) {
   srand((unsigned int)time(NULL)); // seed the rand function
@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
   FD_SET(STDIN_FILENO, &master_set);
 
   /* Working buffer */
-  char buffer[BUFFER_SIZE];
-  memset(&buffer, 0, BUFFER_SIZE);
+  char buffer[SIZE];
+  memset(&buffer, 0, SIZE);
 
   struct sockaddr in_addr;
   socklen_t in_addrlen;
@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
 
     for (/* X */; counter > 0; counter--) {
       if (FD_ISSET(STDIN_FILENO, &working_set)) {
-        memset(&buffer, 0, BUFFER_SIZE);
-        if (read(STDIN_FILENO, buffer, BUFFER_SIZE) == -1) {
+        memset(&buffer, 0, SIZE);
+        if (read(STDIN_FILENO, buffer, SIZE) == -1) {
           system_error("In main() ->" RED " read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
           /*error*/ exit(EXIT_FAILURE);
         }
 
-        if (read(newfd, buffer, BUFFER_SIZE) == -1) {
+        if (read(newfd, buffer, SIZE) == -1) {
           system_error("In main() ->" RED " read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }

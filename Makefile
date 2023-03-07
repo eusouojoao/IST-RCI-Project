@@ -2,11 +2,14 @@ TARGET=cot
 CC=gcc
 CFLAGS=-std=c99 -Wpedantic -Wconversion -Wall -Werror
 LDFLAGS=-lm
-HEADERS=$(wildcard hdr/*.h)
-SRCS=$(wildcard src/*.c)
-OBJS=$(addprefix bin/, $(notdir $(patsubst %.c, %.o, $(SRCS))))
-.DEFAULT_GOAL := all
+HEADERS=$(wildcard src/*/*.h)
+SRCS=$(wildcard src/*.c) $(wildcard src/*/*.c)
+OBJS=$(addprefix obj/, $(notdir $(patsubst %.c, %.o, $(SRCS))))
+OBJ_DIR=obj
 
+VPATH := $(sort $(dir $(SRCS)))
+
+.DEFAULT_GOAL := all
 .PHONY: help
 help: ## -> invoca a lista de opções implementadas na Makefile; uso -> 'make help'
 help:
@@ -17,19 +20,19 @@ help:
 .PHONY: all
 all: ## -> opção geral, i.e., quando se executa 'make' ou 'make all' no terminal
 all: CFLAGS+=-O3
-all: $(shell mkdir -p bin) $(TARGET)
+all: $(shell mkdir -p $(OBJ_DIR)) $(TARGET)
 
 $(TARGET): $(OBJS) Makefile
 	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
 
-bin/%.o: src/%.c $(HEADERS) Makefile
+$(OBJ_DIR)/%.o: %.c $(HEADERS) Makefile
 	$(CC) -c $(CFLAGS) $< -o $@
 
 .PHONY: clean
 clean: ## -> opção CLEAN para limpar os object files e o executável; uso -> 'make clean'
-	rm -rf bin/ $(TARGET) vgcore*
+	rm -rf $(OBJ_DIR) $(TARGET) vgcore*
 
 .PHONY: debug
 debug: ## -> opção DEBUG, acrescenta a flag de debug ao compilador; uso -> 'make debug'
 debug: CFLAGS+=-ggdb -Wextra
-debug: $(shell mkdir -p bin) $(TARGET)
+debug: $(shell mkdir -p $(OBJ_DIR)) $(TARGET)

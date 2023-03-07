@@ -1,5 +1,5 @@
-#include "../hdr/TCP_utils.h"
-#include "../hdr/error_handling.h"
+#include "TCP.h"
+#include "../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
 #include <stdio.h>

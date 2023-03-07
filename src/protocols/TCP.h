@@ -1,7 +1,7 @@
 #ifndef TCP_utils_H
 #define TCP_utils_H
 
-#include "struct.h"
+#include "../common/struct.h"
 
 char *fetch_bck(host *host, char *msg);
 int create_listen_socket(user_args *uip);

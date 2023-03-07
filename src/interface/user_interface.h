@@ -1,7 +1,7 @@
 #ifndef user_interface_H
 #define user_interface_H
 
-#include "struct.h"
+#include "../common/struct.h"
 
 typedef enum user_command {
   JOIN,
