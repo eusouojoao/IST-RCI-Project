@@ -88,3 +88,17 @@ int check_IP_address(char *src) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, src, &(sa.sin_addr));
 }
+
+/**
+ * @brief  Verifica se um nome cumpre as restrições (menos de 100 caracteres)
+ *
+ * @note
+ * @param  *name: nome a ser verificafo
+ * @retval 0 nome válido
+ *         -1 nome inválido
+ */
+int check_name(char *name) {
+  if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por um buffer
+    return -1;                // invalid name
+  return 0;                   // valid name
+}
