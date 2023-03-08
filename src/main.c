@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     counter = select(maxfd + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
                      (struct timeval *)&timeout);
     if (counter <= 0) {
-      system_error("In main() ->" RED " select() failed");
+      system_error("In main() -> select() failed");
       /*error*/ exit(EXIT_FAILURE);
     }
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
         memset(&buffer, 0, SIZE);
         if (read(STDIN_FILENO, buffer, SIZE) == -1) {
-          system_error("In main() ->" RED " read() failed");
+          system_error("In main() -> read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
         /* Process standard input */
@@ -76,12 +76,12 @@ int main(int argc, char *argv[]) {
       else if (FD_ISSET(host->listen_fd, &working_set)) {
         printf("\ncounter = %d, listen_fd\n", counter);
         if ((newfd = accept(host->listen_fd, &in_addr, &in_addrlen)) == -1) {
-          system_error("In main() ->" RED " accept() failed");
+          system_error("In main() -> accept() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
 
         if (read(newfd, buffer, SIZE) == -1) {
-          system_error("In main() ->" RED " read() failed");
+          system_error("In main() -> read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
 
