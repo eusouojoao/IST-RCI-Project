@@ -28,6 +28,8 @@ typedef struct host {
   int tab_expedicao[100];
   user_args *uip;
 
+  int listen_fd;
+
   node *ext;       // pointer to ext node in the node_list
   node *bck;       // pointer to bck node (that is not in the node_list)
   node *node_list; // lista dos nós vizinhos, i.e., internos e externos

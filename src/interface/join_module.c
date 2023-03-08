@@ -1,4 +1,4 @@
-#include "join_modules.h"
+#include "join_module.h"
 #include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
@@ -12,9 +12,9 @@
 
 #define MAXPORT 65535
 #define MAXNODES 99
-#define SIZE 128
+#define SIZE 64
 
-void djoin(char *buffer, host *host, int flag) {
+void djoin_network(char *buffer, host *host, int flag) {
   if (host->ext != NULL) {
     return;
   }
@@ -24,7 +24,7 @@ void djoin(char *buffer, host *host, int flag) {
     return;
   }
 
-  char msg_to_send[SIZE] = {'\0'}, *received_ext_msg = NULL;
+  char msg_to_send[SIZE << 2] = {'\0'}, *received_msg = NULL;
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
   char bootID[SIZE] = {'\0'}, bootIP[SIZE] = {'\0'}, bootTCP[SIZE] = {'\0'};
 
@@ -43,6 +43,19 @@ void djoin(char *buffer, host *host, int flag) {
       /*error*/ printf("Invalid djoin call\n");
       return;
     }
+    sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
+    received_msg = send_message_UDP(host->uip, msg_to_send);
+    if (received_msg == NULL) {
+      return;
+    }
+
+    /*! TODO: CHECK for OKREG, warn user if something went wrong */
+    if (strcmp(received_msg, "OKREG") != 0) {
+      free(received_msg);
+      return;
+    }
+
+    free(received_msg);
   }
 
   /* Single node in the network */
@@ -54,9 +67,10 @@ void djoin(char *buffer, host *host, int flag) {
   insert_node(bootID, -1, bootIP, atoi(bootTCP), host);
 
   /* Message exchange between the host and the extern node */
+  memset(msg_to_send, 0, strlen(msg_to_send));
   sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
-  received_ext_msg = fetch_bck(host, msg_to_send);
-  if (received_ext_msg == NULL) {
+  received_msg = fetch_bck(host, msg_to_send);
+  if (received_msg == NULL) {
     free(host->ext);
     host->node_list = host->ext = NULL;
     /* error */ return;
@@ -64,7 +78,7 @@ void djoin(char *buffer, host *host, int flag) {
 
   assign_ID_and_net(host, ID, net);
 
-  sscanf(received_ext_msg, "EXTERN %s %s %s", bootID, bootIP, bootTCP);
+  sscanf(received_msg, "EXTERN %s %s %s", bootID, bootIP, bootTCP);
   host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP));
 
   return;
@@ -88,14 +102,14 @@ char *fetch_extern_from_nodelist(char *nodelist) {
   return str;
 }
 
-void join(char *buffer, host *host) {
+void join_network(char *buffer, host *host) {
   if (number_of_command_arguments(buffer, ' ') > 2) {
     /*! TODO: Treat error: invalid user input */
     return;
   }
 
   char *received_reg_msg = NULL, *received_nodeslist = NULL, *ext_node = NULL;
-  char msg_to_send[SIZE] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
+  char msg_to_send[SIZE << 2] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
   if (sscanf(buffer, "join %s %s", net, ID) < 2) {
     system_error("In join() ->" RED " sscanf() failed");
@@ -137,7 +151,7 @@ void join(char *buffer, host *host) {
     memset(msg_to_send, 0, strlen(msg_to_send));
     if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
-      djoin(msg_to_send, host, JOIN); // connects to the ext node in the network
+      djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network
     } else {
       assign_ID_and_net(host, ID, net);
     }

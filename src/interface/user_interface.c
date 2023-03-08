@@ -1,8 +1,9 @@
 #include "user_interface.h"
 #include "../error_handling/error_messages.h"
-#include "content_modules.h"
-#include "join_modules.h"
-#include "show_modules.h"
+#include "content_module.h"
+#include "join_module.h"
+#include "leave_module.h"
+#include "show_module.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -19,7 +20,7 @@ user_command get_user_command(char *token) {
   } else if (strcmp(token, "get") == 0) {
     return GET;
   } else if (strcmp(token, "show") == 0 || strcmp(token, "st") == 0 ||
-             /*show*/ strcmp(token, "sn") == 0 || strcmp(token, "sr") == 0) {
+             strcmp(token, "sn") == 0 || strcmp(token, "sr") == 0) {
     return SHOW;
   } else if (strcmp(token, "leave") == 0) {
     return LEAVE;
@@ -41,10 +42,10 @@ void process_stdin_input(char *buffer, host *host) {
 
   switch (get_user_command(token)) {
   case JOIN:
-    join(buffer, host);
+    join_network(buffer, host);
     break;
   case DJOIN:
-    djoin(buffer, host, DJOIN);
+    djoin_network(buffer, host, DJOIN);
     break;
   case CREATE:
     /*! TODO: */
@@ -59,10 +60,10 @@ void process_stdin_input(char *buffer, host *host) {
     /*! TODO: */
     break;
   case LEAVE:
-    /*! TODO: */
+    leave_network(host);
     break;
   case EXIT:
-    /*! TODO: */
+    exit_network(host);
     break;
   case CLEAR:
     CLEAR_STDIN();

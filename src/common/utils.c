@@ -3,11 +3,11 @@
 #include <stdio.h> //APAGAR!!
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define NETSIZE 3
 #define IDSIZE 2
 
-#if 1
 /**
  * @brief  inicializa host
  * @note   quando se cria o nó (host) bck e o exp é o proprio nó (representado
@@ -39,8 +39,8 @@ void assign_ID_and_net(host *host, char *ID, char *net) {
   if (host->ID == NULL) {
     /*error*/ exit(EXIT_FAILURE);
   }
-  host->net = (char *)malloc((IDSIZE + 1) * sizeof(char));
-  if (host->ID == NULL) {
+  host->net = (char *)malloc((NETSIZE + 1) * sizeof(char));
+  if (host->net == NULL) {
     /*error*/ exit(EXIT_FAILURE);
   }
   if (sprintf(host->ID, "%2s", ID) < IDSIZE) {
@@ -92,24 +92,23 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
  * @retval None
  */
 void delete_host(host *host) {
-  node *del = NULL;
-  node *aux = NULL;
+  node *del1 = NULL;
+  node *aux1 = host->node_list;
   names *del2 = NULL;
-  names *aux2 = NULL;
-  aux = host->node_list;
-  aux2 = host->names_list;
-  while (aux != NULL) // delete node_list
-  {
-    del = aux;
-    aux = aux->next;
-    free(del);
+  names *aux2 = host->names_list;
+
+  while (aux1 != NULL) { // delete node_list
+    del1 = aux1;
+    aux1 = aux1->next;
+    free(del1);
   }
-  while (aux2 != NULL) // delete names_list
-  {
+
+  while (aux2 != NULL) { // delete names_list
     del2 = aux2;
     aux2 = aux2->next;
     free(del2);
   }
+
   free(host->uip); // delete user_args
   free(host);      // delete host
 }
@@ -139,6 +138,54 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   // host->tab_expedicao[ID] = ID;
 }
 
+void free_node(node *node) {
+  if (node != NULL) {
+    free(node->ID);
+    free(node->IP);
+    close(node->fd);
+    free(node);
+  }
+  return;
+}
+
+#if 0
+/**
+ * @brief  apaga uma node específica dada pelo seu ID da lista de nodes
+ * @note   atualiza também a tabela de expedição
+ * @param  ID: ID da node a ser eliminada
+ * @param  *host: struct host com a lista de nodes
+ * @retval None
+ */
+void delete_node(char *ID, host *host) {
+  node *nodeList = host->node_list;
+  node *previous_pointer = NULL;
+
+  if (host->ext->ID == ID) // vai perder nó externo
+    host->ext = NULL;
+  if (host->bck->ID == ID) // vai perder nó backup
+    host->bck = NULL;
+
+  while (nodeList != NULL) {
+    if (nodeList->ID == ID) {
+
+      if (previous_pointer == NULL) {
+        host->node_list = nodeList->next;
+      } else {
+        previous_pointer->next = nodeList->next;
+      }
+
+      free(nodeList);
+      remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
+      return;
+    }
+    previous_pointer = nodeList;
+    nodeList = nodeList->next;
+  }
+  // APAGAR - apenas para teste
+  printf("ERROR, não se encontrou o node a apagar!");
+  return; // Falha não encontrou o node a apagar
+}
+#endif
 /**
  * @brief  adiciona uma nova rota à tabela de expedição
  * @note
@@ -147,6 +194,7 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
  * @param  *host: struct host (guarda toda a informação)
  * @retval None
  */
+
 void add_route_tab(int dest, int neighbour, host *host) {
   // APAGAR!!
   if (host->tab_expedicao[dest] ==
@@ -174,42 +222,6 @@ void remove_route_tab(int eraseN, host *host) {
       host->tab_expedicao[i] =
           -1; // remove rote to a node when the destiny is the deleted node
   }
-}
-
-/**
- * @brief  apaga uma node específica dada pelo seu ID da lista de nodes
- * @note   atualiza também a tabela de expedição
- * @param  ID: ID da node a ser eliminada
- * @param  *host: struct host com a lista de nodes
- * @retval None
- */
-void delete_node(char *ID, host *host) {
-  node *nodeList = host->node_list;
-  node *previous_pointer = NULL;
-
-  if (host->ext->ID == ID) // vai perder nó externo
-    host->ext = NULL;
-  if (host->bck->ID == ID) // vai perder nó backup
-    host->bck = NULL;
-
-  while (nodeList != NULL) {
-    if (nodeList->ID == ID) {
-
-      if (previous_pointer == NULL)
-        host->node_list = nodeList->next;
-      else
-        previous_pointer->next = nodeList->next;
-
-      free(nodeList);
-      remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
-      return;
-    }
-    previous_pointer = nodeList;
-    nodeList = nodeList->next;
-  }
-  // APAGAR - apenas para teste
-  printf("ERROR, não se encontrou o node a apagar!");
-  return; // Falha não encontrou o node a apagar
 }
 
 /**
@@ -333,5 +345,3 @@ int find_name(char *name,
   }
   return 0; // Falha, não existia name com tal nome
 }
-
-#endif

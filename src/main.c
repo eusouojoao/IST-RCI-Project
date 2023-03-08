@@ -25,12 +25,12 @@ int main(int argc, char *argv[]) {
   host *host = init_host(uip);
 
   /* File descriptors e counter do select() */
-  int listen_fd = create_listen_socket(uip);
-  int newfd = -1, maxfd = listen_fd, counter = 0;
+  host->listen_fd = create_listen_socket(uip);
+  int newfd = -1, maxfd = host->listen_fd, counter = 0;
   /* Inicializar o master fd_set */
   fd_set master_set, working_set;
   FD_ZERO(&master_set);
-  FD_SET(listen_fd, &master_set);
+  FD_SET(host->listen_fd, &master_set);
   FD_SET(STDIN_FILENO, &master_set);
 
   /* Working buffer */
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     printf(GREEN "<USER> " RESET);
     fflush(stdout);
     memcpy(&working_set, &master_set, sizeof(master_set));
-    maxfd = max(listen_fd, maxfd);
+    maxfd = max(host->listen_fd, maxfd);
     counter = select(maxfd + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
                      (struct timeval *)&timeout);
     if (counter <= 0) {
@@ -66,15 +66,13 @@ int main(int argc, char *argv[]) {
           system_error("In main() ->" RED " read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
-        /* Ver se funciona, remover mais tarde */
-        printf("buffer: %s\n", buffer);
-
+        /* Process standard input */
         process_stdin_input(buffer, host);
         FD_CLR(STDIN_FILENO, &working_set);
       }
 
-      else if (FD_ISSET(listen_fd, &working_set)) {
-        if ((newfd = accept(listen_fd, &in_addr, &in_addrlen)) == -1) {
+      else if (FD_ISSET(host->listen_fd, &working_set)) {
+        if ((newfd = accept(host->listen_fd, &in_addr, &in_addrlen)) == -1) {
           system_error("In main() ->" RED " accept() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
@@ -90,7 +88,7 @@ int main(int argc, char *argv[]) {
          * lista de nós vizinhos, e interagir com a mensagem recebida.
          */
 
-        FD_CLR(listen_fd, &working_set);
+        FD_CLR(host->listen_fd, &working_set);
       }
 
       else if (/* FD_ISSET(fd_guardado, &working_set) */ 0) {
@@ -107,6 +105,4 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-
-  return EXIT_SUCCESS;
 }
