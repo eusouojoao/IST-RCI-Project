@@ -230,16 +230,22 @@ void remove_route_tab(int eraseN, host *host) {
  * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
-void promote_intr_to_ext(host *host) { host->ext = host->node_list; }
+void promote_intr_to_ext(host *host) {
+  if (host->ext == NULL)
+    host->ext = host->node_list;
+}
 
 /**
  * @brief  promove um vertice de backup a vertice externo
  * @note   return poderá fazer return NULL caso nao haja backup
+ *         ao promover o bck a externo temos de o adicionar à lista de nodes
  * @param  *host: struct com a informação dos vertíces
  * @retval apontador para o novo vertice externo
  */
 void promote_bck_to_ext(host *host) {
   host->ext = host->bck;
+  host->ext->next = host->node_list;
+  host->node_list = host->ext;
   host->bck = NULL;
 }
 
