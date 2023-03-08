@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "../error_handling/error_checking.h"
 
 #include <stdio.h> //APAGAR!!
 #include <stdlib.h>
@@ -272,9 +273,9 @@ names *new_names(char *name, names *next) {
  */
 int insert_name(char *name, host *host) {
   names *list_pointer = host->names_list;
-  if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
-                              // sizeof(list_pointer->name)
-    return -1;                // Falha, name demasiado longo
+  if (check_name(name) == -1)
+    return -1; // Falha, name demasiado longo
+
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, name) == 0)
       return 0; // Falha, já existia um name com esse nome
@@ -299,10 +300,9 @@ int insert_name(char *name, host *host) {
 int delete_name(char *delname, host *host) {
   names *list_pointer = host->names_list;
   names *previous_pointer = NULL;
-  if (strlen(delname) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
-                                 // sizeof(list_pointer->name)
-    return -1; // Falha, name a apagar demasiado longo (logo não poderia tar na
-               // lista)
+  if (check_name(delname) == -1)
+    return -1; // Falha, name demasiado longo
+
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, delname) == 0) {
       if (previous_pointer == NULL)
@@ -329,15 +329,14 @@ int delete_name(char *delname, host *host) {
  *         -1 Falha, name a procurar demasiado longo (logo não poderia tar na
  * lista)
  */
-int find_name(char *name,
-              host *host) { // APAGAR- não sei se é suposto devolver o conteúdo caso seja
-                            // encontrado ou apenas uma msg a dizer q o conteudo existe
+int find_name(char *name, host *host) {
+  // APAGAR- não sei se é suposto devolver o conteúdo caso seja
+  // encontrado ou apenas uma msg a dizer q o conteudo existe
   // const char *FindName()
   names *list_pointer = host->names_list;
-  if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por algo q faça o
-                              // sizeof(list_pointer->name)
-    return -1; // Falha, name a procurar demasiado longo (logo não poderia tar
-               // na lista)
+  if (check_name(name) == -1)
+    return -1; // Falha, name demasiado longo
+
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, name) == 0)
       return 1; // Sucesso, name encontrado
