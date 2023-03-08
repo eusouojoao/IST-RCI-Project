@@ -1,6 +1,7 @@
 #include "error_messages.h"
 
 #include <stdio.h>
+#include <string.h>
 
 void usage(char *target) {
   fprintf(stderr, RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET,
@@ -12,15 +13,19 @@ void usage(char *target) {
 }
 
 void UDP_server_message(int error_flag, char *msg) {
+  size_t length = strlen(msg);
+  if (msg[length - 1] == '\n') {
+    msg[length - 1] = '\0';
+  }
   if (error_flag) {
     fputs(RED "(!) Server reply:\n" RESET, stderr);
     fputs(msg, stderr);
-    fputs("\n", stderr);
+    fputs(RED "\n------[END]------\n" RESET, stderr);
     return;
   }
   fputs(YELLOW "(OK) Server reply:\n" RESET, stderr);
   fputs(msg, stderr);
-  fputs("\n", stderr);
+  fputs(YELLOW "\n------[END]------\n" RESET, stderr);
 }
 
 void user_input_error(char *msg, char *input, char *detail) {
@@ -37,5 +42,7 @@ void user_input_error(char *msg, char *input, char *detail) {
 
 void system_error(char *msg) {
   fputs(RED "(!) " RESET, stderr);
-  perror(msg);
+  fputs(msg, stderr);
+  perror(RED);
+  fputs(RESET, stderr);
 }

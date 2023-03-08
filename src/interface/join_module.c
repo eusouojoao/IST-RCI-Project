@@ -56,8 +56,9 @@ int djoin_network(char *buffer, host *host, int flag) {
   assign_ID_and_net(host, ID, net);
 
   /* Message exchange between the host and the extern node */
-  memset(msg_to_send, 0, strlen(msg_to_send));
+  memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
+  printf("msg_to_send: %s", msg_to_send);
   received_msg = fetch_bck(host, msg_to_send);
   if (received_msg == NULL) {
     printf("123\n");
@@ -99,7 +100,7 @@ int join_network(char *buffer, host *host) {
   char msg_to_send[SIZE << 2] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
   if (sscanf(buffer, "join %s %s", net, ID) < 2) {
-    system_error("In join() ->" RED " sscanf() failed");
+    system_error("In join() -> sscanf() failed");
     return 0;
   }
 
@@ -123,7 +124,7 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
-  memset(msg_to_send, 0, strlen(msg_to_send));
+  memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
   received_reg_msg = send_message_UDP(host->uip, msg_to_send);
   if (received_reg_msg == NULL) {
@@ -135,7 +136,7 @@ int join_network(char *buffer, host *host) {
   if (strcmp(received_reg_msg, "OKREG") == 0) {
     UDP_server_message(0, received_nodeslist);
     UDP_server_message(0, received_reg_msg);
-    memset(msg_to_send, 0, strlen(msg_to_send));
+    memset(msg_to_send, 0, sizeof(msg_to_send));
     if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
       djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network

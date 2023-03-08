@@ -7,5 +7,6 @@ int check_net_and_id(char *net, char *id);
 int check_if_number(char *src);
 int check_IP_address(char *src);
 int check_PORT(char *src);
+int check_name(char *name);
 
 #endif // !ERROR_CHECKING_H
