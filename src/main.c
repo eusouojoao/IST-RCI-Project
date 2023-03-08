@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   timeout.tv_usec = 0;
 
   CLEAR_STDIN();
-  printf(BLUE "\tUser interface [" GREEN "ON" BLUE "]\n" RESET);
+  printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
   for (/* for */; /* ever */; /* ! */) {
     printf(GREEN "<USER> " RESET);
     fflush(stdout);
@@ -61,6 +61,8 @@ int main(int argc, char *argv[]) {
 
     for (/* X */; counter > 0; counter--) {
       if (FD_ISSET(STDIN_FILENO, &working_set)) {
+        printf("\ncounter = %d, keyboard\n", counter);
+
         memset(&buffer, 0, SIZE);
         if (read(STDIN_FILENO, buffer, SIZE) == -1) {
           system_error("In main() ->" RED " read() failed");
@@ -72,6 +74,7 @@ int main(int argc, char *argv[]) {
       }
 
       else if (FD_ISSET(host->listen_fd, &working_set)) {
+        printf("\ncounter = %d, listen_fd\n", counter);
         if ((newfd = accept(host->listen_fd, &in_addr, &in_addrlen)) == -1) {
           system_error("In main() ->" RED " accept() failed");
           /*error*/ exit(EXIT_FAILURE);
@@ -87,6 +90,8 @@ int main(int argc, char *argv[]) {
          * @todo Guardar o file descriptor da ligação criada com o nó interno na
          * lista de nós vizinhos, e interagir com a mensagem recebida.
          */
+
+        printf("buffer_main: %s\n", buffer);
 
         FD_CLR(host->listen_fd, &working_set);
       }

@@ -34,6 +34,7 @@ user_command get_user_command(char *token) {
 }
 
 void process_stdin_input(char *buffer, host *host) {
+  static int flag = -1;
   char token[32];
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
@@ -42,10 +43,14 @@ void process_stdin_input(char *buffer, host *host) {
 
   switch (get_user_command(token)) {
   case JOIN:
-    join_network(buffer, host);
+    if (join_network(buffer, host)) {
+      flag = JOIN;
+    }
     break;
   case DJOIN:
-    djoin_network(buffer, host, DJOIN);
+    if (djoin_network(buffer, host, DJOIN)) {
+      flag = JOIN;
+    }
     break;
   case CREATE:
     /*! TODO: */
@@ -60,14 +65,14 @@ void process_stdin_input(char *buffer, host *host) {
     /*! TODO: */
     break;
   case LEAVE:
-    leave_network(host);
+    leave_network(host, flag);
     break;
   case EXIT:
-    exit_network(host);
+    exit_program(host, flag);
     break;
   case CLEAR:
     CLEAR_STDIN();
-    printf(BLUE "\tUser interface [" GREEN "ON" BLUE "]\n" RESET);
+    printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n\n" RESET, 6, "");
     break;
   case UNDEF:
   default:

@@ -59,10 +59,17 @@ char *fetch_bck(host *host, char *msg) {
     return NULL;
   }
 
-  n = read(fd, buffer, sizeof(buffer));
-  if (n == -1) {
-    system_error("In fetch_bck() ->" RED " read() failed");
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    system_error("In send_user_message_UDP() ->" RED " setsockopt() failed");
     close(fd);
+    return NULL;
+  }
+
+  n = recv(fd, buffer, sizeof(buffer), 0);
+  if (n == -1) {
+    system_error("In fetch_bck() ->" RED " recv() failed");
+    close(fd);
+    printf("recv: %s", buffer);
     return NULL;
   }
 

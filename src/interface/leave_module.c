@@ -2,13 +2,14 @@
 #include "../common/utils.h"
 #include "../error_handling/error_messages.h"
 #include "../protocols/UDP.h"
+#include "user_commands.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#define SIZE 128
+#define SIZE 16
 
 void clear_host(host *host) {
   node *aux1 = host->node_list, *del1 = NULL;
@@ -16,6 +17,10 @@ void clear_host(host *host) {
 
   free(host->net), free(host->ID);
   host->net = host->ID = NULL;
+
+  if (host->ext != NULL && host->ext->fd != -1) {
+    close(host->ext->fd);
+  }
 
   free_node(host->bck);
   while (aux1 != NULL) { // delete nodes_list
@@ -34,25 +39,35 @@ void clear_host(host *host) {
   return;
 }
 
-void leave_network(host *host) {
-  char msg_to_send[SIZE] = {'\0'}, *msg_received = NULL;
-
-  /*! TODO: Verificar se o host já se encontra numa rede, caso contrário, não há nada a
+void leave_network(host *host, int flag) {
+  /*! TODO: Verificar se o host se encontra numa rede, caso contrário, não há nada a
    * fazer, retornar e avisar o utilizador */
+  if (host->net == NULL) {
+    printf(YELLOW "[NOTICE]" RESET " Host not registered in a network\n\n");
+    return;
+  }
+
+  if (flag == DJOIN) {
+    clear_host(host);
+    return;
+  }
 
   /* Unregister from the node server */
+  char msg_to_send[SIZE] = {'\0'}, *msg_received = NULL;
+
   sprintf(msg_to_send, "UNREG %s %s\n", host->net, host->ID);
   msg_received = send_message_UDP(host->uip, msg_to_send);
 
   if (strcmp(msg_received, "OKUNREG") == 0) {
     /*! TODO: Enviar mensagem para os nós vizinhos a avisar: WITHDRAW */
 
-    fprintf(stdout, "[Successfully unregistered from the network %s]\n", host->net);
+    printf(YELLOW "[NOTICE]" RESET " Successfully unregistered from the network %s\n",
+           host->net);
     clear_host(host); // limpar a estrutura relativa à rede à qual se despede
   } else {
     /* failed to unregister */;
-    fprintf(stderr, "[Something went wrong :(");
-    fprintf(stderr, "Couldn't unregister from the network %s]\n", host->net);
+    fprintf(stderr, YELLOW "[NOTICE]" RESET " Something went wrong :( ");
+    fprintf(stderr, "Couldn't unregister from the network %s\n", host->net);
   }
 
   if (msg_received != NULL) {
@@ -62,8 +77,8 @@ void leave_network(host *host) {
   return;
 }
 
-void exit_network(host *host) {
-  leave_network(host);
+void exit_program(host *host, int flag) {
+  leave_network(host, flag);
 
   if (host->ext != NULL) { // Failed to unregister from the network in leave_network()
     clear_host(host);
@@ -74,6 +89,6 @@ void exit_network(host *host) {
   free(host->uip);
   free(host);
 
-  printf(BLUE "\tUser interface [" RED "OFF" BLUE "]\n" RESET);
+  printf(BLUE "%*s User interface [" RED "OFF" BLUE "]\n" RESET, 6, "");
   exit(EXIT_SUCCESS);
 }

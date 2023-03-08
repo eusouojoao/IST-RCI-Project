@@ -42,7 +42,7 @@ char *send_message_UDP(user_args *uip, char *msg) {
 
   /* Inicializar a estrutura timeval para o timeout */
   struct timeval timeout;
-  timeout.tv_sec = 30;
+  timeout.tv_sec = 15;
   timeout.tv_usec = 0;
 
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {

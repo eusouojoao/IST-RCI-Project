@@ -11,6 +11,18 @@ void usage(char *target) {
   return;
 }
 
+void UDP_server_message(int error_flag, char *msg) {
+  if (error_flag) {
+    fputs(RED "(!) Server reply:\n" RESET, stderr);
+    fputs(msg, stderr);
+    fputs("\n", stderr);
+    return;
+  }
+  fputs(YELLOW "(OK) Server reply:\n" RESET, stderr);
+  fputs(msg, stderr);
+  fputs("\n", stderr);
+}
+
 void user_input_error(char *msg, char *input, char *detail) {
   fputs(RED "(!) " RESET, stderr);
   fputs(msg, stderr);
