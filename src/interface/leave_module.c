@@ -60,10 +60,14 @@ void leave_network(host *host, int flag) {
 
   if (strcmp(msg_received, "OKUNREG") == 0) {
     /*! TODO: Enviar mensagem para os nós vizinhos a avisar: WITHDRAW */
+    printf(YELLOW "[NOTICE]" RESET " Successfully unregistered from the network %s\n",
+           host->net);
     UDP_server_message(0, msg_received);
     clear_host(host); // limpar a estrutura relativa à rede à qual se despede
   } else {
     /* failed to unregister */;
+    fprintf(stderr, YELLOW "[NOTICE]" RESET " Something went wrong :( ");
+    fprintf(stderr, "Couldn't unregister from the network %s\n", host->net);
     UDP_server_message(1, msg_received);
   }
 

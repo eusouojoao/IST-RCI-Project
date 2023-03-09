@@ -131,9 +131,10 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   new_node->next = first_node;
   host->node_list = new_node;
 
-  if (host->ext ==
-      NULL) // caso o host tenha acabado de entrar na rede ou perdido o externo
+  // caso o host tenha acabado de entrar na rede ou perdido o externo
+  if (host->ext == NULL) {
     host->ext = new_node;
+  }
   // APAGAR!!
   // podia se logo atualizar a tabela de expedição (mas n sei se é o pretendido)
   // host->tab_expedicao[ID] = ID;
