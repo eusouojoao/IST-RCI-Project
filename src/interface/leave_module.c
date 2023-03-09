@@ -43,7 +43,7 @@ void leave_network(host *host, int flag) {
   /*! TODO: Verificar se o host se encontra numa rede, caso contrário, não há nada a
    * fazer, retornar e avisar o utilizador */
   if (host->net == NULL) {
-    printf(YELLOW "[NOTICE]" RESET " Host not registered in a network\n\n");
+    printf(YELLOW "[NOTICE]" RESET " Host not registered in a network\n");
     return;
   }
 
@@ -60,14 +60,15 @@ void leave_network(host *host, int flag) {
 
   if (strcmp(msg_received, "OKUNREG") == 0) {
     /*! TODO: Enviar mensagem para os nós vizinhos a avisar: WITHDRAW */
-
     printf(YELLOW "[NOTICE]" RESET " Successfully unregistered from the network %s\n",
            host->net);
+    UDP_server_message(0, msg_received);
     clear_host(host); // limpar a estrutura relativa à rede à qual se despede
   } else {
     /* failed to unregister */;
     fprintf(stderr, YELLOW "[NOTICE]" RESET " Something went wrong :( ");
     fprintf(stderr, "Couldn't unregister from the network %s\n", host->net);
+    UDP_server_message(1, msg_received);
   }
 
   if (msg_received != NULL) {

@@ -20,12 +20,12 @@ void UDP_server_message(int error_flag, char *msg) {
   if (error_flag) {
     fputs(RED "(!) Server reply:\n" RESET, stderr);
     fputs(msg, stderr);
-    fputs(RED "\n------[END]------\n" RESET, stderr);
+    fputs(RED "\n------[END]------\n\n" RESET, stderr);
     return;
   }
   fputs(YELLOW "(OK) Server reply:\n" RESET, stderr);
   fputs(msg, stderr);
-  fputs(YELLOW "\n------[END]------\n" RESET, stderr);
+  fputs(YELLOW "\n------[END]------\n\n" RESET, stderr);
 }
 
 void user_input_error(char *msg, char *input, char *detail) {

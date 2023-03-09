@@ -50,7 +50,6 @@ int check_net_and_id(char *net, char *id) {
   }
 
   int int_net = atoi(net), int_id = atoi(id);
-  printf("int_net = %d, int_id = %d\n", int_net, int_id);
   if ((int_net < 0 || int_net > 999) || (int_id < 0 || int_id > 99)) {
     /*error*/ printf("out of range\n");
     return EXIT_FAILURE;

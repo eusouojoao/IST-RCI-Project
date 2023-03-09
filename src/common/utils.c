@@ -139,9 +139,10 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   new_node->next = first_node;
   host->node_list = new_node;
 
-  if (host->ext ==
-      NULL) // caso o host tenha acabado de entrar na rede ou perdido o externo
+  // caso o host tenha acabado de entrar na rede ou perdido o externo
+  if (host->ext == NULL) {
     host->ext = new_node;
+  }
   // APAGAR!!
   // podia se logo atualizar a tabela de expedição (mas n sei se é o pretendido)
   // host->tab_expedicao[ID] = ID;
@@ -341,9 +342,9 @@ int delete_name(char *delname, host *host) {
  *         -1 Falha, name a procurar demasiado longo (logo não poderia tar na
  * lista)
  */
-int find_name(char *name,
-              host *host) { // APAGAR- não sei se é suposto devolver o conteúdo caso seja
-                            // encontrado ou apenas uma msg a dizer q o conteudo existe
+int find_name(char *name, host *host) {
+  // APAGAR- não sei se é suposto devolver o conteúdo caso seja
+  // encontrado ou apenas uma msg a dizer q o conteudo existe
   // const char *FindName()
   names *list_pointer = host->names_list;
   if (check_name(name) == -1)

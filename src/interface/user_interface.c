@@ -72,7 +72,7 @@ void process_stdin_input(char *buffer, host *host) {
     break;
   case CLEAR:
     CLEAR_STDIN();
-    printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n\n" RESET, 6, "");
+    printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
     break;
   case UNDEF:
   default:
