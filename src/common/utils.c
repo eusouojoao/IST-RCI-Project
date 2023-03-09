@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "../error_handling/error_checking.h"
+#include "../protocols/TCP.h"
 
 #include <stdio.h> //APAGAR!!
 #include <stdlib.h>
@@ -94,12 +95,13 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   return new_node;
 }
 
+#if 0
 /**
  * @brief  apaga completamente o host
  * @note
  * @param  *host: struct host a ser apagada
  * @retval None
- */
+*/
 void delete_host(host *host) {
   node *del1 = NULL;
   node *aux1 = host->node_list;
@@ -121,6 +123,7 @@ void delete_host(host *host) {
   free(host->uip); // delete user_args
   free(host);      // delete host
 }
+#endif
 
 /**
  * @brief  cria e insere um nó na lista de nodes do host
@@ -152,13 +155,14 @@ void free_node(node *node) {
   if (node != NULL) {
     free(node->ID);
     free(node->IP);
-    close(node->fd);
+    if (node->fd != -1)
+      close(node->fd);
     free(node);
   }
   return;
 }
 
-#if 0
+#if 1
 /**
  * @brief  apaga uma node específica dada pelo seu ID da lista de nodes
  * @note   atualiza também a tabela de expedição
@@ -169,31 +173,63 @@ void free_node(node *node) {
 void delete_node(char *ID, host *host) {
   node *nodeList = host->node_list;
   node *previous_pointer = NULL;
-
-  if (host->ext->ID == ID) // vai perder nó externo
-    host->ext = NULL;
-  if (host->bck->ID == ID) // vai perder nó backup
+  char msg_to_send[128] = {'\0'}, *msg_received = NULL;
+  char bckID[64] = {'\0'}, bckIP[64] = {'\0'}, bckTCP[64] = {'\0'}; /*! TODO - buffers*/
+  char ID_ext[16] = {'\0'};
+  strcpy(ID_ext, host->ext->ID);
+  if (strcmp(host->bck->ID, ID) == 0) { // vai perder nó backup
+    free_node(host->bck);
     host->bck = NULL;
-
+    remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
+                                      /*! TODO - REVER */
+    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
+    msg_received = fetch_bck(host, msg_to_send);
+    if (msg_received == NULL) {
+      /*! TODO - error  */
+      return;
+    }
+    /*! TODO - verificar se a msg recebida esta no formato correto */
+    sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
+    host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
+    return;
+  }
   while (nodeList != NULL) {
-    if (nodeList->ID == ID) {
-
+    if (strcmp(nodeList->ID, ID) == 0) {
       if (previous_pointer == NULL) {
         host->node_list = nodeList->next;
       } else {
         previous_pointer->next = nodeList->next;
       }
-
-      free(nodeList);
+      free_node(nodeList);
       remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
-      return;
+      break;
     }
     previous_pointer = nodeList;
     nodeList = nodeList->next;
   }
-  // APAGAR - apenas para teste
-  printf("ERROR, não se encontrou o node a apagar!");
-  return; // Falha não encontrou o node a apagar
+
+  if (strcmp(ID_ext, ID) == 0) { // vai perder nó externo
+    host->ext = NULL;
+    if (host->bck == NULL)
+      promote_intr_to_ext(host);
+    /*! TODO - confirmarrr!!*/
+    else if (host->bck != NULL) {
+      promote_bck_to_ext(host);
+      /*! TODO - function que vai ligar ao bck (novo externo) */
+    }
+    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
+    msg_received = fetch_bck(host, msg_to_send);
+    if (msg_received == NULL) {
+      /*! TODO - error  */
+      return;
+    }
+    /*! TODO - verificar se a msg recebida esta no formato correto */
+    sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
+    /*! TODO - if() verificar se  bckID, bckIP, bckTCP são iguais ao proprio */
+    if (strcmp(bckID, host->ID) != 0)
+      host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
+  }
+  return;
 }
 #endif
 /**
@@ -253,9 +289,11 @@ void promote_intr_to_ext(host *host) {
  * @retval apontador para o novo vertice externo
  */
 void promote_bck_to_ext(host *host) {
-  host->ext = host->bck;
-  host->ext->next = host->node_list;
-  host->node_list = host->ext;
+  if (host->bck != NULL) {
+    host->ext = host->bck;
+    host->ext->next = host->node_list; // APAGAR TA MAL!!
+    host->node_list = host->ext;
+  }
   host->bck = NULL;
 }
 

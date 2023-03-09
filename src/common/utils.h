@@ -6,7 +6,7 @@
 host *init_host(user_args *uip);
 void assign_ID_and_net(host *host, char *ID, char *net);
 node *create_new_node(char *ID, int fd, char *IP, int TCP);
-void delete_host(host *host);
+// void delete_host(host *host);
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host);
 void free_node(node *node);
 // void delete_node(char *ID, host *host);

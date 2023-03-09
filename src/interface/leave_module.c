@@ -35,7 +35,7 @@ void clear_host(host *host) {
     aux2 = aux2->next;
     free(del2);
   }
-
+  memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
   return;
 }
 

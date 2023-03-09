@@ -67,7 +67,8 @@ int djoin_network(char *buffer, host *host, int flag) {
   }
 
   sscanf(received_msg, "EXTERN %s %s %s", bootID, bootIP, bootTCP);
-  host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP));
+  if (strcmp(bootID, host->ID) != 0)
+    host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP));
 
   return 1;
 }
