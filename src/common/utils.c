@@ -171,19 +171,18 @@ void free_node(node *node) {
  * @retval None
  */
 void delete_node(char *ID, host *host) {
-  node *nodeList = host->node_list;
-  node *previous_pointer = NULL;
   char msg_to_send[128] = {'\0'}, *msg_received = NULL;
   char bckID[64] = {'\0'}, bckIP[64] = {'\0'}, bckTCP[64] = {'\0'}; /*! TODO - buffers*/
   char ID_ext[16] = {'\0'};
   strcpy(ID_ext, host->ext->ID);
+
   if (strcmp(host->bck->ID, ID) == 0) { // vai perder nó backup
     free_node(host->bck);
     host->bck = NULL;
     remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
                                       /*! TODO - REVER */
-    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
-    msg_received = fetch_bck(host, msg_to_send);
+    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
+    msg_received = send_message_TCP(host->ext->fd, msg_to_send);
     if (msg_received == NULL) {
       /*! TODO - error  */
       return;
@@ -193,6 +192,10 @@ void delete_node(char *ID, host *host) {
     host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
     return;
   }
+
+  node *nodeList = host->node_list;
+  node *previous_pointer = NULL;
+
   while (nodeList != NULL) {
     if (strcmp(nodeList->ID, ID) == 0) {
       if (previous_pointer == NULL) {
@@ -200,24 +203,27 @@ void delete_node(char *ID, host *host) {
       } else {
         previous_pointer->next = nodeList->next;
       }
+
       free_node(nodeList);
       remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
       break;
     }
+
     previous_pointer = nodeList;
     nodeList = nodeList->next;
   }
 
   if (strcmp(ID_ext, ID) == 0) { // vai perder nó externo
     host->ext = NULL;
-    if (host->bck == NULL)
+    if (host->bck == NULL) {
       promote_intr_to_ext(host);
-    /*! TODO - confirmarrr!!*/
-    else if (host->bck != NULL) {
+      /*! TODO - confirmarrr!!*/
+      return;
+    } else if (host->bck != NULL) {
       promote_bck_to_ext(host);
-      /*! TODO - function que vai ligar ao bck (novo externo) */
     }
-    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
+
+    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
     msg_received = fetch_bck(host, msg_to_send);
     if (msg_received == NULL) {
       /*! TODO - error  */
@@ -226,9 +232,11 @@ void delete_node(char *ID, host *host) {
     /*! TODO - verificar se a msg recebida esta no formato correto */
     sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
     /*! TODO - if() verificar se  bckID, bckIP, bckTCP são iguais ao proprio */
-    if (strcmp(bckID, host->ID) != 0)
+    if (strcmp(bckID, host->ID) != 0) {
       host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
+    }
   }
+
   return;
 }
 #endif

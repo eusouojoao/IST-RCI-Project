@@ -14,22 +14,23 @@ int number_of_command_arguments(char *str, char delim) {
   for (int i = 0; str[i]; i++) {
     n += (str[i] == delim);
   }
+
   return n;
 }
 
-int check_boot_parameters(char *bootID, char *bootIP, char *bootTCP) {
-  if (strlen(bootID) != 2) {
+int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
+  if (strlen(node_ID) != 2) {
     /*error*/ printf("strlen\n");
     return EXIT_FAILURE;
   }
 
-  if (!(check_if_number(bootID) && check_if_number(bootTCP)) ||
-      (check_IP_address(bootIP) != 1)) {
+  if (!(check_if_number(node_ID) && check_if_number(node_TCP)) ||
+      (check_IP_address(node_IP) != 1)) {
     /*error*/ printf("not a number\n");
     return EXIT_FAILURE;
   }
 
-  int int_id = atoi(bootID), int_tcp = atoi(bootTCP);
+  int int_id = atoi(node_ID), int_tcp = atoi(node_TCP);
   if ((int_id < 0 || int_id > 99) || (int_tcp < 0 || int_tcp > MAXPORT)) {
     /*error*/ printf("out of range\n");
     return EXIT_FAILURE;

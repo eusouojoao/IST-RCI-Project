@@ -12,11 +12,46 @@
 #define MAXREQUESTS 99
 #define BUFFER_SIZE 256
 
-char *fetch_bck(host *host, char *msg) {
-  int fd = -1;
+char *send_message_TCP(int fd, char *msg) {
   ssize_t n = 0;
   char buffer[BUFFER_SIZE] = {'\0'};
   char *received_msg = NULL;
+
+  /* Inicializar a estrutura timeval para o timeout */
+  struct timeval timeout;
+  timeout.tv_sec = 15;
+  timeout.tv_usec = 0;
+
+  n = write(fd, msg, strlen(msg) + 1);
+  if (n == -1) {
+    system_error("In send_message_TCP() -> write() failed");
+    close(fd);
+    return NULL;
+  }
+
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    system_error("In send_message_TCP() -> setsockopt() failed");
+    close(fd);
+    return NULL;
+  }
+
+  n = recv(fd, buffer, sizeof(buffer), 0);
+  if (n == -1) {
+    system_error("In send_message_TCP() -> recv() failed");
+    close(fd);
+    printf("recv: %s", buffer);
+    return NULL;
+  }
+
+  received_msg = calloc((size_t)n, sizeof(char));
+  memcpy(received_msg, buffer, (size_t)n);
+
+  return received_msg;
+}
+
+char *fetch_bck(host *host, char *msg) {
+  int fd = -1;
+  ssize_t n = 0;
   struct sockaddr_in addr;
 
   fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -34,11 +69,6 @@ char *fetch_bck(host *host, char *msg) {
   addr.sin_family = AF_INET;
   addr.sin_port = htons((in_port_t)host->ext->TCP);
 
-  /* Inicializar a estrutura timeval para o timeout */
-  struct timeval timeout;
-  timeout.tv_sec = 15;
-  timeout.tv_usec = 0;
-
   /*
   if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
     system_error("In fetch_bck() ->" RED " setsockopt() failed");
@@ -54,32 +84,8 @@ char *fetch_bck(host *host, char *msg) {
     return NULL;
   }
 
-  n = write(fd, msg, strlen(msg) + 1);
-  if (n == -1) {
-    system_error("In fetch_bck() -> write() failed");
-    close(fd);
-    return NULL;
-  }
-
-  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-    system_error("In send_user_message_UDP() -> setsockopt() failed");
-    close(fd);
-    return NULL;
-  }
-
-  n = recv(fd, buffer, sizeof(buffer), 0);
-  if (n == -1) {
-    system_error("In fetch_bck() -> recv() failed");
-    close(fd);
-    printf("recv: %s", buffer);
-    return NULL;
-  }
-
-  received_msg = calloc((size_t)n, sizeof(char));
-  memcpy(received_msg, buffer, (size_t)n);
-
   host->ext->fd = fd;
-  return received_msg;
+  return send_message_TCP(host->ext->fd, msg);
 }
 
 int create_listen_socket(user_args *uip) {
@@ -94,7 +100,7 @@ int create_listen_socket(user_args *uip) {
   memset(&addr, 0, sizeof(addr));
   if (inet_pton(AF_INET, uip->IP, &(addr.sin_addr)) != 1) {
     close(fd);
-    /*error*/ exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   }
 
   addr.sin_family = AF_INET;

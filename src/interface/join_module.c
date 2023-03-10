@@ -27,9 +27,9 @@ int djoin_network(char *buffer, host *host, int flag) {
 
   char msg_to_send[SIZE << 2] = {'\0'}, *received_msg = NULL;
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
-  char bootID[SIZE] = {'\0'}, bootIP[SIZE] = {'\0'}, bootTCP[SIZE] = {'\0'};
+  char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, bootID, bootIP, bootTCP) < 5) {
+  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) < 5) {
     /*! TODO: Treat error: invalid user input or function failure */
     return 0;
   }
@@ -40,24 +40,24 @@ int djoin_network(char *buffer, host *host, int flag) {
   if (flag == DJOIN) {
     /*! TODO: Verify input buffer */
     if (check_net_and_id(net, ID) == EXIT_FAILURE ||
-        check_boot_parameters(bootID, bootIP, bootTCP) == EXIT_FAILURE) {
+        check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
       /*error*/ printf("Invalid djoin call\n");
       return 0;
     }
   }
 
   /* Single node in the network */
-  if (strcmp(ID, bootID) == 0) {
+  if (strcmp(ID, node_ID) == 0) {
     assign_ID_and_net(host, ID, net);
     return 1;
   }
 
-  insert_node(bootID, -1, bootIP, atoi(bootTCP), host);
+  insert_node(node_ID, -1, node_IP, atoi(node_TCP), host);
   assign_ID_and_net(host, ID, net);
 
   /* Message exchange between the host and the extern node */
   memset(msg_to_send, 0, sizeof(msg_to_send));
-  sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->ext->IP, host->ext->TCP);
+  sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
   printf("msg_to_send: %s", msg_to_send);
   received_msg = fetch_bck(host, msg_to_send);
   if (received_msg == NULL) {
@@ -66,9 +66,10 @@ int djoin_network(char *buffer, host *host, int flag) {
     /* error */ return 0;
   }
 
-  sscanf(received_msg, "EXTERN %s %s %s", bootID, bootIP, bootTCP);
-  if (strcmp(bootID, host->ID) != 0)
-    host->bck = create_new_node(bootID, -1, bootIP, atoi(bootTCP));
+  sscanf(received_msg, "EXTERN %s %s %s", node_ID, node_IP, node_TCP);
+  if (strcmp(node_ID, host->ID) != 0) {
+    host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
+  }
 
   return 1;
 }

@@ -22,12 +22,13 @@ void clear_host(host *host) {
     close(host->ext->fd);
   }
 
-  free_node(host->bck);
   while (aux1 != NULL) { // delete nodes_list
     del1 = aux1;
     aux1 = aux1->next;
     free_node(del1);
   }
+
+  free_node(host->bck);
   host->ext = host->bck = NULL;
 
   while (aux2 != NULL) { // delete names_list

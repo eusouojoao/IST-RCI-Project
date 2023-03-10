@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   memset(&buffer, 0, SIZE);
 
   struct sockaddr in_addr;
-  socklen_t in_addrlen;
+  socklen_t in_addrlen = sizeof(in_addr);
 
   /* Inicializar a estrutura timeval para o timeout */
   struct timeval timeout;
@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
           system_error("In main() -> read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
+        printf("msg received: %s\n", buffer);
         /* Process the new accepted file descriptor */
         process_newfd(host, new_fd, buffer);
         FD_CLR(host->listen_fd, &working_set);
@@ -95,6 +96,7 @@ int main(int argc, char *argv[]) {
       }
 
       else { // SOCKETS DOS NÓS VIZINHOS
+        printf("teste\n");
         for (; temp != NULL && !FD_ISSET(temp->fd, &working_set); temp = temp->next)
           ;
         /*! TODO: Função que processa o fildes do nó vizinho pronto */

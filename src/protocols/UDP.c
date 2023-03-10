@@ -13,7 +13,7 @@
 char *send_message_UDP(user_args *uip, char *msg) {
   int fd = -1;
   ssize_t n = 0;
-  char buffer[BUFFER_SIZE] = "";
+  char buffer[BUFFER_SIZE] = {'\0'};
   char *received_msg = NULL;
   struct sockaddr_in addr;
 
@@ -59,8 +59,8 @@ char *send_message_UDP(user_args *uip, char *msg) {
     return NULL;
   }
 
-  received_msg = calloc((size_t)n, sizeof(char));
-  memcpy(received_msg, buffer, (size_t)n);
+  received_msg = calloc((size_t)n + 1, sizeof(char));
+  memcpy(received_msg, buffer, (size_t)n + 1);
 
   close(fd);
   return received_msg;
