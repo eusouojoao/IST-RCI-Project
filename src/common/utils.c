@@ -402,3 +402,26 @@ int find_name(char *name, host *host) {
   }
   return 0; // Falha, não existia name com tal nome
 }
+
+/**
+ * @brief  Procura na tabela de expedição se existe uma rota para o destino ID
+ * @note   Pode retornar NULL caso não exista informação do vizinho
+ * @param  *ID: ID do destino
+ * @param  *myH: struct com a tabela e lista de nodes
+ * @retval retorna apontador para a node vizinha do destino (caso essa informação exista)
+ *         retorna NULL caso não exista informação da node vizinha
+ */
+node *check_rote(char *ID, host *myH) {
+  int destino = atoi(ID), vizinho = -1;
+  node *auxN = NULL;
+  if (myH->tab_expedicao[destino] != -1) {
+    vizinho = myH->tab_expedicao[destino];
+    auxN = myH->node_list;
+    while (auxN != NULL) {
+      if (atoi(auxN->ID) == vizinho)
+        return auxN; // retorna a node vizinha
+      auxN = auxN->next;
+    }
+  }
+  return auxN; // se retornar auxN==NULL, ent não encontrou o node vizinha na tabela
+}

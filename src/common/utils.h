@@ -18,5 +18,6 @@ int delete_name(char *delname, host *host);
 int find_name(char *name, host *host);
 void promote_intr_to_ext(host *host);
 void promote_bck_to_ext(host *host);
+node *check_rote(char *ID, host *myH);
 
 #endif
