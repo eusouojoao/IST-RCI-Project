@@ -5,6 +5,6 @@
 #include "user_commands.h"
 
 user_command get_user_command(char *token);
-void process_stdin_input(char *buffer, host *host);
+void process_stdin_input(host *host, char *buffer);
 
 #endif // !user_interface_H

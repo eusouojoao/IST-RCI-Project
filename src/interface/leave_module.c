@@ -64,6 +64,17 @@ void leave_network(host *host, int flag) {
     printf(YELLOW "[NOTICE]" RESET " Successfully unregistered from the network %s\n",
            host->net);
     UDP_server_message(0, msg_received);
+
+    /* Call all known nodes and inform them of the withdrawal */
+    memset(&msg_to_send, 0, sizeof(msg_to_send));
+    sprintf(msg_to_send, "WITHDRAW %s", host->ext->ID);
+    // the extern node is always the first in the node list, and must be bypassed
+    for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
+      if (write(temp->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
+        system_error("In withdraw_module() ->" RED " write() failed");
+      }
+    }
+
     clear_host(host); // limpar a estrutura relativa à rede à qual se despede
   } else {
     /* failed to unregister */;

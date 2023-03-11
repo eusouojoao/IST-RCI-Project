@@ -15,6 +15,21 @@
 #define MAXNODES 99
 #define SIZE 64
 
+char *fetch_extern_from_nodelist(char *nodelist) {
+  char *token = strtok(nodelist, "\n"), *array[MAXNODES] = {NULL};
+  int i = 0;
+
+  for (token = strtok(NULL, "\n"); token != NULL; token = strtok(NULL, "\n"), i++) {
+    array[i] = token;
+  }
+
+  if (i == 0) {
+    return NULL; // é o primeiro nó na lista do servidor
+  }
+
+  return array[rand() % i];
+}
+
 int djoin_network(char *buffer, host *host, int flag) {
   if (host->ext != NULL) {
     return 0;
@@ -58,12 +73,10 @@ int djoin_network(char *buffer, host *host, int flag) {
   /* Message exchange between the host and the extern node */
   memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
-  printf("msg_to_send: %s", msg_to_send);
   received_msg = fetch_bck(host, msg_to_send);
   if (received_msg == NULL) {
-    printf("123\n");
     leave_network(host, flag == JOIN ? JOIN : DJOIN);
-    /* error */ return 0;
+    return 0; /* error */
   }
 
   sscanf(received_msg, "EXTERN %s %s %s", node_ID, node_IP, node_TCP);
@@ -72,24 +85,6 @@ int djoin_network(char *buffer, host *host, int flag) {
   }
 
   return 1;
-}
-
-char *fetch_extern_from_nodelist(char *nodelist) {
-  char *token = strtok(nodelist, "\n"), *array[MAXNODES] = {NULL};
-  int i = 0;
-  char *str = NULL;
-
-  for (token = strtok(NULL, "\n"); token != NULL; token = strtok(NULL, "\n"), i++) {
-    array[i] = token;
-  }
-
-  if (i == 0) {
-    return NULL; // é o primeiro nó na lista do servidor
-  }
-
-  str = array[rand() % i];
-  // printf("array[rand() %% i=%d]: %s\n", i, str); // REMOVER mais tarde
-  return str;
 }
 
 int join_network(char *buffer, host *host) {

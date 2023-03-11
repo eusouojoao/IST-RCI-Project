@@ -18,9 +18,7 @@ char *send_message_TCP(int fd, char *msg) {
   char *received_msg = NULL;
 
   /* Inicializar a estrutura timeval para o timeout */
-  struct timeval timeout;
-  timeout.tv_sec = 15;
-  timeout.tv_usec = 0;
+  struct timeval timeout = {.tv_sec = 15, .tv_usec = 0};
 
   n = write(fd, msg, strlen(msg) + 1);
   if (n == -1) {

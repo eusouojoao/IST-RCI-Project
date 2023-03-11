@@ -1,6 +1,6 @@
 #include "common/arguments_parser.h"
 #include "common/utils.h"
-#include "descriptor_utils/descriptor_control.h"
+#include "descriptor_utils/socket_descriptor_control.h"
 #include "error_handling/error_messages.h"
 #include "interface/user_interface.h"
 #include "protocols/TCP.h"
@@ -20,21 +20,16 @@ int main(int argc, char *argv[]) {
   srand((unsigned int)time(NULL)); // seed the rand function
   /* User arguments */
   user_args *uip = NULL;
-  uip = parser(argc, argv);
+  uip = arguments_parser(argc, argv);
 
   /* Inicializar a estrutura do host e temp */
   host *host = init_host(uip);
   node *temp = NULL;
 
   /* File descriptors e counter do select() */
-  host->listen_fd = create_listen_socket(uip);
+  fd_set working_set; // set with the read file descriptors
   int new_fd = -1, counter = 0;
-
-  /* Inicializar o master fd_set */
-  fd_set master_set, working_set;
-  FD_ZERO(&master_set);
-  FD_SET(host->listen_fd, &master_set);
-  FD_SET(STDIN_FILENO, &master_set);
+  host->listen_fd = create_listen_socket(uip);
 
   /* Working buffer */
   char buffer[SIZE];
@@ -44,19 +39,16 @@ int main(int argc, char *argv[]) {
   socklen_t in_addrlen = sizeof(in_addr);
 
   /* Inicializar a estrutura timeval para o timeout */
-  struct timeval timeout;
-  timeout.tv_sec = 300; // 5min = 5 * 60s = 300s
-  timeout.tv_usec = 0;
+  struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // 600s = 10min
 
   CLEAR_STDIN();
   printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
+
   for (/* for */; /* ever */; /* ! */) {
     printf(GREEN "<USER> " RESET);
     fflush(stdout);
-    memcpy(&working_set, &master_set, sizeof(master_set));
-    for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
-      FD_SET(temp->fd, &working_set);
-    }
+    /* Update the file descriptor's working set */
+    update_working_set(host, &working_set);
 
     counter = select(get_maxfd(host) + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
                      (struct timeval *)&timeout);
@@ -65,18 +57,17 @@ int main(int argc, char *argv[]) {
       /*error*/ exit(EXIT_FAILURE);
     }
 
-    temp = host->node_list;
-    for (/* X */; counter > 0; counter--) {
-      memset(&buffer, 0, SIZE);
+    printf("counter = %d\n", counter); // DEBUG - remover
+
+    for (temp = host->node_list; counter > 0; memset(&buffer, 0, SIZE), counter--) {
       if (FD_ISSET(STDIN_FILENO, &working_set)) { // KEYBOARD
         if (read(STDIN_FILENO, buffer, SIZE) == -1) {
           system_error("In main() -> read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
-        /* Process standard input */
-        process_stdin_input(buffer, host);
+        /* Process standard input - keyboard */
+        process_stdin_input(host, buffer);
         FD_CLR(STDIN_FILENO, &working_set);
-        continue;
       }
 
       else if (FD_ISSET(host->listen_fd, &working_set)) { // SOCKET DE LISTEN
@@ -88,18 +79,21 @@ int main(int argc, char *argv[]) {
           system_error("In main() -> read() failed");
           /*error*/ exit(EXIT_FAILURE);
         }
-        printf("msg received: %s\n", buffer);
         /* Process the new accepted file descriptor */
-        process_newfd(host, new_fd, buffer);
+        process_new_fd(host, new_fd, buffer);
         FD_CLR(host->listen_fd, &working_set);
-        continue;
       }
 
       else { // SOCKETS DOS NÓS VIZINHOS
-        printf("teste\n");
         for (; temp != NULL && !FD_ISSET(temp->fd, &working_set); temp = temp->next)
-          ;
-        /*! TODO: Função que processa o fildes do nó vizinho pronto */
+          /* Traverse to the right fd to process */;
+
+        if (read(temp->fd, buffer, SIZE) == -1) {
+          system_error("In main() -> read() failed");
+          /*error*/ exit(EXIT_FAILURE);
+        }
+        /* Process extern and intern node communication */
+        process_neighbour_node_fd(host, temp, buffer);
         FD_CLR(temp->fd, &working_set);
       }
     }

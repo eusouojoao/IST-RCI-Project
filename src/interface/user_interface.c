@@ -33,9 +33,9 @@ user_command get_user_command(char *token) {
   return UNDEF;
 }
 
-void process_stdin_input(char *buffer, host *host) {
+void process_stdin_input(host *host, char *buffer) {
   static int flag = -1;
-  char token[32];
+  char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
     return;

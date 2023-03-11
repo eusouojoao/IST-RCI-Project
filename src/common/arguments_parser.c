@@ -14,8 +14,6 @@ void init_uip(user_args **uip) {
   (*uip)->TCP = 0;
   (*uip)->regIP = "193.136.138.142";
   (*uip)->regUDP = 59000;
-
-  return;
 }
 
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
@@ -41,7 +39,7 @@ int check_input_integrity(int argc, char *argv[], user_args **uip) {
   return EXIT_SUCCESS;
 }
 
-user_args *parser(int argc, char *argv[]) {
+user_args *arguments_parser(int argc, char *argv[]) {
   int input_ok = 0;
 
   /* Verifica se o número mínimo ou máximo de parâmetros

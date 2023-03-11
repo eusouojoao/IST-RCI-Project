@@ -9,7 +9,7 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP);
 // void delete_host(host *host);
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host);
 void free_node(node *node);
-// void delete_node(char *ID, host *host);
+// void delete_node(host *host, char *ID);
 void add_route_tab(int dest, int neighbour, host *host);
 void remove_route_tab(int eraseN, host *host);
 names *new_names(char *name, names *next);

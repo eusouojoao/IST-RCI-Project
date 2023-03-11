@@ -95,36 +95,6 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   return new_node;
 }
 
-#if 0
-/**
- * @brief  apaga completamente o host
- * @note
- * @param  *host: struct host a ser apagada
- * @retval None
-*/
-void delete_host(host *host) {
-  node *del1 = NULL;
-  node *aux1 = host->node_list;
-  names *del2 = NULL;
-  names *aux2 = host->names_list;
-
-  while (aux1 != NULL) { // delete node_list
-    del1 = aux1;
-    aux1 = aux1->next;
-    free(del1);
-  }
-
-  while (aux2 != NULL) { // delete names_list
-    del2 = aux2;
-    aux2 = aux2->next;
-    free(del2);
-  }
-
-  free(host->uip); // delete user_args
-  free(host);      // delete host
-}
-#endif
-
 /**
  * @brief  cria e insere um nó na lista de nodes do host
  * @note   inserção no inicio da node list
@@ -136,10 +106,9 @@ void delete_host(host *host) {
  * @retval None
  */
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
-  node *first_node = host->node_list;
   node *new_node = create_new_node(ID, fd, IP, TCP);
 
-  new_node->next = first_node;
+  new_node->next = host->node_list;
   host->node_list = new_node;
 
   // caso o host tenha acabado de entrar na rede ou perdido o externo
@@ -162,84 +131,6 @@ void free_node(node *node) {
   return;
 }
 
-#if 1
-/**
- * @brief  apaga uma node específica dada pelo seu ID da lista de nodes
- * @note   atualiza também a tabela de expedição
- * @param  ID: ID da node a ser eliminada
- * @param  *host: struct host com a lista de nodes
- * @retval None
- */
-void delete_node(char *ID, host *host) {
-  char msg_to_send[128] = {'\0'}, *msg_received = NULL;
-  char bckID[64] = {'\0'}, bckIP[64] = {'\0'}, bckTCP[64] = {'\0'}; /*! TODO - buffers*/
-  char ID_ext[16] = {'\0'};
-  strcpy(ID_ext, host->ext->ID);
-
-  if (strcmp(host->bck->ID, ID) == 0) { // vai perder nó backup
-    free_node(host->bck);
-    host->bck = NULL;
-    remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
-                                      /*! TODO - REVER */
-    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
-    msg_received = send_message_TCP(host->ext->fd, msg_to_send);
-    if (msg_received == NULL) {
-      /*! TODO - error  */
-      return;
-    }
-    /*! TODO - verificar se a msg recebida esta no formato correto */
-    sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
-    host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
-    return;
-  }
-
-  node *nodeList = host->node_list;
-  node *previous_pointer = NULL;
-
-  while (nodeList != NULL) {
-    if (strcmp(nodeList->ID, ID) == 0) {
-      if (previous_pointer == NULL) {
-        host->node_list = nodeList->next;
-      } else {
-        previous_pointer->next = nodeList->next;
-      }
-
-      free_node(nodeList);
-      remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
-      break;
-    }
-
-    previous_pointer = nodeList;
-    nodeList = nodeList->next;
-  }
-
-  if (strcmp(ID_ext, ID) == 0) { // vai perder nó externo
-    host->ext = NULL;
-    if (host->bck == NULL) {
-      promote_intr_to_ext(host);
-      /*! TODO - confirmarrr!!*/
-      return;
-    } else if (host->bck != NULL) {
-      promote_bck_to_ext(host);
-    }
-
-    sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
-    msg_received = fetch_bck(host, msg_to_send);
-    if (msg_received == NULL) {
-      /*! TODO - error  */
-      return;
-    }
-    /*! TODO - verificar se a msg recebida esta no formato correto */
-    sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
-    /*! TODO - if() verificar se  bckID, bckIP, bckTCP são iguais ao proprio */
-    if (strcmp(bckID, host->ID) != 0) {
-      host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
-    }
-  }
-
-  return;
-}
-#endif
 /**
  * @brief  adiciona uma nova rota à tabela de expedição
  * @note
@@ -250,10 +141,8 @@ void delete_node(char *ID, host *host) {
  */
 
 void add_route_tab(int dest, int neighbour, host *host) {
-  // APAGAR!!
-  if (host->tab_expedicao[dest] ==
-      -1) // apenas para testar se as tabelas estão a ser corretamente apagadas
-  {
+  // APAGAR!! // apenas para testar se as tabelas estão a ser corretamente apagadas
+  if (host->tab_expedicao[dest] == -1) {
     printf("ERROR, tabela populada a ser repopulada!");
     exit(1);
   }
