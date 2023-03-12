@@ -37,7 +37,6 @@ char *send_message_TCP(int fd, char *msg) {
   if (n == -1) {
     system_error("In send_message_TCP() -> recv() failed");
     close(fd);
-    printf("recv: %s", buffer);
     return NULL;
   }
 

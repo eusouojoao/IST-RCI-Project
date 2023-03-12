@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
   /* Working buffer */
   char buffer[SIZE];
-  memset(&buffer, 0, SIZE);
+  memset(buffer, 0, SIZE);
 
   struct sockaddr in_addr;
   socklen_t in_addrlen = sizeof(in_addr);
@@ -49,17 +49,18 @@ int main(int argc, char *argv[]) {
     fflush(stdout);
     /* Update the file descriptor's working set */
     update_working_set(host, &working_set);
-
-    counter = select(get_maxfd(host) + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
+    int maxfd = get_maxfd(host);
+    printf("maxfd = %d\n", maxfd);
+    counter = select(maxfd + 1, &working_set, (fd_set *)NULL, (fd_set *)NULL,
                      (struct timeval *)&timeout);
     if (counter <= 0) {
       system_error("In main() -> select() failed");
       /*error*/ exit(EXIT_FAILURE);
     }
 
-    printf("counter = %d\n", counter); // DEBUG - remover
+    printf("Counter = %d\n", counter);
 
-    for (temp = host->node_list; counter > 0; memset(&buffer, 0, SIZE), counter--) {
+    for (temp = host->node_list; counter > 0; memset(buffer, 0, SIZE), counter--) {
       if (FD_ISSET(STDIN_FILENO, &working_set)) { // KEYBOARD
         if (read(STDIN_FILENO, buffer, SIZE) == -1) {
           system_error("In main() -> read() failed");
@@ -85,16 +86,17 @@ int main(int argc, char *argv[]) {
       }
 
       else { // SOCKETS DOS NÓS VIZINHOS
-        for (; temp != NULL && !FD_ISSET(temp->fd, &working_set); temp = temp->next)
-          /* Traverse to the right fd to process */;
-
-        if (read(temp->fd, buffer, SIZE) == -1) {
-          system_error("In main() -> read() failed");
-          /*error*/ exit(EXIT_FAILURE);
+        for (; temp != NULL; temp = temp->next) {
+          if (FD_ISSET(temp->fd, &working_set)) {
+            if (read(temp->fd, buffer, SIZE) == -1) {
+              system_error("In main() -> read() failed");
+              /*error*/ exit(EXIT_FAILURE);
+            }
+            /* Process extern and intern node communication */
+            process_neighbour_node_fd(host, temp, buffer);
+            FD_CLR(temp->fd, &working_set);
+          }
         }
-        /* Process extern and intern node communication */
-        process_neighbour_node_fd(host, temp, buffer);
-        FD_CLR(temp->fd, &working_set);
       }
     }
   }

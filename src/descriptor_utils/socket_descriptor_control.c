@@ -48,7 +48,7 @@ void process_new_fd(host *host, int new_fd, char *buffer) {
 
   if (host->ext == NULL) { // caso nós âncora
     sprintf(msg_to_send, "EXTERN %s %s %s\n", new_ID, new_IP, new_TCP);
-    if (write(new_fd, msg_to_send, sizeof(msg_to_send)) == -1) {
+    if (write(new_fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
       /*error*/;
       close(new_fd);
       return;
@@ -58,7 +58,7 @@ void process_new_fd(host *host, int new_fd, char *buffer) {
   } else { // caso normal
     sprintf(msg_to_send, "EXTERN %s %s %d\n", host->ext->ID, host->ext->IP,
             host->ext->TCP);
-    if (write(new_fd, msg_to_send, sizeof(msg_to_send)) == -1) {
+    if (write(new_fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
       /*error*/;
       close(new_fd);
       return;
@@ -88,9 +88,9 @@ protocol_command get_protocol_command(char *token) {
 
 void process_neighbour_node_fd(host *host, node *node, char *buffer) {
   char token[32] = {'\0'}, ID[32] = {'\0'};
+  printf("buffer: %s\n", buffer);
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
-    return;
   }
 
   switch (get_protocol_command(token)) {
@@ -104,7 +104,7 @@ void process_neighbour_node_fd(host *host, node *node, char *buffer) {
     }
     if (!(strlen(ID) == 2 && check_if_number(ID))) {
       /* error, protocol with bad format */
-      printf("Enrro! Bad format!\n");
+      printf("Error! Bad format!\n");
       return;
     }
     withdraw_node(host, ID);
@@ -117,7 +117,7 @@ void process_neighbour_node_fd(host *host, node *node, char *buffer) {
     break;
   case BADFORMAT:
   default:
-    /*error*/ // exit(EXIT_FAILURE);
+    /*error*/
     printf("Something something bad format from NODE: %s\n", node->ID);
     break;
   }

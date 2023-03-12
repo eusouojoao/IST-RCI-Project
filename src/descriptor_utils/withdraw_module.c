@@ -36,10 +36,15 @@ void withdraw_node(host *host, char *ID) {
   for (; node_list != NULL; previous_pointer = node_list, node_list = node_list->next) {
     if (strcmp(node_list->ID, ID) == 0) {
       if (previous_pointer == NULL) {
+        printf("here123\n");
         host->node_list = node_list->next;
       } else {
         previous_pointer->next = node_list->next;
       }
+
+      printf("node_list = %p\n", (void *)node_list);
+      printf("node_list->ID = %s, node_list->IP = %s, node_list->TCP = %d\n",
+             node_list->ID, node_list->IP, node_list->TCP);
       free_node(node_list);
       remove_route_tab(atoi(ID), host); // atualizar tabela de expedição
       break;
@@ -48,6 +53,7 @@ void withdraw_node(host *host, char *ID) {
 
   if (strcmp(ID_ext, ID) == 0) { // vai perder nó externo
     host->ext = NULL;
+    /* Atribuir novo externo ao host */
     if (host->bck == NULL) {
       /* Caso nó âncora */
       promote_intr_to_ext(host);
@@ -71,13 +77,17 @@ void withdraw_node(host *host, char *ID) {
         host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
       }
     }
-    /* Call all intern nodes to update their backup (current node's extern) */
-    memset(&msg_to_send, 0, sizeof(msg_to_send));
-    sprintf(msg_to_send, "EXTERN %s %s %d", host->ext->ID, host->ext->IP, host->ext->TCP);
-    // the extern node is always the first in the node list, and must be bypassed
-    for (node *temp = host->node_list->next; temp != NULL; temp = temp->next) {
-      if (write(temp->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
-        system_error("In withdraw_module() ->" RED " write() failed");
+    /* Avisar todos os nós internos da mudança, apenas no caso de existir externo novo */
+    if (host->ext != NULL) {
+      /* Call all intern nodes to update their backup (current node's extern) */
+      memset(msg_to_send, 0, sizeof(msg_to_send));
+      sprintf(msg_to_send, "EXTERN %s %s %d", host->ext->ID, host->ext->IP,
+              host->ext->TCP);
+      // the extern node is always the first in the node list, and must be bypassed
+      for (node *temp = host->node_list->next; temp != NULL; temp = temp->next) {
+        if (write(temp->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
+          system_error("In withdraw_module() ->" RED " write() failed");
+        }
       }
     }
   }

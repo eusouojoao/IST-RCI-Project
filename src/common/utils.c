@@ -174,8 +174,9 @@ void remove_route_tab(int eraseN, host *host) {
  * @retval apontador para o novo vertice externo
  */
 void promote_intr_to_ext(host *host) {
-  if (host->ext == NULL)
+  if (host->ext == NULL) {
     host->ext = host->node_list;
+  }
 }
 
 /**
