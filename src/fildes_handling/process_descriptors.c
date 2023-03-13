@@ -3,6 +3,7 @@
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
 #include "socket_protocols_interface/utility.h"
+#include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
 
 #include <stdio.h>
@@ -23,9 +24,14 @@ user_command get_user_command(char *token) {
     return DELETE;
   } else if (strcmp(token, "get") == 0) {
     return GET;
-  } else if (strcmp(token, "show") == 0 || strcmp(token, "st") == 0 ||
-             strcmp(token, "sn") == 0 || strcmp(token, "sr") == 0) {
+  } else if (strcmp(token, "show") == 0) {
     return SHOW;
+  } else if (strcmp(token, "st") == 0) {
+    return SHOW_TOPOLOGY;
+  } else if (strcmp(token, "sn") == 0) {
+    return SHOW_NAMES;
+  } else if (strcmp(token, "sr") == 0) {
+    return SHOW_ROUTING;
   } else if (strcmp(token, "leave") == 0) {
     return LEAVE;
   } else if (strcmp(token, "exit") == 0) {
@@ -39,21 +45,22 @@ user_command get_user_command(char *token) {
 
 void process_stdin_input(host *host, char *buffer) {
   static int flag = -1;
+  int opt = UNDEF;
   char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
     return;
   }
 
-  switch (get_user_command(token)) {
+  switch (opt = get_user_command(token)) {
   case JOIN:
     if (join_network(buffer, host)) {
-      flag = JOIN;
+      flag = opt;
     }
     break;
   case DJOIN:
-    if (djoin_network(buffer, host, DJOIN)) {
-      flag = DJOIN;
+    if (djoin_network(buffer, host, opt)) {
+      flag = opt;
     }
     break;
   case CREATE:
@@ -66,7 +73,10 @@ void process_stdin_input(host *host, char *buffer) {
     /*! TODO: */
     break;
   case SHOW:
-    /*! TODO: */
+  case SHOW_TOPOLOGY:
+  case SHOW_NAMES:
+  case SHOW_ROUTING:
+    show_wrapper(host, opt);
     break;
   case LEAVE:
     leave_network(host, flag);
@@ -197,11 +207,18 @@ void process_neighbour_node_fd(host *host, node *node, char *buffer) {
       system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
       return;
     }
+
     if (!(strlen(ID) == 2 && check_if_number(ID))) {
       /* error, protocol with bad format */
       printf("Error! Bad format!\n");
       return;
     }
+
+    char *withdraw_msg = remove_node_from_forwarding_table(host, atoi(ID));
+    if (withdraw_msg == NULL) {
+      return;
+    }
+    send_withdraw_messages(host, node->fd, withdraw_msg);
     break;
   case QUERY:
   case CONTENT:

@@ -1,9 +1,22 @@
 #include "show_module.h"
+#include "user_commands.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #define ELEMENTS sizeof(host->tab_expedicao) / sizeof(host->tab_expedicao[0])
+
+void show_wrapper(host *host, int opt) {
+  if (opt == SHOW_TOPOLOGY) {
+    show_topology(host);
+  } else if (opt == SHOW_NAMES) {
+    show_names(host);
+  } else if (opt == SHOW_ROUTING) {
+    show_routes(host);
+  }
+  /*! TODO: Implementar caso geral do show por extenso */
+  return;
+}
 
 /**
  * @brief Prints the topology of a host.
@@ -14,19 +27,22 @@
  * @param host Pointer to the host struct.
  */
 void show_topology(host *host) {
-  const node *node_ptr = host->node_list;
-  const char *ext_id = host->ext->ID;
+  node *node_ptr = host->node_list;
+
+  printf("host->ext: %p, host->bck: %p\n", (void *)host->ext, (void *)host->bck);
 
   fprintf(stdout, "Topologia do host com: ID %s; Rede %s\n", host->ID, host->net);
-  fprintf(stdout, "Nó de backup %s; Vizinho Externo %s\n", host->bck->ID, ext_id);
-  fprintf(stdout, "Lista de Vizinhos Internos:");
-
-  while (node_ptr != NULL) {
-    if (strcmp(node_ptr->ID, ext_id) != 0) {
-      // Don't print external node as internal
-      fprintf(stdout, " %s;", node_ptr->ID);
+  if (host->ext != NULL) { // se n~ao for o nó único na rede
+    fprintf(stdout, "Nó de backup %s; Vizinho Externo %s\n",
+            host->bck == NULL ? host->ID : host->bck->ID, host->ext->ID);
+    fprintf(stdout, "Lista de Vizinhos Internos:");
+    while (node_ptr != NULL) {
+      if (strcmp(node_ptr->ID, host->ext->ID) != 0) {
+        // Don't print external node as internal
+        fprintf(stdout, " %s;", node_ptr->ID);
+      }
+      node_ptr = node_ptr->next;
     }
-    node_ptr = node_ptr->next;
   }
 
   fprintf(stdout, "\n------------------------\n");

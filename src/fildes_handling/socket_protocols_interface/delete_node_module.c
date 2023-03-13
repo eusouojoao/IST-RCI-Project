@@ -3,14 +3,12 @@
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../../protocols/TCP.h"
+#include "withdraw_module.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#define ELEMENTS sizeof(host->tab_expedicao) / sizeof(host->tab_expedicao[0])
-#define SIZE 128
 
 void delete_node(host *host, int withdraw_fd) {
   node *previous_pointer = NULL, *current_node = host->node_list;
@@ -26,11 +24,12 @@ void delete_node(host *host, int withdraw_fd) {
 
       withdraw_msg = remove_node_from_forwarding_table(host, atoi(current_node->ID));
       if (withdraw_msg == NULL) {
+        printf("WITHDRAW error - teste\n"); // DEBUG - remover
         return;
       }
 
-      send_withdraw_messages(host, withdraw_msg);
       free_node(current_node);
+      send_withdraw_messages(host, withdraw_fd, withdraw_msg);
       break;
     }
     previous_pointer = current_node;
@@ -40,46 +39,9 @@ void delete_node(host *host, int withdraw_fd) {
   update_external_node(host, withdraw_fd);
 }
 
-char *remove_node_from_forwarding_table(host *host, int eraseN) {
-  char node_to_withdraw[SIZE] = {'\0'};
-  char *msg_to_send = calloc(SIZE << 3, sizeof(char));
-  if (msg_to_send == NULL) {
-    /*error*/ exit(1);
-  }
-
-  size_t i = 0;
-  while (i < ELEMENTS) {
-    if (host->tab_expedicao[i] == eraseN) {
-      host->tab_expedicao[i] = -1;
-      memset(node_to_withdraw, 0, sizeof(node_to_withdraw));
-      snprintf(node_to_withdraw, sizeof(node_to_withdraw), "WITHDRAW %02lu\n", i);
-      strcat(msg_to_send, node_to_withdraw);
-    }
-    i++;
-  }
-
-  if (i == 0) {
-    return NULL; /* Error: nothing to be done */
-  }
-
-  return msg_to_send;
-}
-
-void send_withdraw_messages(host *host, char *withdraw_msg) {
-  node *current_node = host->node_list;
-  while (current_node != NULL) {
-    if (current_node->fd == host->ext->fd) {
-      continue;
-    }
-    if (write(current_node->fd, withdraw_msg, strlen(withdraw_msg) + 1) == -1) {
-      system_error("In withdraw_module() ->" RED " write() failed");
-    }
-    current_node = current_node->next;
-  }
-}
-
 void update_external_node(host *host, int withdraw_fd) {
   if (host->ext == NULL || host->ext->fd != withdraw_fd) {
+    printf("update_external_node() error - teste\n"); // DEBUG - remover
     return;
   }
 
@@ -102,6 +64,7 @@ void get_a_new_backup(host *host) {
   sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
   char *msg_received = fetch_bck(host, msg_to_send);
   if (msg_received == NULL) {
+    printf("get_a_new_backup() error - teste\n"); // DEBUG - remover
     return;
   }
 
