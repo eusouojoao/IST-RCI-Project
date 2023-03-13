@@ -66,14 +66,6 @@ char *fetch_bck(host *host, char *msg) {
   addr.sin_family = AF_INET;
   addr.sin_port = htons((in_port_t)host->ext->TCP);
 
-  /*
-  if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
-    system_error("In fetch_bck() ->" RED " setsockopt() failed");
-    close(fd);
-    return NULL;
-  }
-  */
-
   n = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
   if (n == -1) {
     system_error("In fetch_bck() ->" RED " connect() failed");

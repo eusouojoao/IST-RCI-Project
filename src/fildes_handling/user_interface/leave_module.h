@@ -1,7 +1,7 @@
 #ifndef LEAVE_MODULE_H
 #define LEAVE_MODULE_H
 
-#include "../common/struct.h"
+#include "../../common/struct.h"
 #include "user_commands.h"
 
 void clear_host(host *host);

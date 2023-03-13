@@ -1,9 +1,9 @@
 TARGET=cot
 CC=gcc
-CFLAGS=-std=c99 -Wpedantic -Wconversion -Wall -Werror
+CFLAGS=-std=gnu99 -Wpedantic -Wconversion -Wall -Werror
 LDFLAGS=-lm
-HEADERS=$(wildcard src/*/*.h)
-SRCS=$(wildcard src/*.c) $(wildcard src/*/*.c)
+HEADERS=$(wildcard src/*/*.h) $(wildcard src/*/*/*.h)
+SRCS=$(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard src/*/*/*.c)
 OBJS=$(addprefix obj/, $(notdir $(patsubst %.c, %.o, $(SRCS))))
 OBJ_DIR=obj
 

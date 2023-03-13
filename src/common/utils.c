@@ -150,24 +150,6 @@ void add_route_tab(int dest, int neighbour, host *host) {
 }
 
 /**
- * @brief  remove todas as rotas da tabela de expedição associadas ao node
- * eraseN
- * @note
- * @param  eraseN: node a apagar as rotas
- * @param  *host: struct host que contém a tabela de expedição
- * @retval None
- */
-void remove_route_tab(int eraseN, host *host) {
-  int i;
-  host->tab_expedicao[eraseN] = -1; // remove rote to deleted node
-  for (i = 0; i < 100; i++) {
-    if (host->tab_expedicao[i] == eraseN)
-      host->tab_expedicao[i] =
-          -1; // remove rote to a node when the destiny is the deleted node
-  }
-}
-
-/**
  * @brief  promove um vertice interno a externo
  * @note   return poderá fazer return NULL caso nao hajam nós internos
  * @param  *host: struct com a informação dos vertíces

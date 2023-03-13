@@ -1,9 +1,9 @@
 #include "join_module.h"
-#include "../common/utils.h"
-#include "../error_handling/error_checking.h"
-#include "../error_handling/error_messages.h"
-#include "../protocols/TCP.h"
-#include "../protocols/UDP.h"
+#include "../../common/utils.h"
+#include "../../error_handling/error_checking.h"
+#include "../../error_handling/error_messages.h"
+#include "../../protocols/TCP.h"
+#include "../../protocols/UDP.h"
 #include "leave_module.h"
 #include "user_commands.h"
 
@@ -15,6 +15,16 @@
 #define MAXNODES 99
 #define SIZE 64
 
+/**
+ * @brief Fetches a random external node from a node list string.
+ * @note Assumes the first token in the list the header: NODESLIST XXX.
+ *
+ * @param nodelist: a string containing the node list, separated by newline
+ * characters.
+ *
+ * @return a pointer to a string containing the needed information of the randomly
+ * selected external node. Returns NULL if no suitable external node is found.
+ */
 char *fetch_extern_from_nodelist(char *nodelist) {
   char *token = strtok(nodelist, "\n"), *array[MAXNODES] = {NULL};
   int i = 0;
@@ -30,6 +40,25 @@ char *fetch_extern_from_nodelist(char *nodelist) {
   return array[rand() % i];
 }
 
+/**
+ * @brief Join a network for debugging purposes
+ *
+ * This function allows a host to join a network for debugging purposes. The function
+ * receives a buffer containing the command and parameters for the join, a pointer to
+ * the host joining the network, and a flag indicating if the join call was made
+ * directly by the user or from a function call. The function performs several checks
+ * on the input parameters, and if all of them are valid, it proceeds with the join
+ * operation by inserting a new node in the network and exchanging messages between
+ * the host and the external node.
+ *
+ * @param buffer: A pointer to a character array containing the command and
+ * parameters for the join
+ * @param host: a pointer to a host structure representing the host joining the
+ * network
+ * @param flag: an integer flag indicating if the join call was made directly by the
+ * user or from a function call
+ * @return 1 if the operation was successful, 0 otherwise
+ */
 int djoin_network(char *buffer, host *host, int flag) {
   if (host->ext != NULL) {
     return 0;
@@ -44,14 +73,15 @@ int djoin_network(char *buffer, host *host, int flag) {
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) < 5) {
+  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) <
+      5) {
     /*! TODO: Treat error: invalid user input or function failure */
     return 0;
   }
 
   /* If the input comes from join(), all arguments passed to the buffer are
-   * properly checked and ready to be used. A direct call from the user to djoin() must
-   * have all it's arguments verified */
+   * properly checked and ready to be used. A direct call from the user to djoin()
+   * must have all it's arguments verified */
   if (flag == DJOIN) {
     /*! TODO: Verify input buffer */
     if (check_net_and_id(net, ID) == EXIT_FAILURE ||
@@ -72,7 +102,7 @@ int djoin_network(char *buffer, host *host, int flag) {
 
   /* Message exchange between the host and the extern node */
   memset(msg_to_send, 0, sizeof(msg_to_send));
-  sprintf(msg_to_send, "NEW %s %s %d\n", ID, host->uip->IP, host->uip->TCP);
+  sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
   received_msg = fetch_bck(host, msg_to_send);
   if (received_msg == NULL) {
     leave_network(host, flag == JOIN ? JOIN : DJOIN);
@@ -87,6 +117,20 @@ int djoin_network(char *buffer, host *host, int flag) {
   return 1;
 }
 
+/**
+ * @brief Join a network given its name and a unique ID
+ *
+ * First, it checks the user input for errors. Then, it sends a message to the node
+ * server requesting the list of available nodes. After receiving the list, it sends
+ * a message to the node server requesting to register the host. If registration is
+ * successful, it checks if there are any external nodes in the network and, if so,
+ * connects to one of them. If registration is not successful, it prints an error
+ * message to the console.
+ *
+ * @param buffer: input buffer with the user command and arguments
+ * @param host: pointer to the `host` struct
+ * @return 1 if the host successfully joined the network, 0 otherwise
+ */
 int join_network(char *buffer, host *host) {
   if (number_of_command_arguments(buffer, ' ') > 2) {
     /*! TODO: Treat error: invalid user input */
@@ -136,7 +180,8 @@ int join_network(char *buffer, host *host) {
     memset(msg_to_send, 0, sizeof(msg_to_send));
     if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
-      djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network
+      djoin_network(msg_to_send, host,
+                    JOIN); // connects to the ext node in the network
     } else {
       assign_ID_and_net(host, ID, net);
     }
