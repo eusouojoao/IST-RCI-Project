@@ -10,6 +10,8 @@
 #include <string.h>
 #include <time.h>
 
+#define ON 1
+
 int main(int argc, char *argv[]) {
   srand((unsigned int)time(NULL)); // seed the rand function
   /* User arguments */
@@ -39,8 +41,9 @@ int main(int argc, char *argv[]) {
   CLEAR_STDIN();
   printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
 
-  while (1) {
+  while (ON) {
     int counter = 0; // will receive the number of descriptors that became ready
+
     /* Print prompt */
     printf(GREEN "<USER> " RESET);
     fflush(stdout);

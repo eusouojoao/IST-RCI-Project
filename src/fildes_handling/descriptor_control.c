@@ -28,6 +28,7 @@
 void update_working_set(host *host, fd_set *working_set) {
   FD_ZERO(working_set);
   FD_SET(STDIN_FILENO, working_set);
+
   FD_SET(host->listen_fd, working_set);
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     FD_SET(temp->fd, working_set);
