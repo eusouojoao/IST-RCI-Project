@@ -43,7 +43,7 @@ user_command get_user_command(char *token) {
   return UNDEF;
 }
 
-void process_stdin_input(host *host, char *buffer) {
+void process_keyboard_input(host *host, char *buffer) {
   static int flag = -1;
   int opt = UNDEF;
   char token[32] = {'\0'};
@@ -111,7 +111,7 @@ void process_stdin_input(host *host, char *buffer) {
  * @param new_fd: the new file descriptor
  * @param buffer: a buffer containing the message to process
  */
-void process_new_fd(host *host, int new_fd, char *buffer) {
+void process_new_connection(host *host, int new_fd, char *buffer) {
   char msg_to_send[SIZE << 2] = {'\0'}, cmd[SIZE] = {'\0'};
   char new_ID[SIZE] = {'\0'}, new_IP[SIZE] = {'\0'}, new_TCP[SIZE] = {'\0'};
 
@@ -185,7 +185,7 @@ protocol_command get_protocol_command(char *token) {
  * @param node: the neighbour node that sent the message
  * @param buffer: the message received
  */
-void process_neighbour_node_fd(host *host, node *node, char *buffer) {
+void process_neighbour_nodes(host *host, node *node, char *buffer) {
   char token[32] = {'\0'}, ID[32] = {'\0'};
   printf("buffer: %s\n", buffer); // DEBUG
 

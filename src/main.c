@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #define ON 1
 
@@ -40,13 +41,12 @@ int main(int argc, char *argv[]) {
   /* User interface engage */
   CLEAR_STDIN();
   printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
+  /* Print prompt */
+  printf(GREEN "<USER> " RESET);
+  fflush(stdout);
 
   while (ON) {
     int counter = 0; // will receive the number of descriptors that became ready
-
-    /* Print prompt */
-    printf(GREEN "<USER> " RESET);
-    fflush(stdout);
 
     /* Update the file descriptor's working set */
     update_working_set(host, &working_set);

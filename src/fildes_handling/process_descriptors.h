@@ -6,11 +6,11 @@
 #include "user_interface/user_commands.h"
 
 user_command get_user_command(char *token);
-void process_stdin_input(host *host, char *buffer);
+void process_keyboard_input(host *host, char *buffer);
 
-void process_new_fd(host *host, int new_fd, char *buffer);
+void process_new_connection(host *host, int new_fd, char *buffer);
 
 protocol_command get_protocol_command(char *token);
-void process_neighbour_node_fd(host *host, node *node, char *buffer);
+void process_neighbour_nodes(host *host, node *node, char *buffer);
 
 #endif // !PROCESS_DESCRIPTORS_H

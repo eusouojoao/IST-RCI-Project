@@ -28,8 +28,10 @@ void delete_node(host *host, int withdraw_fd) {
         return;
       }
 
-      free_node(current_node);
       send_withdraw_messages(host, withdraw_fd, withdraw_msg);
+      if (withdraw_fd != host->ext->fd) {
+        free_node(current_node);
+      }
       break;
     }
     previous_pointer = current_node;
@@ -37,9 +39,17 @@ void delete_node(host *host, int withdraw_fd) {
   }
 
   update_external_node(host, withdraw_fd);
+  if (withdraw_fd == host->ext->fd) {
+    free_node(current_node);
+  }
 }
 
 void update_external_node(host *host, int withdraw_fd) {
+
+  printf("withdraw_fd = %d\t host->ext->fd = %d\n", withdraw_fd, host->ext->fd);
+  printf("host->ext == NULL := %d\t host->ext->fd != withdraw_fd := %d\n",
+         host->ext == NULL, host->ext->fd != withdraw_fd);
+
   if (host->ext == NULL || host->ext->fd != withdraw_fd) {
     printf("update_external_node() error - teste\n"); // DEBUG - remover
     return;
@@ -95,6 +105,13 @@ void notify_internal_nodes_of_external_change(host *host) {
     }
 
     if (write(temp->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
+      system_error("In withdraw_module() ->" RED " write() failed");
+    }
+  }
+
+  /* The promoted internal node (new external node), must also be notified */
+  if (host->bck == NULL) {
+    if (write(host->ext->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
       system_error("In withdraw_module() ->" RED " write() failed");
     }
   }

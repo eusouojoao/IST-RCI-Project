@@ -21,12 +21,15 @@ void update_backup(host *host, char *buffer) {
   }
 
   free_node(host->bck);
-  host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
+  if (strcmp(host->ID, node_ID) != 0) {
+    host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
+  } else {
+    host->bck = NULL;
+  }
   return;
 }
 
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
-  int deleted_entries = 0;
   char *node_to_withdraw = calloc(SIZE, sizeof(char));
   if (node_to_withdraw == NULL) {
     /*error*/ exit(1);
@@ -38,30 +41,26 @@ char *remove_node_from_forwarding_table(host *host, int eraseN) {
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] == eraseN) {
       host->tab_expedicao[i] = -1;
-      deleted_entries++;
     }
   }
-
-  /*! TODO: Perguntar se faz sentido n~ao enviar mensagem de WITHDRAW no caso de n~ao
-   * conhecer o nó (os seguintes também n~ao devem conhecer)*/
-  // if (deleted_entries == 0) {
-  //   free(node_to_withdraw);
-  //   return NULL;
-  // }
 
   return node_to_withdraw;
 }
 
 void send_withdraw_messages(host *host, int sender_fd, char *withdraw_msg) {
   node *current_node = host->node_list;
+  size_t len = strlen(withdraw_msg) + 1;
   while (current_node != NULL) {
     if (current_node->fd == sender_fd) {
       continue;
     }
-    if (write(current_node->fd, withdraw_msg, strlen(withdraw_msg) + 1) == -1) {
+
+    if (write(current_node->fd, withdraw_msg, len) == -1) {
       system_error("In withdraw_module() ->" RED " write() failed");
     }
+
     current_node = current_node->next;
   }
+
   free(withdraw_msg);
 }

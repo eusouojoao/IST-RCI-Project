@@ -3,6 +3,7 @@
 #include "process_descriptors.h"
 #include "socket_protocols_interface/delete_node_module.h"
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,6 +70,7 @@ int get_maxfd(host *host) {
  */
 int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout) {
+
   *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL, (fd_set *)NULL,
                     (struct timeval *)timeout);
   if (*counter <= 0) {
@@ -94,74 +96,125 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * @return 0 on success, -1 on failure
  */
 int fildes_control(host *host, fd_set *working_set, int *counter) {
-  /* Working buffer */
-  char buffer[SIZE];
-  memset(buffer, 0, SIZE);
-
-  /* Declarations of aux. variables used in the loop */
-  node *temp = host->node_list;
-  ssize_t bytes_read = 0;
-  int new_fd = -1;
-
   while (*counter > 0) {
-    if (FD_ISSET(STDIN_FILENO, working_set)) { // KEYBOARD
+    // Handle keyboard input
+    if (FD_ISSET(STDIN_FILENO, working_set)) {
       FD_CLR(STDIN_FILENO, working_set);
-
-      if (read(STDIN_FILENO, buffer, SIZE) <= 0) {
-        system_error("In fildes_control() -> read() failed");
+      if (handle_keyboard_input(host) == -1) {
         return -1;
       }
-      /* Process standard input - keyboard */
-      process_stdin_input(host, buffer);
+      continue;
     }
 
-    else if (FD_ISSET(host->listen_fd, working_set)) { // SOCKET DE LISTEN
+    // Handle new connections
+    if (FD_ISSET(host->listen_fd, working_set)) {
       FD_CLR(host->listen_fd, working_set);
-      struct sockaddr in_addr;
-      socklen_t in_addrlen = sizeof(in_addr);
-
-      if ((new_fd = accept(host->listen_fd, &in_addr, &in_addrlen)) == -1) {
-        system_error("In fildes_control() -> accept() failed");
+      if (handle_new_connection(host) == -1) {
         return -1;
       }
-      if ((bytes_read = read(new_fd, buffer, SIZE)) == 0) {
-        close(new_fd);
-        continue;
-      } else if (bytes_read < 0) {
-        system_error("In fildes_control() -> read() failed");
-        /*error*/ exit(EXIT_FAILURE);
-      }
-      /* Process the new accepted file descriptor */
-      process_new_fd(host, new_fd, buffer);
+      continue;
     }
 
-    else { // SOCKETS DOS NÓS VIZINHOS
-      for (; temp != NULL; temp = temp->next) {
-        if (FD_ISSET(temp->fd, working_set)) {
-          FD_CLR(temp->fd, working_set);
-
-          bytes_read = read(temp->fd, buffer, SIZE);
-          if (bytes_read == 0) {
-            /* Node leaved the network */
-            delete_node(host, temp->fd);
-            continue;
-          } else if (bytes_read < 0) {
-            system_error("In fildes_control() -> read() failed");
-            return -1;
-          }
-
-          char *token = strtok(buffer, "\n");
-          while (token != NULL) {
-            /* Process extern and intern node communication */
-            process_neighbour_node_fd(host, temp, token);
-            token = strtok(NULL, "\n");
-          }
-        }
-      }
+    // Handle communication with neighbour nodes
+    if (handle_neighbour_nodes(host, working_set) == -1) {
+      return -1;
     }
-    /* Clean-up the working buffer */
-    memset(buffer, 0, SIZE);
+
     (*counter)--;
+  }
+
+  return 0;
+}
+
+int handle_keyboard_input(host *host) {
+  char *buffer = calloc(SIZE, sizeof(char));
+  if (buffer == NULL) {
+    system_error("In process_keyboard_input() -> calloc() failed");
+    return -1;
+  }
+
+  ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE);
+  if (bytes_read <= 0) {
+    system_error("In process_keyboard_input() -> read() failed");
+    free(buffer);
+    return -1;
+  }
+
+  /* Process standard input - keyboard */
+  process_keyboard_input(host, buffer);
+  free(buffer);
+  return 0;
+}
+
+int handle_new_connection(host *host) {
+  struct sockaddr in_addr;
+  socklen_t in_addrlen = sizeof(in_addr);
+
+  int new_fd = accept(host->listen_fd, &in_addr, &in_addrlen);
+  if (new_fd == -1) {
+    system_error("In process_new_connection() -> accept() failed");
+    return -1;
+  }
+
+  char *buffer = calloc(SIZE, sizeof(char));
+  if (buffer == NULL) {
+    system_error("In process_new_connection() -> calloc() failed");
+    close(new_fd);
+    return -1;
+  }
+
+  ssize_t bytes_read = read(new_fd, buffer, SIZE);
+  if (bytes_read == 0) {
+    close(new_fd);
+    free(buffer);
+    return 0;
+  } else if (bytes_read < 0) {
+    system_error("In process_new_connection() -> read() failed");
+    close(new_fd);
+    free(buffer);
+    return -1;
+  }
+
+  /* Process the new accepted file descriptor */
+  process_new_connection(host, new_fd, buffer);
+  free(buffer);
+  return 0;
+}
+
+int handle_neighbour_nodes(host *host, fd_set *working_set) {
+  node *temp = host->node_list;
+  while (temp != NULL) {
+    if (FD_ISSET(temp->fd, working_set)) {
+      FD_CLR(temp->fd, working_set);
+
+      char *buffer = calloc(SIZE << 4, sizeof(char));
+      if (buffer == NULL) {
+        system_error("In process_neighbour_nodes() -> calloc() failed");
+        return -1;
+      }
+
+      ssize_t bytes_read = read(temp->fd, buffer, SIZE);
+      if (bytes_read == 0) {
+        /* Node left the network */
+        delete_node(host, temp->fd);
+        free(buffer);
+        break;
+      } else if (bytes_read < 0) {
+        system_error("In process_neighbour_nodes() -> read() failed");
+        free(buffer);
+        return -1;
+      }
+
+      char *token = strtok(buffer, "\n");
+      while (token != NULL) {
+        /* Process external and */
+        process_neighbour_nodes(host, temp, token);
+        token = strtok(NULL, "\n");
+      }
+
+      free(buffer);
+      break;
+    }
   }
 
   return 0;
