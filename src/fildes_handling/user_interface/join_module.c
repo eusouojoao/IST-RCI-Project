@@ -16,6 +16,29 @@
 #define SIZE 64
 
 /**
+ * @brief Check if an ID is unique in a node list and generate a new one if
+ * necessary.
+ *
+ * @param node_list: null-terminated string containing the list of nodes to check.
+ * @param ID: pointer to a string containing the ID to check and/or modify.
+ */
+void check_uniqueness_of_ID(char *node_list, char (*ID)[SIZE]) {
+  int new_id = -1;
+  char pattern[SIZE] = {'\0'};
+
+  // Build the pattern
+  snprintf(pattern, SIZE, "\n%s", (*ID));
+
+  // Loop until pattern is unique or maximum collisions are reached
+  while (strstr(node_list, pattern) != NULL) {
+    // Generate a new ID
+    snprintf((*ID), SIZE, "%02d", ++new_id);
+    // Update the pattern with the new ID
+    snprintf(pattern, SIZE, "\n%s", (*ID));
+  }
+}
+
+/**
  * @brief Fetches a random external node from a node list string.
  * @note Assumes the first token in the list the header: NODESLIST XXX.
  *
@@ -165,6 +188,8 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
+  // check_uniqueness_of_ID(received_nodeslist, &ID);
+
   memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
   received_reg_msg = send_message_UDP(host->uip, msg_to_send);
@@ -180,8 +205,8 @@ int join_network(char *buffer, host *host) {
     memset(msg_to_send, 0, sizeof(msg_to_send));
     if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
-      djoin_network(msg_to_send, host,
-                    JOIN); // connects to the ext node in the network
+      djoin_network(msg_to_send, host, JOIN); // connects to the ext node
+                                              // in the network
     } else {
       assign_ID_and_net(host, ID, net);
     }

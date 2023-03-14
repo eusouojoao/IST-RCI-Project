@@ -41,15 +41,16 @@ int main(int argc, char *argv[]) {
   /* User interface engage */
   CLEAR_STDIN();
   printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
-  /* Print prompt */
-  printf(GREEN "<USER> " RESET);
-  fflush(stdout);
 
   while (ON) {
     int counter = 0; // will receive the number of descriptors that became ready
 
     /* Update the file descriptor's working set */
     update_working_set(host, &working_set);
+
+    /* Print prompt */
+    printf(GREEN "<USER> " RESET);
+    fflush(stdout);
 
     /* Wait for input */
     if (wait_for_ready_fildes(host, &working_set, &counter, &timeout) == -1) {

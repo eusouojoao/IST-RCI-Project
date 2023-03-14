@@ -96,7 +96,7 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * @return 0 on success, -1 on failure
  */
 int fildes_control(host *host, fd_set *working_set, int *counter) {
-  while (*counter > 0) {
+  while ((*counter)-- > 0) {
     // Handle keyboard input
     if (FD_ISSET(STDIN_FILENO, working_set)) {
       FD_CLR(STDIN_FILENO, working_set);
@@ -119,8 +119,6 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
     if (handle_neighbour_nodes(host, working_set) == -1) {
       return -1;
     }
-
-    (*counter)--;
   }
 
   return 0;
@@ -215,6 +213,8 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
       free(buffer);
       break;
     }
+
+    temp = temp->next;
   }
 
   return 0;

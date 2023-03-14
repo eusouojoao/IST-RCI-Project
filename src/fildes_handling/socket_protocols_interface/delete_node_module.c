@@ -30,6 +30,7 @@ void delete_node(host *host, int withdraw_fd) {
 
       send_withdraw_messages(host, withdraw_fd, withdraw_msg);
       if (withdraw_fd != host->ext->fd) {
+        printf("not here\n");
         free_node(current_node);
       }
       break;
@@ -39,22 +40,15 @@ void delete_node(host *host, int withdraw_fd) {
   }
 
   update_external_node(host, withdraw_fd);
-  if (withdraw_fd == host->ext->fd) {
-    free_node(current_node);
-  }
 }
 
 void update_external_node(host *host, int withdraw_fd) {
-
-  printf("withdraw_fd = %d\t host->ext->fd = %d\n", withdraw_fd, host->ext->fd);
-  printf("host->ext == NULL := %d\t host->ext->fd != withdraw_fd := %d\n",
-         host->ext == NULL, host->ext->fd != withdraw_fd);
-
   if (host->ext == NULL || host->ext->fd != withdraw_fd) {
     printf("update_external_node() error - teste\n"); // DEBUG - remover
     return;
   }
 
+  free_node(host->ext);
   host->ext = NULL;
 
   if (host->bck == NULL) {

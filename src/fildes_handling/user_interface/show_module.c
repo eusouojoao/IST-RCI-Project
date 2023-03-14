@@ -58,7 +58,7 @@ void show_names(host *host) {
   printf("Nomes do host com: ID %s; Rede %s\n", host->ID, host->net);
   printf("Lista de Nomes:\n");
   while (names_ptr != NULL) {
-    printf(" %s\n", names_ptr->name);
+    printf("%s\n", names_ptr->name);
     names_ptr = names_ptr->next;
   }
   printf("------------------------\n");
