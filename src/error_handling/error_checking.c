@@ -103,7 +103,7 @@ int check_name(char *name) {
     return -1;
   }
 
-  for (size_t i = 0; i <= strlen(name); i++) {
+  for (size_t i = 0; i < strlen(name); i++) {
     if (!isalnum(name[i])) {
       return -1;
     }

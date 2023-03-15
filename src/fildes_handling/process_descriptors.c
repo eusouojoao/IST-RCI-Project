@@ -1,4 +1,5 @@
 #include "process_descriptors.h"
+#include "../common/prompts.h"
 #include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
@@ -50,13 +51,13 @@ user_command get_user_command(char *token) {
   return UNDEF;
 }
 
-void process_keyboard_input(host *host, char *buffer) {
+int process_keyboard_input(host *host, char *buffer) {
   static int flag = -1;
   int cmd = UNDEF;
   char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
-    return;
+    return -1;
   }
 
   cmd = get_user_command(token);
@@ -72,10 +73,10 @@ void process_keyboard_input(host *host, char *buffer) {
     }
     break;
   case CREATE:;
-    insert_name(buffer, host);
+    insert_name(host, buffer);
     break;
   case DELETE:
-    delete_name(buffer, host);
+    delete_name(host, buffer);
     break;
   case GET:
     /*! TODO: */
@@ -90,19 +91,18 @@ void process_keyboard_input(host *host, char *buffer) {
     leave_network(host, flag);
     break;
   case EXIT:
-    exit_program(host, flag);
-    break;
+    return exit_program(host, flag);
   case CLEAR:
-    CLEAR_STDIN();
-    printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
+    CLEAR_STREAM(STDIN_FILENO);
+    user_interface_toggle(ON);
     break;
   case UNDEF:
   default:
-    /*error*/ // exit(EXIT_FAILURE);
+    return -1; // Error, shouldn't be here
     break;
   }
 
-  return;
+  return 1;
 }
 
 /*
@@ -173,11 +173,10 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
  */
 protocol_command get_protocol_command(char *token) {
   //  Static array of struct pairs that maps token strings to protocol commands
-  static const token_protocol_pair protocol_lookup[] = {{"EXTERN", EXTERN},
-                                                        {"WITHDRAW", WITHDRAW},
-                                                        {"QUERY", QUERY},
-                                                        {"CONTENT", CONTENT},
-                                                        {"NOCONTENT", NOCONTENT}};
+  static const token_protocol_pair protocol_lookup[] = {
+      {"EXTERN", EXTERN},   {"WITHDRAW", WITHDRAW},   {"QUERY", QUERY},
+      {"CONTENT", CONTENT}, {"NOCONTENT", NOCONTENT},
+  };
 
   // Calculate the number of elements in the protocol_lookup array
   size_t number_of_elements = sizeof(protocol_lookup) / sizeof(token_protocol_pair);

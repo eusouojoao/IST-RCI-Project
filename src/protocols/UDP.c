@@ -1,4 +1,5 @@
 #include "UDP.h"
+#include "../common/retry.h"
 #include "../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
@@ -33,7 +34,10 @@ char *send_message_UDP(user_args *uip, char *msg) {
   addr.sin_family = AF_INET;
   addr.sin_port = htons((in_port_t)uip->regUDP);
 
-  n = sendto(fd, msg, strlen(msg) + 1, 0, (struct sockaddr *)&addr, sizeof(addr));
+  RETRY( // Will retry if it fails...
+      sendto(fd, msg, strlen(msg) + 1, 0, (struct sockaddr *)&addr, sizeof(addr)),
+      MAX_ATTEMPTS, n);
+
   if (n == -1) {
     system_error("In send_user_message_UDP() -> sendto() failed");
     close(fd);
@@ -50,7 +54,10 @@ char *send_message_UDP(user_args *uip, char *msg) {
   }
 
   socklen_t addrlen = sizeof(addr);
-  n = recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &addrlen);
+  RETRY( // Will retry if it fails...
+      recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &addrlen),
+      MAX_ATTEMPTS, n);
+
   if (n == -1) {
     system_error("In send_user_message_UDP() -> recvfrom() failed");
     close(fd);

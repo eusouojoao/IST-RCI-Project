@@ -5,7 +5,7 @@
 #include "user_commands.h"
 
 names *new_names(char *name, names *next);
-int insert_name(char *name, host *host);
-int delete_name(char *delname, host *host);
+int insert_name(host *host, char *name);
+int delete_name(host *host, char *delname);
 
 #endif // !CONTENT_MODULES_H

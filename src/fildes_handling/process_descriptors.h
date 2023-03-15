@@ -6,7 +6,7 @@
 #include "user_interface/user_commands.h"
 
 user_command get_user_command(char *token);
-void process_keyboard_input(host *host, char *buffer);
+int process_keyboard_input(host *host, char *buffer);
 
 void process_new_connection(host *host, int new_fd, char *buffer);
 

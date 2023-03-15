@@ -6,6 +6,6 @@
 
 void clear_host(host *host);
 void leave_network(host *host, int flag);
-void exit_program(host *host, int flag);
+int exit_program(host *host, int flag);
 
 #endif // !LEAVE_MODULE_H

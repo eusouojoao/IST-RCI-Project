@@ -3,7 +3,9 @@
 #include "process_descriptors.h"
 #include "socket_protocols_interface/delete_node_module.h"
 
+#include <errno.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,8 +73,11 @@ int get_maxfd(host *host) {
 int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout) {
 
-  *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL, (fd_set *)NULL,
-                    (struct timeval *)timeout);
+  do {
+    *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL,
+                      (fd_set *)NULL, (struct timeval *)timeout);
+  } while (*counter == -1 && errno == EINTR); // Ignore SIGQUIT
+
   if (*counter <= 0) {
     system_error("In wait_for_ready_fildes() -> select() failed");
     return -1;
@@ -100,8 +105,8 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
     // Handle keyboard input
     if (FD_ISSET(STDIN_FILENO, working_set)) {
       FD_CLR(STDIN_FILENO, working_set);
-      if (handle_keyboard_input(host) == -1) {
-        return -1;
+      if (handle_keyboard_input(host) == 0) {
+        return 0;
       }
       continue;
     }
@@ -121,7 +126,7 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
     }
   }
 
-  return 0;
+  return 1; // OK
 }
 
 int handle_keyboard_input(host *host) {
@@ -139,9 +144,9 @@ int handle_keyboard_input(host *host) {
   }
 
   /* Process standard input - keyboard */
-  process_keyboard_input(host, buffer);
+  int r = process_keyboard_input(host, buffer);
   free(buffer);
-  return 0;
+  return r;
 }
 
 int handle_new_connection(host *host) {
@@ -165,7 +170,7 @@ int handle_new_connection(host *host) {
   if (bytes_read == 0) {
     close(new_fd);
     free(buffer);
-    return 0;
+    return 1;
   } else if (bytes_read < 0) {
     system_error("In process_new_connection() -> read() failed");
     close(new_fd);
@@ -176,7 +181,7 @@ int handle_new_connection(host *host) {
   /* Process the new accepted file descriptor */
   process_new_connection(host, new_fd, buffer);
   free(buffer);
-  return 0;
+  return 1;
 }
 
 int handle_neighbour_nodes(host *host, fd_set *working_set) {
@@ -214,5 +219,5 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
     }
   }
 
-  return 0;
+  return 1;
 }

@@ -1,65 +1,80 @@
 #include "common/arguments_parser.h"
+#include "common/handle_terminal.h"
+#include "common/prompts.h"
 #include "common/utils.h"
-#include "error_handling/error_messages.h"
 #include "fildes_handling/descriptor_control.h"
 #include "protocols/TCP.h"
 
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
-#define ON 1
+#include <stdio.h>
+
+void signal_setup(void) {
+  // Set up the custom signal handler and enable SA_RESTART
+  struct sigaction action;
+  action.sa_handler = handle_sigquit;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = SA_RESTART;
+
+  // Register the signal handler
+  if (sigaction(SIGQUIT, &action, NULL) == -1) {
+    exit(EXIT_FAILURE);
+  }
+
+  // Ignore SIGPIPE, SIGINT and SIGTSTP
+  signal(SIGPIPE, SIG_IGN);
+  signal(SIGINT, SIG_IGN);
+  signal(SIGTSTP, SIG_IGN);
+}
 
 int main(int argc, char *argv[]) {
+  int r = 0;
   srand((unsigned int)time(NULL)); // seed the rand function
   /* User arguments */
   user_args *uip = NULL;
   uip = arguments_parser(argc, argv);
 
-  /* Inicializar a estrutura do host e temp */
   host *host = init_host(uip);
-
-  /* File descriptors e counter do select() */
-  fd_set working_set; // set with the read file descriptors
   host->listen_fd = create_listen_socket(uip);
 
-  /* Inicializar a estrutura timeval para o timeout */
+  fd_set working_set; // read file descriptors set
   struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // 600s = 10min
 
-  /* Ignore SIGPIPE */
-  struct sigaction act;
-  memset(&act, 0, sizeof(act));
-  act.sa_handler = SIG_IGN;
-  if (sigaction(SIGPIPE, &act, NULL) == -1) {
-    /*error*/ exit(EXIT_FAILURE);
-  }
-  (void)act;
+  signal_setup();
+
+  // Map SIGQUIT to CTRL+L to clear the terminal
+  struct termios original_termios;
+  modify_termios(&original_termios);
 
   /* User interface engage */
-  CLEAR_STDIN();
-  printf(BLUE "%*s User interface [" GREEN "ON" BLUE "]\n" RESET, 6, "");
+  print_header();
+  user_interface_toggle(ON);
 
   while (ON) {
     int counter = 0; // will receive the number of descriptors that became ready
 
+    /* Print prompt */
+    prompt();
+
     /* Update the file descriptor's working set */
     update_working_set(host, &working_set);
 
-    /* Print prompt */
-    printf(GREEN "<USER> " RESET);
-    fflush(stdout);
-
     /* Wait for input */
-    if (wait_for_ready_fildes(host, &working_set, &counter, &timeout) == -1) {
-      /*error*/ exit(EXIT_FAILURE);
+    if ((r = wait_for_ready_fildes(host, &working_set, &counter, &timeout)) == -1) {
+      // Exiting... fatal error
+      break;
     }
 
     /* Process input */
-    if (fildes_control(host, &working_set, &counter) == -1) {
-      /*error*/ exit(EXIT_FAILURE);
+    if ((r = fildes_control(host, &working_set, &counter)) == 0) {
+      // Exiting...
+      break;
     }
   }
+
+  restore_termios(&original_termios);
+  return r;
 }

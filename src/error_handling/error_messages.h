@@ -1,8 +1,7 @@
 #ifndef error_handling_H
 #define error_handling_H
 
-#define CLEAR_STDIN() printf("\033[H\033[J")
-#define CLEAR_STDERR() fprintf(stderr, "\033[H\033[J")
+#define CLEAR_STREAM(S) write((S), "\033[H\033[J", 7)
 
 #define RED "\x1B[31m"
 #define GREEN "\x1B[32m"

@@ -18,7 +18,7 @@ typedef struct node {
 } node;
 
 typedef struct names {
-  char name[100];
+  char *name;
 
   struct names *next;
 } names;
@@ -30,9 +30,9 @@ typedef struct host {
 
   int listen_fd;
 
-  node *ext;       // pointer to ext node in the node_list
-  node *bck;       // pointer to bck node (that is not in the node_list)
-  node *node_list; // lista dos nós vizinhos, i.e., internos e externos
+  node *bck;       // pointer to bck node (not in the node_list)
+  node *ext;       // pointer to ext node (also available in the node_list)
+  node *node_list; // list of neighbour nodes, i.e., internal and external
 
   names *names_list;
 } host;

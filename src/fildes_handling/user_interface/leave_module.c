@@ -1,4 +1,5 @@
 #include "leave_module.h"
+#include "../../common/prompts.h"
 #include "../../common/utils.h"
 #include "../../error_handling/error_messages.h"
 #include "../../protocols/UDP.h"
@@ -126,7 +127,7 @@ void leave_network(host *host, int flag) {
  * @param flag: an integer value that indicates which join command connected the host
  * to the network
  */
-void exit_program(host *host, int flag) {
+int exit_program(host *host, int flag) {
   // Leave the network before exiting the program
   leave_network(host, flag);
 
@@ -140,6 +141,6 @@ void exit_program(host *host, int flag) {
   free(host->uip);
   free(host);
 
-  printf(BLUE "%*s User interface [" RED "OFF" BLUE "]\n" RESET, 6, "");
-  exit(EXIT_SUCCESS);
+  user_interface_toggle(OFF);
+  return 0;
 }
