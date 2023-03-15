@@ -2,6 +2,7 @@
 #include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,38 +30,42 @@ void update_backup(host *host, char *buffer) {
   return;
 }
 
+void withdraw_wrapper(host *host, node *node, char *buffer) {
+  char ID[32] = {'\0'};
+  // If the command is WITHDRAW, withdraw the node with the specified ID
+  if (sscanf(buffer, "WITHDRAW %s", ID) < 1) {
+    system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
+    return;
+  }
+
+  if (!(strlen(ID) == 2 && check_if_number(ID))) {
+    /* error, protocol with bad format */
+    printf("Error! Bad format!\n");
+    return;
+  }
+
+  char *withdraw_msg = remove_node_from_forwarding_table(host, atoi(ID));
+  if (withdraw_msg == NULL) {
+    return;
+  }
+
+  send_protocol_messages(host, node->fd, withdraw_msg);
+}
+
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
-  char *node_to_withdraw = calloc(SIZE, sizeof(char));
-  if (node_to_withdraw == NULL) {
+  char *withdraw_message = calloc(SIZE, sizeof(char));
+  if (withdraw_message == NULL) {
     /*error*/ exit(1);
   }
 
-  snprintf(node_to_withdraw, strlen(node_to_withdraw) + 1, "WITHDRAW %02d\n",
-           eraseN);
+  snprintf(withdraw_message, SIZE, "WITHDRAW %02d\n", eraseN);
 
+  host->tab_expedicao[eraseN] = -1;
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] == eraseN) {
       host->tab_expedicao[i] = -1;
     }
   }
 
-  return node_to_withdraw;
-}
-
-void send_withdraw_messages(host *host, int sender_fd, char *withdraw_msg) {
-  node *current_node = host->node_list;
-  size_t len = strlen(withdraw_msg) + 1;
-  while (current_node != NULL) {
-    if (current_node->fd == sender_fd) {
-      continue;
-    }
-
-    if (write(current_node->fd, withdraw_msg, len) == -1) {
-      system_error("In withdraw_module() ->" RED " write() failed");
-    }
-
-    current_node = current_node->next;
-  }
-
-  free(withdraw_msg);
+  return withdraw_message;
 }

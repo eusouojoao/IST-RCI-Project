@@ -72,7 +72,8 @@ int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);
   if ((end == src) || (*end != '\0')) {
-    user_input_error("Bad port format", src, "must be an integer within 0 and 65535.");
+    user_input_error("Bad port format", src,
+                     "must be an integer within 0 and 65535.");
     exit(EXIT_FAILURE);
   }
 
@@ -98,7 +99,15 @@ int check_IP_address(char *src) {
  *         -1 nome inválido
  */
 int check_name(char *name) {
-  if (strlen(name) + 1 > 100) // APAGAR - substituir 100 por um buffer
-    return -1;                // invalid name
-  return 0;                   // valid name
+  if (strlen(name) > 100) {
+    return -1;
+  }
+
+  for (size_t i = 0; i <= strlen(name); i++) {
+    if (!isalnum(name[i])) {
+      return -1;
+    }
+  }
+
+  return 0;
 }

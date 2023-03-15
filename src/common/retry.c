@@ -9,14 +9,18 @@ void delay(int seconds) {
   nanosleep(&ts, NULL);
 }
 
-int retry(void (*function)(va_list), int max_attempts, ...) {
+int retry(int (*function)(va_list), int max_attempts, ...) {
+  int retval = -1;
   va_list args;
   va_start(args, max_attempts);
 
   for (int attempts = 0; attempts < max_attempts; attempts++) {
-    function(args);
+    retval = function(args);
+    if (retval != -1) {
+      return 0;
+    }
+
     delay(attempts);
-    attempts++;
   }
 
   va_end(args);

@@ -2,7 +2,10 @@
 #include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
+#include "socket_protocols_interface/protocol_commands.h"
 #include "socket_protocols_interface/utility.h"
+#include "socket_protocols_interface/withdraw_module.h"
+#include "user_interface/content_module.h"
 #include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
 
@@ -13,31 +16,35 @@
 
 #define SIZE 128
 
+typedef struct {
+  char *token;
+  user_command command;
+} token_command_pair;
+
+typedef struct {
+  char *token;
+  protocol_command protocol;
+} token_protocol_pair;
+
 user_command get_user_command(char *token) {
-  if (strcmp(token, "join") == 0) {
-    return JOIN;
-  } else if (strcmp(token, "djoin") == 0) {
-    return DJOIN;
-  } else if (strcmp(token, "create") == 0) {
-    return CREATE;
-  } else if (strcmp(token, "delete") == 0) {
-    return DELETE;
-  } else if (strcmp(token, "get") == 0) {
-    return GET;
-  } else if (strcmp(token, "show") == 0) {
-    return SHOW;
-  } else if (strcmp(token, "st") == 0) {
-    return SHOW_TOPOLOGY;
-  } else if (strcmp(token, "sn") == 0) {
-    return SHOW_NAMES;
-  } else if (strcmp(token, "sr") == 0) {
-    return SHOW_ROUTING;
-  } else if (strcmp(token, "leave") == 0) {
-    return LEAVE;
-  } else if (strcmp(token, "exit") == 0) {
-    return EXIT;
-  } else if (strcmp(token, "clear") == 0) {
-    return CLEAR;
+  // Static array of struct pairs that maps token strings to user commands
+  static const token_command_pair command_lookup[] = {
+      {"join", JOIN},        {"djoin", DJOIN},   {"create", CREATE},
+      {"delete", DELETE},    {"get", GET},       {"show", SHOW},
+      {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES}, {"sr", SHOW_ROUTING},
+      {"leave", LEAVE},      {"exit", EXIT},     {"clear", CLEAR},
+  };
+
+  // Calculate the number of elements in the command_lookup array
+  size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
+
+  // Iterate through the command_lookup array, looking for a pair whose token field
+  // matches the input token string
+  for (size_t i = 0; i < number_of_elements; i++) {
+    if (strcmp(token, command_lookup[i].token) == 0) {
+      // If a match is found, return the corresponding command field
+      return command_lookup[i].command;
+    }
   }
 
   return UNDEF;
@@ -45,29 +52,30 @@ user_command get_user_command(char *token) {
 
 void process_keyboard_input(host *host, char *buffer) {
   static int flag = -1;
-  int opt = UNDEF;
+  int cmd = UNDEF;
   char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
     return;
   }
 
-  switch (opt = get_user_command(token)) {
+  cmd = get_user_command(token);
+  switch (cmd) {
   case JOIN:
     if (join_network(buffer, host)) {
-      flag = opt;
+      flag = cmd;
     }
     break;
   case DJOIN:
-    if (djoin_network(buffer, host, opt)) {
-      flag = opt;
+    if (djoin_network(buffer, host, cmd)) {
+      flag = cmd;
     }
     break;
-  case CREATE:
-    /*! TODO: */
+  case CREATE:;
+    insert_name(buffer, host);
     break;
   case DELETE:
-    /*! TODO: */
+    delete_name(buffer, host);
     break;
   case GET:
     /*! TODO: */
@@ -76,7 +84,7 @@ void process_keyboard_input(host *host, char *buffer) {
   case SHOW_TOPOLOGY:
   case SHOW_NAMES:
   case SHOW_ROUTING:
-    show_wrapper(host, opt);
+    show_wrapper(host, cmd);
     break;
   case LEAVE:
     leave_network(host, flag);
@@ -160,20 +168,30 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
  * @brief Returns the corresponding protocol command for a given token
  *
  * @param token: the token to be checked
+ *
  * @return the protocol command corresponding to the token
  */
 protocol_command get_protocol_command(char *token) {
-  if (strcmp(token, "EXTERN") == 0)
-    return EXTERN;
-  if (strcmp(token, "WITHDRAW") == 0)
-    return WITHDRAW;
-  if (strcmp(token, "QUERY") == 0)
-    return QUERY;
-  if (strcmp(token, "CONTENT") == 0)
-    return CONTENT;
-  if (strcmp(token, "NOCONTENT") == 0)
-    return NOCONTENT;
+  //  Static array of struct pairs that maps token strings to protocol commands
+  static const token_protocol_pair protocol_lookup[] = {{"EXTERN", EXTERN},
+                                                        {"WITHDRAW", WITHDRAW},
+                                                        {"QUERY", QUERY},
+                                                        {"CONTENT", CONTENT},
+                                                        {"NOCONTENT", NOCONTENT}};
 
+  // Calculate the number of elements in the protocol_lookup array
+  size_t number_of_elements = sizeof(protocol_lookup) / sizeof(token_protocol_pair);
+
+  // Iterate through the protocol_lookup array, looking for a pair whose token field
+  // matches the input token string
+  for (size_t i = 0; i < number_of_elements; i++) {
+    if (strcmp(token, protocol_lookup[i].token) == 0) {
+      // If a match is found, return the corresponding command field
+      return protocol_lookup[i].protocol;
+    }
+  }
+
+  // If no match is found, return BADFORMAT
   return BADFORMAT;
 }
 
@@ -186,7 +204,8 @@ protocol_command get_protocol_command(char *token) {
  * @param buffer: the message received
  */
 void process_neighbour_nodes(host *host, node *node, char *buffer) {
-  char token[32] = {'\0'}, ID[32] = {'\0'};
+  int cmd = BADFORMAT;
+  char token[32] = {'\0'};
   printf("buffer: %s\n", buffer); // DEBUG
 
   // Get the first token from the message
@@ -196,29 +215,14 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
   }
 
   // Check the protocol command and perform the corresponding action
-  switch (get_protocol_command(token)) {
+  cmd = get_protocol_command(token);
+  switch (cmd) {
   case EXTERN:
     // If the command is EXTERN, update the backup
     update_backup(host, buffer);
     break;
   case WITHDRAW:
-    // If the command is WITHDRAW, withdraw the node with the specified ID
-    if (sscanf(buffer, "WITHDRAW %s", ID) < 1) {
-      system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
-      return;
-    }
-
-    if (!(strlen(ID) == 2 && check_if_number(ID))) {
-      /* error, protocol with bad format */
-      printf("Error! Bad format!\n");
-      return;
-    }
-
-    char *withdraw_msg = remove_node_from_forwarding_table(host, atoi(ID));
-    if (withdraw_msg == NULL) {
-      return;
-    }
-    send_withdraw_messages(host, node->fd, withdraw_msg);
+    withdraw_wrapper(host, node, buffer);
     break;
   case QUERY:
   case CONTENT:

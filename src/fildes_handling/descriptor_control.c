@@ -180,8 +180,7 @@ int handle_new_connection(host *host) {
 }
 
 int handle_neighbour_nodes(host *host, fd_set *working_set) {
-  node *temp = host->node_list;
-  while (temp != NULL) {
+  for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     if (FD_ISSET(temp->fd, working_set)) {
       FD_CLR(temp->fd, working_set);
 
@@ -213,8 +212,6 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
       free(buffer);
       break;
     }
-
-    temp = temp->next;
   }
 
   return 0;

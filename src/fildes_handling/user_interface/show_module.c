@@ -71,12 +71,13 @@ void show_names(host *host) {
  */
 void show_routes(host *host) {
   fprintf(stdout, "Routing table of host %s (net %s):\n", host->ID, host->net);
-  fprintf(stdout, "Destination  |  Next Hop\n");
-  fprintf(stdout, "-------------|-------------\n");
+  fprintf(stdout, "-------------+-------------\n");
+  fprintf(stdout, " Destination |  Neighbour  \n");
+  fprintf(stdout, "-------------+-------------\n");
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] != -1) {
-      fprintf(stdout, "%-13zu|  %-13d\n", i, host->tab_expedicao[i]);
+      fprintf(stdout, "     %02zu      |     %02d\n", i, host->tab_expedicao[i]);
     }
   }
-  fprintf(stdout, "-------------|-------------\n");
+  fprintf(stdout, "-------------+-------------\n");
 }

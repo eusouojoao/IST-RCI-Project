@@ -3,6 +3,7 @@
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../../protocols/TCP.h"
+#include "common.h"
 #include "withdraw_module.h"
 
 #include <stdio.h>
@@ -28,7 +29,7 @@ void delete_node(host *host, int withdraw_fd) {
         return;
       }
 
-      send_withdraw_messages(host, withdraw_fd, withdraw_msg);
+      send_protocol_messages(host, withdraw_fd, withdraw_msg);
       if (withdraw_fd != host->ext->fd) {
         printf("not here\n");
         free_node(current_node);

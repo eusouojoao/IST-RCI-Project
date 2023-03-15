@@ -59,8 +59,8 @@ void assign_ID_and_net(host *host, char *ID, char *net) {
   if (sprintf(host->net, "%3s", net) < NETSIZE) {
     /*error*/ exit(EXIT_FAILURE);
   }
+
   host->tab_expedicao[atoi(ID)] = atoi(ID);
-  return;
 }
 
 /**

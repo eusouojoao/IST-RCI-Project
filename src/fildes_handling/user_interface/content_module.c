@@ -25,61 +25,51 @@ names *new_names(char *name, names *next) {
 }
 
 /**
- * @brief  insere um novo conteudo na lista de conteudos
- * @note   inserção no inicio da names list
- * @param  *name: conteudo a ser inserido
- * @param  *host: struct host com a lista de conteudos
- * @retval 1 Sucesso
- *         0 Falha, já existia um name com esse nome
- *         -1 Falha, name demasiado longo
+ * @brief Insert a name in the names list of the host.
+ * @param name The name to be inserted.
+ * @param host The host where the name should be inserted.
+ * @return Returns 1 on success, -1 if the name is too long, 0 if the name already
+ * exists in the list.
  */
 int insert_name(char *name, host *host) {
-  names *list_pointer = host->names_list;
-
   if (check_name(name) == -1) {
-    return -1; // Falha, name demasiado longo
+    return -1; // Failure, name is too long
   }
 
-  while (list_pointer != NULL) {
-    if (strcmp(list_pointer->name, name) == 0) {
-      return 0; // Falha, já existia um name com esse nome
-    } else {
-      list_pointer = list_pointer->next;
+  // Check if name already exists in the list
+  for (names *current = host->names_list; current != NULL; current = current->next) {
+    if (strcmp(current->name, name) == 0) {
+      return 0; // Failure, name already exists in the list
     }
   }
 
-  names *new_nodeame = new_names(name, host->names_list);
-  host->names_list = new_nodeame;
-  return 1; // Sucesso
+  // Insert new name at the beginning of the list
+  host->names_list = new_names(name, host->names_list);
+  return 1; // Success, name was inserted
 }
 
 /**
- * @brief  apaga um conteudo especifico da lista de conteudos
- * @note
- * @param  *delname: nome a ser apagado
- * @param  *host: struct host com a lista de names
- * @retval 1 Sucesso
- *         0 Falha, não existia name com tal nome
- *         -1 Falha, name a apagar demasiado longo (logo não poderia tar na
- * lista)
+ * @brief Delete a name from the names list of the host.
+ * @param delname The name to be deleted.
+ * @param host The host where the name should be deleted from.
+ * @return Returns 1 on success, -1 if the name is too long, 0 if the name does not
+ * exist in the list.
  */
 int delete_name(char *delname, host *host) {
-  names *list_pointer = host->names_list;
-  names *previous_pointer = NULL;
-  if (check_name(delname) == -1)
-    return -1; // Falha, name demasiado longo
-  while (list_pointer != NULL) {
-    if (strcmp(list_pointer->name, delname) == 0) {
-      if (previous_pointer == NULL)
-        host->names_list = list_pointer->next;
-      else
-        previous_pointer->next = list_pointer->next;
-      free(list_pointer);
-      return 1; // Sucesso, delname apagado
-    } else {
-      previous_pointer = list_pointer;
-      list_pointer = list_pointer->next;
-    }
+  if (check_name(delname) == -1) {
+    return -1; // Name too long
   }
-  return 0; // Falha, não existia name com tal nome
+
+  names **p = &host->names_list;
+  while (*p != NULL) {
+    if (strcmp((*p)->name, delname) == 0) {
+      names *temp = *p;
+      *p = (*p)->next;
+      free(temp);
+      return 1; // Success, name deleted
+    }
+    p = &(*p)->next;
+  }
+
+  return 0; // Failure, name not found
 }
