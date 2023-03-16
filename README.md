@@ -66,40 +66,40 @@
 The program structure is organized into a main directory with a Makefile, and a `src` subdirectory containing the source code files. The `src` directory is further divided into several subdirectories, each focusing on a specific aspect of the program:
 
 1. **common** - Contains utility functions, data structures, and other common components used throughout the program:
-    * arguments_parser.c and arguments_parser.h: Argument parsing functionality.
-    * handle_terminal.c and handle_terminal.h: Terminal handling functions.
-    * prompts.c and prompts.h: Functions related to user prompts.
-    * retry.c and retry.h: Functions for retrying operations.
-    * struct.h: Definitions of common data structures.
-    * utils.c and utils.h: General utility functions.
+    * `arguments_parser.c` and `arguments_parser.h`: Argument parsing functionality.
+    * `handle_terminal.c` and `handle_terminal.h`: Terminal handling functions.
+    * `prompts.c` and `prompts.h`: Functions related to user prompts.
+    * `retry.c` and `retry.h`: Functions for retrying operations.
+    * `struct.h`: Definitions of common data structures.
+    * `utils.c` and `utils.h`: General utility functions.
 
 2. **error_handling** - Contains functions related to error handling and error messages:
-    * error_checking.c and error_checking.h: Functions for checking and validating errors.
-    * error_messages.c and error_messages.h: Functions for displaying error messages.
+    * `error_checking.c` and `error_checking.h`: Functions for checking and validating errors.
+    * `error_messages.c` and `error_messages.h`: Functions for displaying error messages.
 
 3. **fildes_handling** - Contains functions related to file descriptor handling and socket protocols:
-    * descriptor_control.c and descriptor_control.h: Functions for controlling file descriptors.
-    * process_descriptors.c and process_descriptors.h: Functions for processing file descriptors.
+    * `descriptor_control.c` and `descriptor_control.h`: Functions for controlling file descriptors.
+    * `process_descriptors.c` and `process_descriptors.h`: Functions for processing file descriptors.
 
 4. **fildes_handling/socket_protocols_interface** - Contains functions and modules related to socket protocols:
-    * common.c and common.h: Common functions for socket protocols.
-    * delete_node_module.c and delete_node_module.h: Module for deleting a node.
-    * protocol_commands.h: Definitions of protocol commands.
-    * query_module.c and query_module.h: Module for querying information.
-    * utility.h: Utility functions for socket protocols.
-    * withdraw_module.c and withdraw_module.h: Module for withdrawing a node.
+    * `common.c` and `common.h`: Common functions for socket protocols.
+    * `delete_node_module.c` and `delete_node_module.h`: Module for deleting a node.
+    * `protocol_commands.h`: Definitions of protocol commands.
+    * `query_module.c` and `query_module.h`: Module for querying information.
+    * `utility.h`: Utility functions for socket protocols.
+    * `withdraw_module.c` and `withdraw_module.h`: Module for withdrawing a node.
 
 5. **fildes_handling/user_interface** - Contains functions and modules for user interface components:
-    * content_module.c and content_module.h: Module for managing content.
-    * join_module.c and join_module.h: Module for joining a network.
-    * leave_module.c and leave_module.h: Module for leaving a network.
-    * show_module.c and show_module.h: Module for displaying information.
-    * user_commands.h: Definitions of user commands.
-    * utility.h: Utility functions for user interface components.
+    * `content_module.c` and `content_module.h`: Module for managing content.
+    * `join_module.c` and `join_module.h`: Module for joining a network.
+    * `leave_module.c` and `leave_module.h`: Module for leaving a network.
+    * `show_module.c` and `show_module.h`: Module for displaying information.
+    * `user_commands.h`: Definitions of user commands.
+    * `utility.h`: Utility functions for user interface components.
 
 6. **protocols** - Contains functions related to different communication protocols, like TCP and UDP:
-    * TCP.c and TCP.h: Functions for handling TCP communication.
-    * UDP.c and UDP.h: Functions for handling UDP communication.
+    * `TCP.c` and `TCP.h`: Functions for handling TCP communication.
+    * `UDP.c` and `UDP.h`: Functions for handling UDP communication.
 
 7. **main.c**: The main file of the program that contains the entry point.
 
