@@ -36,7 +36,7 @@ names *new_names(char *name, names *next) {
  * @brief Insert a name in the names list of the host.
  * @param name The name to be inserted.
  * @param host The host where the name should be inserted.
- * @return Returns 1 on success, -1 if the name is too long, 0 if the name already
+ * @return 1 on success, -1 if the name is too long, 0 if the name already
  * exists in the list.
  */
 int insert_name(host *host, char *buffer) {
@@ -71,6 +71,7 @@ int insert_name(host *host, char *buffer) {
 
 /**
  * @brief Delete a name from the names list of the host.
+ *
  * @param name_to_delete The name to be deleted.
  * @param host The host where the name should be deleted from.
  * @return Returns 1 on success, -1 if the name is too long, 0 if the name does not

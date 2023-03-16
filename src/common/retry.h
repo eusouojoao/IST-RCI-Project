@@ -16,9 +16,11 @@ void delay(int seconds);
  * of attempts is reached. The result of the function is stored in the provided
  * result_var variable.
  *
- * @param F The function to be retried. This can be a function call with arguments.
- * @param max_attempts The maximum number of attempts to retry the function.
- * @param result_var The variable that will store the result of the function call.
+ * @param[in] F: The function to be retried. This can be a function call with
+ * arguments.
+ * @param[in] max_attempts: The maximum number of attempts to retry the function.
+ * @param[in,out] result_var: The variable that will store the result of the function
+ * call.
  */
 #define RETRY(F, max_attempts, result_var)                                          \
   do {                                                                              \

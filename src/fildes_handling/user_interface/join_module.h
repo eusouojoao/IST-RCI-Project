@@ -3,6 +3,7 @@
 
 #include "../../common/struct.h"
 
+void assign_host_ID_and_network(host *host, const char *ID, const char *net);
 int join_network(char *buffer, host *host);
 char *fetch_extern_from_nodelist(char *nodelist);
 int djoin_network(char *buffer, host *host, int flag);

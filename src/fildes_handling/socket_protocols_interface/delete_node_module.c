@@ -31,7 +31,6 @@ void delete_node(host *host, int withdraw_fd) {
 
       send_protocol_messages(host, withdraw_fd, withdraw_msg);
       if (withdraw_fd != host->ext->fd) {
-        printf("not here\n");
         free_node(current_node);
       }
       break;
@@ -45,7 +44,6 @@ void delete_node(host *host, int withdraw_fd) {
 
 void update_external_node(host *host, int withdraw_fd) {
   if (host->ext == NULL || host->ext->fd != withdraw_fd) {
-    printf("update_external_node() error - teste\n"); // DEBUG - remover
     return;
   }
 
@@ -60,6 +58,23 @@ void update_external_node(host *host, int withdraw_fd) {
   }
 
   notify_internal_nodes_of_external_change(host);
+}
+
+void promote_intr_to_ext(host *host) {
+  if (host->ext == NULL) {
+    host->ext = host->node_list;
+  }
+}
+
+void promote_bck_to_ext(host *host) {
+  if (host->bck != NULL) {
+    host->ext = host->bck;
+    host->ext->next = host->node_list;
+    host->node_list = host->ext;
+    insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
+  }
+
+  host->bck = NULL;
 }
 
 void get_a_new_backup(host *host) {
@@ -82,6 +97,7 @@ void get_a_new_backup(host *host) {
 
   if (strcmp(bckID, host->ID) != 0) {
     host->bck = create_new_node(bckID, -1, bckIP, atoi(bckTCP));
+    insert_in_forwarding_table(host, atoi(host->bck->ID), atoi(host->ext->ID));
   }
 }
 

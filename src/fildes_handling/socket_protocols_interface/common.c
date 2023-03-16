@@ -13,6 +13,7 @@ void send_protocol_messages(host *host, int sender_fd, char *protocol_msg) {
   // Iterate over all neighbour nodes
   while (current_node != NULL) {
     if (current_node->fd == sender_fd) { // Skip the sender node
+      current_node = current_node->next;
       continue;
     }
 

@@ -85,7 +85,7 @@ int process_keyboard_input(host *host, char *buffer) {
   case SHOW_TOPOLOGY:
   case SHOW_NAMES:
   case SHOW_ROUTING:
-    show_wrapper(host, cmd);
+    show_wrapper(host, cmd, buffer);
     break;
   case LEAVE:
     leave_network(host, flag);
@@ -161,6 +161,7 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
     insert_node(new_ID, new_fd, new_IP, atoi(new_TCP), host);
   }
 
+  insert_in_forwarding_table(host, atoi(new_ID), atoi(new_ID));
   return; // OK
 }
 

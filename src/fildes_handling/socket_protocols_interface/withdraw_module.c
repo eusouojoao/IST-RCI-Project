@@ -24,9 +24,11 @@ void update_backup(host *host, char *buffer) {
   free_node(host->bck);
   if (strcmp(host->ID, node_ID) != 0) {
     host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
+    insert_in_forwarding_table(host, atoi(node_ID), atoi(node_ID));
   } else {
     host->bck = NULL;
   }
+
   return;
 }
 

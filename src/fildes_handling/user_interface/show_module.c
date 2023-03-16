@@ -6,16 +6,51 @@
 
 #define ELEMENTS sizeof(host->tab_expedicao) / sizeof(host->tab_expedicao[0])
 
-void show_wrapper(host *host, int opt) {
-  if (opt == SHOW_TOPOLOGY) {
-    show_topology(host);
-  } else if (opt == SHOW_NAMES) {
-    show_names(host);
-  } else if (opt == SHOW_ROUTING) {
-    show_routes(host);
+/**
+ * @brief Wrapper function to display network information.
+ *
+ * This function takes a command and a buffer containing a "show" command, and
+ * displays the corresponding network information based on the command. The supported
+ * commands are: SHOW_TOPOLOGY, SHOW_NAMES, and SHOW_ROUTING. If the command is not
+ * imediatelly recognized, the function tries to parse the "show" subcommand from the
+ * buffer.
+ *
+ * @param host[in]: pointer to the host structure.
+ * @param cmd[in]: command to execute (SHOW_TOPOLOGY, SHOW_NAMES, or SHOW_ROUTING).
+ * @param buffer[in]: null-terminated string containing the "show" command and its
+ * arguments.
+ */
+void show_wrapper(host *host, int cmd, char *buffer) {
+  // Check if the command is already provided
+  if (cmd == SHOW_TOPOLOGY || cmd == SHOW_NAMES || cmd == SHOW_ROUTING) {
+    switch (cmd) {
+    case SHOW_TOPOLOGY:
+      show_topology(host);
+      break;
+    case SHOW_NAMES:
+      show_names(host);
+      break;
+    case SHOW_ROUTING:
+      show_routes(host);
+      break;
+    }
+  } else {
+    // Attempt to parse a generic "show" command from the buffer
+    char subcmd[128] = {'\0'};
+    if (sscanf(buffer, "show %s", subcmd) == 1) {
+      if (strcmp(subcmd, "topology") == 0) {
+        show_topology(host);
+      } else if (strcmp(subcmd, "names") == 0) {
+        show_names(host);
+      } else if (strcmp(subcmd, "routing") == 0) {
+        show_routes(host);
+      } else {
+        fprintf(stderr, "Command not found: %s", buffer);
+      }
+    } else {
+      fprintf(stderr, "Invalid command format: %s", buffer);
+    }
   }
-  /*! TODO: Implementar caso geral do show por extenso */
-  return;
 }
 
 /**
@@ -27,25 +62,37 @@ void show_wrapper(host *host, int opt) {
  * @param host Pointer to the host struct.
  */
 void show_topology(host *host) {
-  node *node_ptr = host->node_list;
 
-  printf("host->ext: %p, host->bck: %p\n", (void *)host->ext, (void *)host->bck);
+  printf("╔═══════════════════════════════════════╗\n");
+  printf("║           Host Topology: ID %s        ║\n", host->ID);
+  printf("║               Network %s             ║\n", host->net);
+  printf("╠═══════════════════════════════════════╣\n");
 
-  fprintf(stdout, "Topologia do host com: ID %s; Rede %s\n", host->ID, host->net);
-  if (host->ext != NULL) { // se n~ao for o nó único na rede
-    fprintf(stdout, "Nó de backup %s; Vizinho Externo %s\n",
-            host->bck == NULL ? host->ID : host->bck->ID, host->ext->ID);
-    fprintf(stdout, "Lista de Vizinhos Internos:");
+  if (host->ext != NULL) { // If not the only node in the network
+    printf("║  Backup Node:                         ║\n");
+    if (host->bck == NULL) {
+      printf("   %s\t%s\t%d\n", host->ID, host->uip->IP, host->uip->TCP);
+    } else {
+      printf("   %s\t%s\t%d\n", host->bck->ID, host->bck->IP, host->bck->TCP);
+    }
+
+    printf("╠═══════════════════════════════════════╣\n");
+    printf("║  External Neighbor:                   ║\n");
+    printf("   %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
+    printf("╠═══════════════════════════════════════╣\n");
+    printf("║  Internal Neighbors List:             ║\n");
+
+    node *node_ptr = host->node_list;
     while (node_ptr != NULL) {
       if (strcmp(node_ptr->ID, host->ext->ID) != 0) {
         // Don't print external node as internal
-        fprintf(stdout, " %s;", node_ptr->ID);
+        printf("   %s\t%s\t%d\n", node_ptr->ID, node_ptr->IP, node_ptr->TCP);
       }
       node_ptr = node_ptr->next;
     }
   }
 
-  fprintf(stdout, "\n------------------------\n");
+  printf("╚═══════════════════════════════════════╝\n");
 }
 
 /**
@@ -70,14 +117,14 @@ void show_names(host *host) {
  * @param host Pointer to the host struct.
  */
 void show_routes(host *host) {
-  fprintf(stdout, "Routing table of host %s (net %s):\n", host->ID, host->net);
-  fprintf(stdout, "-------------+-------------\n");
-  fprintf(stdout, " Destination |  Neighbour  \n");
-  fprintf(stdout, "-------------+-------------\n");
+  printf("Routing table of host %s (net %s):\n", host->ID, host->net);
+  printf("-------------+-------------\n");
+  printf(" Destination |  Neighbour  \n");
+  printf("-------------+-------------\n");
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] != -1) {
-      fprintf(stdout, "     %02zu      |     %02d\n", i, host->tab_expedicao[i]);
+      printf("     %02zu      |     %02d\n", i, host->tab_expedicao[i]);
     }
   }
-  fprintf(stdout, "-------------+-------------\n");
+  printf("-------------+-------------\n");
 }
