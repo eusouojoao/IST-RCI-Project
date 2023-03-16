@@ -116,39 +116,44 @@ void get_name(host *host, char *buffer) {
   char dest[32] = {'\0'}, name[100] = {'\0'};
   char protocol_msg[256] = {'\0'};
 
+  // Parse the command and store the destination and name.
   if (sscanf(buffer, "get %s %s", dest, name) < 2) {
-    // !TODO - Error control
-    printf("Comandos < 2\n");
-    return; // DEBUG
-  }
-
-  if (check_name(name) == -1) {
-    // !TODO - Error control
-    printf("Nome inválido\n"); // DEBUG
+    // Add proper error handling
+    printf("Less than 2 arguments\n");
     return;
   }
 
+  // Check if the name is valid
+  if (check_name(name) == -1) {
+    // Add proper error handling
+    printf("Invalid name\n");
+    return;
+  }
+
+  // If the destination is the current host, search for the name in the names list.
   if (strcmp(host->ID, dest) == 0) {
     if (find_name(name, host)) {
-      printf("nome: `%s` encontrado no nó %s\n", name, dest);
+      printf("Name: `%s` found on node %s\n", name, dest);
     } else {
-      printf("nome: `%s` n~ao encontrado no nó %s\n", name, dest);
+      printf("Name: `%s` not found on node %s\n", name, dest);
     }
-
     return;
   }
 
+  // Prepare the QUERY protocol message
   snprintf(protocol_msg, 256, "QUERY %s %s %s\n", dest, host->ID, name);
 
-  node *neighbour = check_rote(host, dest);
+  // Check if the destination node is a known neighbor
+  node *neighbour = check_route(host, dest);
   if (neighbour != NULL) {
+    // Send the QUERY message to the known neighbor
     if (write(neighbour->fd, protocol_msg, 256) == -1) {
-      printf("Erro enviar QUERY para nó conhecido, DEBUG\n");
+      printf("Error sending QUERY to known neighbor\n");
     }
-
     return;
   }
 
-  // Caso nao esteja na tabela de expedicao, enviar para todos
+  // If the destination node is not in the routing table, broadcast the QUERY message
+  // to all neighbors
   send_protocol_messages(host, -1, protocol_msg);
 }

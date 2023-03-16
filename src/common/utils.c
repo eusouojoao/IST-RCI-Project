@@ -103,7 +103,7 @@ void insert_in_forwarding_table(host *host, int dest, int neighbour) {
   host->tab_expedicao[dest] = neighbour;
 }
 
-node *check_rote(host *myH, char *ID) {
+node *check_route(host *myH, char *ID) {
   int destino = atoi(ID), vizinho = -1;
   node *auxN = NULL;
 

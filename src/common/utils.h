@@ -10,6 +10,6 @@ void free_node(node *node);
 int find_name(char *name, host *host);
 
 void insert_in_forwarding_table(host *host, int dest, int neighbour);
-node *check_rote(host *host, char *ID);
+node *check_route(host *host, char *ID);
 
 #endif
