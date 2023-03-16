@@ -1,5 +1,8 @@
 #include "content_module.h"
+#include "../../common/struct.h"
+#include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
+#include "../socket_protocols_interface/common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,4 +110,45 @@ int delete_name(host *host, char *buffer) {
   }
 
   return 0; // Failure, name not found
+}
+
+void get_name(host *host, char *buffer) {
+  char dest[32] = {'\0'}, name[100] = {'\0'};
+  char protocol_msg[256] = {'\0'};
+
+  if (sscanf(buffer, "get %s %s", dest, name) < 2) {
+    // !TODO - Error control
+    printf("Comandos < 2\n");
+    return; // DEBUG
+  }
+
+  if (check_name(name) == -1) {
+    // !TODO - Error control
+    printf("Nome inválido\n"); // DEBUG
+    return;
+  }
+
+  if (strcmp(host->ID, dest) == 0) {
+    if (find_name(name, host)) {
+      printf("nome: `%s` encontrado no nó %s\n", name, dest);
+    } else {
+      printf("nome: `%s` n~ao encontrado no nó %s\n", name, dest);
+    }
+
+    return;
+  }
+
+  snprintf(protocol_msg, 256, "QUERY %s %s %s\n", dest, host->ID, name);
+
+  node *neighbour = check_rote(host, dest);
+  if (neighbour != NULL) {
+    if (write(neighbour->fd, protocol_msg, 256) == -1) {
+      printf("Erro enviar QUERY para nó conhecido, DEBUG\n");
+    }
+
+    return;
+  }
+
+  // Caso nao esteja na tabela de expedicao, enviar para todos
+  send_protocol_messages(host, -1, protocol_msg);
 }

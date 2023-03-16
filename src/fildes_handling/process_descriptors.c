@@ -79,7 +79,7 @@ int process_keyboard_input(host *host, char *buffer) {
     delete_name(host, buffer);
     break;
   case GET:
-    /*! TODO: */
+    get_name(host, buffer);
     break;
   case SHOW:
   case SHOW_TOPOLOGY:

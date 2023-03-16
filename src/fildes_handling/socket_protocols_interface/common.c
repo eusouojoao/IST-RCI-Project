@@ -1,4 +1,5 @@
 #include "common.h"
+#include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 
 #include <stdlib.h>
@@ -25,4 +26,17 @@ void send_protocol_messages(host *host, int sender_fd, char *protocol_msg) {
   }
 
   free(protocol_msg);
+}
+
+int find_name(char *name, host *host) {
+  names *list_pointer = host->names_list;
+  while (list_pointer != NULL) {
+    if (strcmp(list_pointer->name, name) == 0) {
+      return 1; // Sucesso, name encontrado
+    }
+
+    list_pointer = list_pointer->next;
+  }
+
+  return 0; // Falha, não existia name com tal nome
 }
