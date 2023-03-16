@@ -52,8 +52,8 @@ user_command get_user_command(char *token) {
 }
 
 int process_keyboard_input(host *host, char *buffer) {
-  static int flag = -1;
-  int cmd = UNDEF;
+  static user_command flag = UNDEF;
+  user_command cmd = UNDEF;
   char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
     system_error("In process_stdin_input() ->" RED " sscanf() failed");
@@ -68,7 +68,7 @@ int process_keyboard_input(host *host, char *buffer) {
     }
     break;
   case DJOIN:
-    if (djoin_network(buffer, host, cmd)) {
+    if (djoin_network(buffer, host, (int)cmd)) {
       flag = cmd;
     }
     break;
@@ -85,13 +85,13 @@ int process_keyboard_input(host *host, char *buffer) {
   case SHOW_TOPOLOGY:
   case SHOW_NAMES:
   case SHOW_ROUTING:
-    show_wrapper(host, cmd, buffer);
+    show_wrapper(host, (int)cmd, buffer);
     break;
   case LEAVE:
-    leave_network(host, flag);
+    leave_network(host, (int)flag);
     break;
   case EXIT:
-    return exit_program(host, flag);
+    return exit_program(host, (int)flag);
   case CLEAR:
     CLEAR_STREAM(STDIN_FILENO);
     user_interface_toggle(ON);
@@ -204,7 +204,7 @@ protocol_command get_protocol_command(char *token) {
  * @param buffer: the message received
  */
 void process_neighbour_nodes(host *host, node *node, char *buffer) {
-  int cmd = BADFORMAT;
+  protocol_command cmd = BADFORMAT;
   char token[32] = {'\0'};
   printf("buffer: %s\n", buffer); // DEBUG
 
