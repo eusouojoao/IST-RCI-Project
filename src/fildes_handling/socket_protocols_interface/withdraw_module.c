@@ -32,7 +32,7 @@ void update_backup(host *host, char *buffer) {
   return;
 }
 
-void withdraw_wrapper(host *host, node *node, char *buffer) {
+void withdraw_wrapper(host *host, node *sender, char *buffer) {
   char ID[32] = {'\0'};
   // If the command is WITHDRAW, withdraw the node with the specified ID
   if (sscanf(buffer, "WITHDRAW %s", ID) < 1) {
@@ -51,7 +51,7 @@ void withdraw_wrapper(host *host, node *node, char *buffer) {
     return;
   }
 
-  send_protocol_messages(host, node->fd, withdraw_msg);
+  send_protocol_messages(host, sender->fd, withdraw_msg);
 }
 
 char *remove_node_from_forwarding_table(host *host, int eraseN) {

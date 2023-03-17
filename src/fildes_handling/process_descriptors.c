@@ -4,6 +4,7 @@
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
 #include "socket_protocols_interface/protocol_commands.h"
+#include "socket_protocols_interface/query_module.h"
 #include "socket_protocols_interface/utility.h"
 #include "socket_protocols_interface/withdraw_module.h"
 #include "user_interface/content_module.h"
@@ -225,6 +226,8 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
     withdraw_wrapper(host, node, buffer);
     break;
   case QUERY:
+    process_query(host, node, buffer);
+    break;
   case CONTENT:
   case NOCONTENT:
     break;
