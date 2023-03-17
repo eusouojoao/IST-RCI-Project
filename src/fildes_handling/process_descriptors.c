@@ -230,6 +230,7 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
     break;
   case CONTENT:
   case NOCONTENT:
+    handle_content_response(host, node, buffer, cmd);
     break;
   case BADFORMAT:
   default:
