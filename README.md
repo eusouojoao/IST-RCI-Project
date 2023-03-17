@@ -103,4 +103,4 @@ The program structure is organized into a main directory with a Makefile, and a 
 
 7. **main.c**: The main file of the program that contains the entry point.
 
-This structure follows a modular approach, where each directory focuses on a specific aspect of the program. This organization makes it easier to navigate, maintain, and extend the codebase.
+This structure follows a modular approach, where each directory focuses on a specific aspect of the program.
