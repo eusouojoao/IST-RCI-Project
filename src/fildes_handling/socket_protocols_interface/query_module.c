@@ -62,7 +62,7 @@ void process_query(host *host, node *sender, char *buffer) {
 
   // If the destination node is not in the forwarding table, broadcast the QUERY
   // message to all neighbors except the sender
-  send_protocol_messages(host, sender->fd, buffer);
+  broadcast_protocol_message(host, sender->fd, buffer);
 }
 
 /**
@@ -117,5 +117,5 @@ void handle_content_response(host *host, node *sender, char *buffer,
 
   // If the destination node is not in the forwarding table, broadcast the message to
   // all neighbors except to the one that sent it
-  send_protocol_messages(host, sender->fd, buffer);
+  broadcast_protocol_message(host, sender->fd, buffer);
 }

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-void send_protocol_messages(host *host, int sender_fd, char *protocol_msg) {
+void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
   // Initialize a pointer to the first node in the network
   node *current_node = host->node_list;
   // Calculate the length of the protocol message string + the null terminator

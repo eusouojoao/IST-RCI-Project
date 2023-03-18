@@ -112,48 +112,73 @@ int delete_name(host *host, char *buffer) {
   return 0; // Failure, name not found
 }
 
-void get_name(host *host, char *buffer) {
-  char dest[32] = {'\0'}, name[100] = {'\0'};
-  char protocol_msg[256] = {'\0'};
-
-  // Parse the command and store the destination and name.
+/**
+ * @brief Parses the input buffer and extracts destination and name.
+ *
+ * @param buffer Input buffer.
+ * @param dest Destination buffer.
+ * @param name Name buffer.
+ * @return Returns 1 if successfully parsed, 0 otherwise.
+ */
+int parse_get_name_command(char *buffer, char *dest, char *name) {
   if (sscanf(buffer, "get %s %s", dest, name) < 2) {
-    // Add proper error handling
     printf("Less than 2 arguments\n");
-    return;
+    return 0;
   }
+  return 1;
+}
 
-  // Check if the name is valid
-  if (check_name(name) == -1) {
-    // Add proper error handling
-    printf("Invalid name\n");
-    return;
-  }
-
-  // If the destination is the current host, search for the name in the names list.
+/**
+ * @brief Handles the case where the destination node is the current host.
+ *
+ * @param host: Pointer to the host structure.
+ * @param dest: destination
+ * @param name: name buffer
+ * @return 1 if the destination is the current host, 0 otherwise.
+ */
+int handle_destination_is_current_host(host *host, char *dest, char *name) {
   if (strcmp(host->ID, dest) == 0) {
     if (find_name(name, host)) {
       printf("Name: `%s` found on node %s\n", name, dest);
     } else {
       printf("Name: `%s` not found on node %s\n", name, dest);
     }
-    return;
+    return 1;
   }
+  return 0;
+}
 
-  // Prepare the QUERY protocol message
-  snprintf(protocol_msg, 256, "QUERY %s %s %s\n", dest, host->ID, name);
-
-  // Check if the destination node is a known neighbor
+void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
   node *neighbour = check_route(host, dest);
   if (neighbour != NULL) {
-    // Send the QUERY message to the known neighbor
+    // Forward the message to the known neighbour
     if (write(neighbour->fd, protocol_msg, 256) == -1) {
       printf("Error sending QUERY to known neighbor\n");
     }
+  } else {
+    broadcast_protocol_message(host, -1, protocol_msg);
+  }
+}
+
+void get_name(host *host, char *buffer) {
+  char dest[32] = {'\0'}, name[100] = {'\0'};
+
+  if (!parse_get_name_command(buffer, dest, name)) {
     return;
   }
 
-  // If the destination node is not in the routing table, broadcast the QUERY message
-  // to all neighbors
-  send_protocol_messages(host, -1, protocol_msg);
+  if (check_name(name) == -1) {
+    printf("Invalid name\n");
+    return;
+  }
+
+  if (handle_destination_is_current_host(host, dest, name)) {
+    return;
+  }
+
+  // Generate the protocol message
+  char protocol_msg[256] = {'\0'};
+  snprintf(protocol_msg, 256, "QUERY %s %s %s\n", dest, host->ID, name);
+
+  send_message_to_neighbours(host, dest, protocol_msg);
 }

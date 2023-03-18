@@ -51,7 +51,7 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
     return;
   }
 
-  send_protocol_messages(host, sender->fd, withdraw_msg);
+  broadcast_protocol_message(host, sender->fd, withdraw_msg);
 }
 
 char *remove_node_from_forwarding_table(host *host, int eraseN) {

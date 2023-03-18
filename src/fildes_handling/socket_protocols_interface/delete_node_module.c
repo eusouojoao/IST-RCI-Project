@@ -29,7 +29,7 @@ void delete_node(host *host, int withdraw_fd) {
         return;
       }
 
-      send_protocol_messages(host, withdraw_fd, withdraw_msg);
+      broadcast_protocol_message(host, withdraw_fd, withdraw_msg);
       if (withdraw_fd != host->ext->fd) {
         free_node(current_node);
       }

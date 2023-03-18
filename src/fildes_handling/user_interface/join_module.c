@@ -29,12 +29,22 @@
  * check.
  * @param ID[in,out]: pointer to a string containing the ID to check and/or modify.
  */
-void check_uniqueness_of_ID(char *node_list, char (*ID)[SIZE]) {
-  int new_id = 0;
-  char pattern[SIZE] = {'\0'};
+void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
+  int new_id = 0, PORT = 0;
+  char pattern[SIZE] = {'\0'}, IP[16] = {'\0'};
 
   // Build the pattern
   snprintf(pattern, SIZE, "\n%s", (*ID));
+
+  char *str = strstr(node_list, pattern);
+  if (sscanf(str, "%*s %s %d", IP, &PORT) < 2) {
+    exit(1);
+  }
+
+  if (strcmp(IP, host->uip->IP) == 0 && PORT == host->uip->TCP) {
+    // Do nothing, server will reply with OKREG
+    return;
+  }
 
   // Loop until pattern is unique or maximum collisions are reached
   while (strstr(node_list, pattern) != NULL && new_id <= MAXNODES) {
@@ -228,7 +238,7 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
-  check_uniqueness_of_ID(received_nodeslist, &ID);
+  check_uniqueness_of_ID(host, received_nodeslist, &ID);
   if (atoi(ID) > MAXNODES) {
     fprintf(stderr, "Network is full! Couldn't register in the network (%s).", net);
     return 0;

@@ -72,7 +72,6 @@ void leave_network(host *host, int flag) {
 
   // If flag is DJOIN, clear the host and return
   if (flag == DJOIN) {
-    /*! TODO: send withdraw*/
     clear_host(host);
     return;
   }
@@ -137,7 +136,6 @@ int exit_program(host *host, int flag) {
   }
 
   close(host->listen_fd);
-  // free(host->uip->IP), free(host->uip->regIP);
   free(host->uip);
   free(host);
 
