@@ -18,6 +18,15 @@ int number_of_command_arguments(char *str, char delim) {
   return n;
 }
 
+/**
+ * @brief  Verifica se os parametros do node estão no formato correto
+ * @note
+ * @param  *node_ID: ID da node
+ * @param  *node_IP: IP da node
+ * @param  *node_TCP: TCP da node
+ * @retval EXIT_SUCCESS - caso os parametros estejam corretos
+ *         EXIT_FAILURE - caso os parametros estejam incorretos
+ */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   if (strlen(node_ID) != 2) {
     /*error*/ printf("strlen\n");
@@ -39,6 +48,14 @@ int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   return EXIT_SUCCESS;
 }
 
+/**
+ * @brief  Verifica se os parametros net e ID estão no formato correto
+ * @note
+ * @param  *net:
+ * @param  *id:
+ * @retval EXIT_SUCCESS - caso os parametros estejam corretos
+ *         EXIT_FAILURE - caso os parametros estejam incorretos
+ */
 int check_net_and_id(char *net, char *id) {
   if (strlen(net) != 3 || strlen(id) != 2) {
     /*error*/ printf("strlen\n");
@@ -68,6 +85,13 @@ int check_if_number(char *src) {
   return 1;
 }
 
+/**
+ * @brief  Verifica se o port está no formato correto
+ * @note
+ * @param  *src: string do port
+ * @retval próprio port (em int) - caso o formato esteja correto
+ *         EXIT_FAILURE - caso o formato esteja incorreto
+ */
 int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);

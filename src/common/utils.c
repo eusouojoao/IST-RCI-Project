@@ -2,7 +2,6 @@
 #include "../error_handling/error_checking.h"
 #include "../protocols/TCP.h"
 
-#include <stdio.h> //APAGAR!!
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -10,7 +9,7 @@
 /**
  * @brief  inicializa host
  * @note   quando se cria o nó (host) bck e o exp é o proprio nó (representado
- * por NULL)
+ *         por NULL)
  * @param  *uip: argumentos do utilizador
  * @retval apontador para o próprio host criado
  */
@@ -65,6 +64,16 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   return new_node;
 }
 
+/**
+ * @brief  Insert (and create) a new node in the node_list
+ * @note   Insertion in list is made in the head
+ * @param  *ID: ID of the node to be inserted
+ * @param  fd: fd of the node to be inserted
+ * @param  *IP: IP of the node to be inserted
+ * @param  TCP: TCP of the node to be inserted
+ * @param  *host: Host structure where the node_list information resides
+ * @retval None
+ */
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   node *new_node = create_new_node(ID, fd, IP, TCP);
 
@@ -76,6 +85,12 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   }
 }
 
+/**
+ * @brief  Free a struct of the type node
+ * @note
+ * @param  *node: structure to be free
+ * @retval None
+ */
 void free_node(node *node) {
   if (node != NULL) {
     free(node->ID);
