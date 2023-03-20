@@ -9,6 +9,14 @@
 
 #define MAXPORT 65535
 
+/**
+ * @brief Counts the number of command arguments in a string.
+ *
+ * @param str: input string to count arguments
+ * @param delim: delimiter character used to separate arguments
+ *
+ * @return the number of command arguments in the input string.
+ */
 int number_of_command_arguments(char *str, char delim) {
   int n = 0;
   for (int i = 0; str[i]; i++) {
@@ -19,13 +27,13 @@ int number_of_command_arguments(char *str, char delim) {
 }
 
 /**
- * @brief  Verifica se os parametros do node estão no formato correto
- * @note
- * @param  *node_ID: ID da node
- * @param  *node_IP: IP da node
- * @param  *node_TCP: TCP da node
- * @retval EXIT_SUCCESS - caso os parametros estejam corretos
- *         EXIT_FAILURE - caso os parametros estejam incorretos
+ * @brief Checks if the node parameters are in the correct format.
+ *
+ * @param node_ID: the node ID
+ * @param node_IP: the node IP address
+ * @param node_TCP: the node TCP port number
+ *
+ * @return EXIT_SUCCESS if the parameters are correct, EXIT_FAILURE otherwise.
  */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   if (strlen(node_ID) != 2) {
@@ -49,12 +57,12 @@ int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
 }
 
 /**
- * @brief  Verifica se os parametros net e ID estão no formato correto
- * @note
- * @param  *net:
- * @param  *id:
- * @retval EXIT_SUCCESS - caso os parametros estejam corretos
- *         EXIT_FAILURE - caso os parametros estejam incorretos
+ * @brief Checks if the network and ID parameters are in the correct format.
+ *
+ * @param net: the network parameter
+ * @param id: the ID parameter
+ *
+ * @return EXIT_SUCCESS if the parameters are correct, EXIT_FAILURE otherwise.
  */
 int check_net_and_id(char *net, char *id) {
   if (strlen(net) != 3 || strlen(id) != 2) {
@@ -86,18 +94,17 @@ int check_if_number(char *src) {
 }
 
 /**
- * @brief  Verifica se o port está no formato correto
- * @note
- * @param  *src: string do port
- * @retval próprio port (em int) - caso o formato esteja correto
- *         EXIT_FAILURE - caso o formato esteja incorreto
+ * @brief Checks if the given port is in the correct format and within range.
+ *
+ * @param src: the input port string to check
+ *
+ * @return The port number as an integer if the format is correct, EXIT_FAILURE otherwise.
  */
 int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);
   if ((end == src) || (*end != '\0')) {
-    user_input_error("Bad port format", src,
-                     "must be an integer within 0 and 65535.");
+    user_input_error("Bad port format", src, "must be an integer within 0 and 65535.");
     exit(EXIT_FAILURE);
   }
 
@@ -109,18 +116,25 @@ int check_PORT(char *src) {
   return (int)PORT;
 }
 
+/**
+ * @brief Checks if the given IP address is in the correct format.
+ *
+ * @param src: the input IP address string to check
+ *
+ * @return 1 if the IP address is in the correct format, 0 otherwise.
+ */
 int check_IP_address(char *src) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, src, &(sa.sin_addr));
 }
 
 /**
- * @brief  Verifica se um nome cumpre as restrições (menos de 100 caracteres)
+ * @brief Checks if a name meets the constraints (less than 100 characters and
+ * alphanumeric).
  *
- * @note
- * @param  *name: nome a ser verificafo
- * @retval 0 nome válido
- *         -1 nome inválido
+ * @param name: the name to be checked
+ *
+ * @return 0 if the name is valid, -1 otherwise.
  */
 int check_name(char *name) {
   if (strlen(name) > 100) {
