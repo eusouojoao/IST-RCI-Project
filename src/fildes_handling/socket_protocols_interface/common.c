@@ -1,7 +1,9 @@
 #include "common.h"
+#include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -26,6 +28,19 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
   }
 
   free(protocol_msg);
+}
+
+void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
+  node *neighbour = check_route(host, dest);
+  if (neighbour != NULL) {
+    // If the route is known, forward the message to the right neighbour
+    if (write(neighbour->fd, protocol_msg, 256) == -1) {
+      printf("Error sending QUERY to known neighbor\n");
+    }
+  } else {
+    // Else, it must be broadcasted to all known neighbours
+    broadcast_protocol_message(host, -1, protocol_msg);
+  }
 }
 
 int find_name(char *name, host *host) {

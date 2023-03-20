@@ -1,11 +1,11 @@
 #ifndef RETRY_H
 #define RETRY_H
 
-#ifndef MAX_ATTEMPTS
 #define MAX_ATTEMPTS 5
-#endif // !MAX_ATTEMPTS
+#define TIMEOUT_SEC 5
 
 void delay(int seconds);
+int set_timeouts(int fd);
 
 #ifndef RETRY_MACRO
 /**

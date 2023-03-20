@@ -1,9 +1,11 @@
 #!/bin/bash
 
-start_port=55000
-end_port=55099
-net=040
+# net=099
+server="193.136.138.142"
+port=59000
 
-for ((port = start_port, id = 0; port <= end_port; port++, id++)); do
-	cat <(echo "UNREG $net $(printf "%02d" $id)") | nc -u 193.136.138.142 59000
+for ((net = 0; net <= 999; net++)); do
+	for ((id = 0; id <= 99; id++)); do
+		echo -n "UNREG $(printf "%03d" $net) $(printf "%02d" $id)" >/dev/udp/$server/$port
+	done
 done

@@ -13,15 +13,55 @@
 #define SIZE 16
 
 /**
+ * @brief Deletes the names list in the host structure and frees memory.
+ *
+ * @param host: pointer to the host structure containing the names list to be deleted
+ */
+void delete_names_list(host *host) {
+  names *current_name = host->names_list;
+  names *next_name;
+
+  while (current_name != NULL) {
+    next_name = current_name->next;
+    free(current_name->name);
+    free(current_name);
+    current_name = next_name;
+  }
+
+  host->names_list = NULL;
+}
+
+/**
+ * @brief Deletes the nodes list in the host structure and frees memory.
+ *
+ * @param host: pointer to the host structure containing the nodes list to be deleted
+ */
+void delete_nodes_list(host *host) {
+  node *current_node = host->node_list;
+  node *next_node;
+
+  while (current_node != NULL) {
+    next_node = current_node->next;
+    free_node(current_node);
+    current_node = next_node;
+  }
+
+  host->node_list = NULL;
+  free_node(host->bck);
+  host->bck = NULL;
+}
+
+/**
  * @brief Clears the host structure and frees memory allocated for it.
  *
- * @param host: pointer to the `host` structure to be cleared.
+ * @param host: Pointer to the host structure to be cleared
  */
 void clear_host(host *host) {
   // Free memory for network and ID
   free(host->net);
   free(host->ID);
-  host->net = host->ID = NULL;
+  host->net = NULL;
+  host->ID = NULL;
 
   // Close external connection if it exists
   if (host->ext != NULL && host->ext->fd != -1) {
@@ -30,40 +70,23 @@ void clear_host(host *host) {
   }
 
   // Delete nodes list
-  node *current_node = host->node_list;
-  while (current_node != NULL) {
-    node *next_node = current_node->next;
-    free_node(current_node);
-    current_node = next_node;
-  }
-  host->node_list = NULL;
-  free_node(host->bck);
-  host->bck = NULL;
+  delete_nodes_list(host);
 
   // Delete names list
-  names *current_name = host->names_list;
-  while (current_name != NULL) {
-    names *next_name = current_name->next;
-    free(current_name);
-    current_name = next_name;
-  }
-  host->names_list = NULL;
+  delete_names_list(host);
 
-  // Reset tab_expedicao
+  // Resets the forwarding table
   memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
 }
 
 /**
- * @brief Leaves the current network and unregisters the host from it.
- * @note If the flag is DJOIN, no UNREG message will be sent.
- * @note Sends UNREG message to the node server, withdraws the host from all nodes
- * and clears the host structure.
+ * @brief Makes the host leave the network and unregister it.
  *
- * @param host: pointer to the `host` structure.
- * @param flag: used to specify the type of leaving. If flag is DJOIN, clears the
- * host and returns.
+ * @param host: pointer to the host structure to leave the network and unregister
+ * @param flag: indicating whether to only clear the host (DJOIN) or to also send an UNREG
+ * message
  */
-void leave_network(host *host, int flag) {
+void leave_network(host *host, user_command flag) {
   // Check if the host is registered in a network
   if (!host->net) {
     printf(YELLOW "[NOTICE]" RESET " Host not registered in a network\n");
@@ -83,19 +106,15 @@ void leave_network(host *host, int flag) {
 
   // Check if message was successfully sent
   if (!msg_received) {
-    fprintf(stderr,
-            YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
+    fprintf(stderr, YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
             host->net);
-    UDP_server_message(1, msg_received);
     return;
   }
 
   // Check if the received message is "OKUNREG"
   if (strcmp(msg_received, "OKUNREG") != 0) {
-    fprintf(stderr,
-            YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
+    fprintf(stderr, YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
             host->net);
-    UDP_server_message(1, msg_received);
     free(msg_received);
     return;
   }
@@ -103,7 +122,6 @@ void leave_network(host *host, int flag) {
   // Print success message and notify UDP server
   printf(YELLOW "[NOTICE]" RESET " Successfully unregistered from the network %s\n",
          host->net);
-  UDP_server_message(0, msg_received);
   free(msg_received);
 
   // Clear host structure
@@ -121,12 +139,11 @@ void leave_network(host *host, int flag) {
  * using `free()`. It also prints a message to indicate that the user interface is
  * turned off.
  *
- * @param host: a pointer to a `host` structure that represents the current host in
+ * @param host: a pointer to a host structure that represents the current host in
  * the network
- * @param flag: an integer value that indicates which join command connected the host
- * to the network
+ * @param flag: indicates which join command connected the host to the network
  */
-int exit_program(host *host, int flag) {
+int exit_program(host *host, user_command flag) {
   // Leave the network before exiting the program
   leave_network(host, flag);
 

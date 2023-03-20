@@ -1,6 +1,5 @@
 #include "content_module.h"
 #include "../../common/struct.h"
-#include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
 #include "../socket_protocols_interface/common.h"
 
@@ -85,20 +84,13 @@ int delete_name(host *host, char *buffer) {
     return -1;
   }
 
-  char *name_to_delete = strdup(buffer + strlen("delete "));
-  if (name_to_delete == NULL) {
-    perror("Error: malloc failed");
-    return -1;
-  }
-  name_to_delete[strlen(name_to_delete) - 1] = '\0';
-
-  if (check_name(name_to_delete) == -1) {
+  if (check_name(buffer) == -1) {
     return -1; // Name too long, or contains non-alphanumeric entries
   }
 
   names **p = &host->names_list;
   while (*p != NULL) {
-    if (strcmp((*p)->name, name_to_delete) == 0) {
+    if (strcmp((*p)->name, buffer) == 0) {
       names *temp = *p;
       *p = (*p)->next;
       printf("temp->name: %s", temp->name);
@@ -146,18 +138,6 @@ int handle_destination_is_current_host(host *host, char *dest, char *name) {
     return 1;
   }
   return 0;
-}
-
-void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
-  node *neighbour = check_route(host, dest);
-  if (neighbour != NULL) {
-    // Forward the message to the known neighbour
-    if (write(neighbour->fd, protocol_msg, 256) == -1) {
-      printf("Error sending QUERY to known neighbor\n");
-    }
-  } else {
-    broadcast_protocol_message(host, -1, protocol_msg);
-  }
 }
 
 void get_name(host *host, char *buffer) {

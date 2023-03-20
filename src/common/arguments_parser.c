@@ -4,11 +4,15 @@
 
 #include <stdlib.h>
 
-/* Inicializa uma estrutura do tipo user_input alocada
- * dinamicamente (e passada por referência), com o intuito
- * de proceder à avaliação dos parâmetros introduzidos
- * pelo utilizador (será overwritten futuramente, caso
- * os parâmetros passem o estágio de avaliação subsequente) */
+/**
+ * @brief Initializes a dynamically allocated user_args structure.
+ *
+ * Initializes a user_args structure with default values to facilitate
+ * subsequent user input evaluation (will be overwritten if the parameters
+ * pass the next evaluation stage).
+ *
+ * @param uip: pointer to the user_args structure to be initialized.
+ */
 void init_uip(user_args **uip) {
   (*uip)->IP = "NULL";
   (*uip)->TCP = 0;
@@ -16,6 +20,19 @@ void init_uip(user_args **uip) {
   (*uip)->regUDP = 59000;
 }
 
+/**
+ * @brief Checks the integrity of user-supplied input arguments.
+ *
+ * Verifies if the given command-line arguments are valid (IP, TCP, regIP, regTCP)
+ * and assigns them to the user_args structure if they pass validation.
+ *
+ * @param argc: number of command-line arguments
+ * @param argv: array of command-line arguments
+ * @param uip: pointer to the user_args structure to be updated with validated
+ * arguments
+ *
+ * @return (int) EXIT_SUCCESS if the input arguments are valid.
+ */
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
 
   if (check_IP_address(argv[1]) != 1) {
@@ -23,8 +40,8 @@ int check_input_integrity(int argc, char *argv[], user_args **uip) {
                      "the IP format must be X.X.X.X, where X must be a "
                      "decimal value between 0 and 255 (octet).");
   }
-  (*uip)->IP = argv[1];              // Atribui o IP validado
-  (*uip)->TCP = check_PORT(argv[2]); // Atribui a porta validada
+  (*uip)->IP = argv[1];              // Assign the validated IP
+  (*uip)->TCP = check_PORT(argv[2]); // Assign the validated port
 
   if (argc == 5) {
     if (check_IP_address(argv[3]) != 1) {
@@ -32,38 +49,44 @@ int check_input_integrity(int argc, char *argv[], user_args **uip) {
                        "the IP format must be X.X.X.X, where X must be a "
                        "decimal value between 0 and 255 (octet).");
     }
-    (*uip)->regIP = argv[3];              // Atribui o IP validado
-    (*uip)->regUDP = check_PORT(argv[4]); // Atribui a porta validade
+    (*uip)->regIP = argv[3];              // Assign the validated IP
+    (*uip)->regUDP = check_PORT(argv[4]); // Assign the validated port
   }
 
   return EXIT_SUCCESS;
 }
 
+/**
+ * @brief Parses user input arguments to initialize the user_args structure.
+ *
+ * @param argc: number of command-line arguments
+ * @param argv: array of command-line arguments
+ *
+ * @return (user_args *) pointer to the user_args structure with the parsed arguments.
+ */
 user_args *arguments_parser(int argc, char *argv[]) {
   int input_ok = 0;
 
-  /* Verifica se o número mínimo ou máximo de parâmetros
-   * introduzidos pelo utilizador na invocação do programa
-   * viola as especificações enunciadas */
+  // Check if the number of user-supplied parameters violates the specified requirements
   if (argc != 3 && argc != 5) {
-    /*error*/ usage(argv[0]);
+    usage(argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  /* Inicialização da estrutura do tipo user_input */
+  // Initialize the user_args structure
   user_args *uip = calloc(1, sizeof(user_args));
   if (uip == NULL) {
-    /*error*/ system_error("In parser() -> calloc() failed: ");
+    system_error("calloc() failed: ");
     exit(EXIT_FAILURE);
   }
   init_uip(&uip);
 
-  /* Verificar a integridade dos parâmetros introduzidos pelo
-   * utilizador na invocação do programa: IP TCP (regIP regTCP)
-   * e atribui, caso se verifique, os valores à estrutura user_input */
+  // Verify the integrity of user-supplied parameters (IP, TCP, regIP, regTCP),
+  // and assign the values to the user_args structure if valid
   input_ok = check_input_integrity(argc, argv, &uip);
   if (input_ok != EXIT_SUCCESS) {
-    /*error*/ usage(argv[0]);
+    usage(argv[0]);
+    free(uip);
     exit(EXIT_FAILURE);
   }
 

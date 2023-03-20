@@ -1,4 +1,5 @@
 #include "show_module.h"
+#include "../../common/prompts.h"
 #include "user_commands.h"
 
 #include <stdio.h>
@@ -62,7 +63,6 @@ void show_wrapper(host *host, int cmd, char *buffer) {
  * @param host Pointer to the host struct.
  */
 void show_topology(host *host) {
-
   printf("╔═══════════════════════════════════════╗\n");
   printf("║           Host Topology: ID %s        ║\n", host->ID);
   printf("║               Network %s             ║\n", host->net);
@@ -78,7 +78,7 @@ void show_topology(host *host) {
 
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  External Neighbor:                   ║\n");
-    printf("   %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
+    printf("║  %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  Internal Neighbors List:             ║\n");
 
@@ -86,7 +86,7 @@ void show_topology(host *host) {
     while (node_ptr != NULL) {
       if (strcmp(node_ptr->ID, host->ext->ID) != 0) {
         // Don't print external node as internal
-        printf("   %s\t%s\t%d\n", node_ptr->ID, node_ptr->IP, node_ptr->TCP);
+        printf("║  %s\t%s\t%d\n", node_ptr->ID, node_ptr->IP, node_ptr->TCP);
       }
       node_ptr = node_ptr->next;
     }
@@ -102,29 +102,38 @@ void show_topology(host *host) {
  */
 void show_names(host *host) {
   const names *names_ptr = host->names_list;
-  printf("Nomes do host com: ID %s; Rede %s\n", host->ID, host->net);
-  printf("Lista de Nomes:\n");
+
+  printf("╔══════════════════════════════════════════════╗\n");
+  printf("║               Host Names: ID %s             ║\n", host->ID);
+  printf("║                  Network %s                ║\n", host->net);
+  printf("╠══════════════════════════════════════════════╣\n");
+  printf("║  Names List:                                 ║\n");
+
   while (names_ptr != NULL) {
-    printf("%s\n", names_ptr->name);
+    printf("║  %-100s\n", names_ptr->name);
     names_ptr = names_ptr->next;
   }
-  printf("------------------------\n");
+
+  printf("╚══════════════════════════════════════════════╝\n");
 }
 
 /**
- * @brief Prints the routing table of a host.
+ * @brief Prints the routing table the current host.
  *
  * @param host Pointer to the host struct.
  */
 void show_routes(host *host) {
-  printf("Routing table of host %s (net %s):\n", host->ID, host->net);
-  printf("-------------+-------------\n");
-  printf(" Destination |  Neighbour  \n");
-  printf("-------------+-------------\n");
+  printf("╔══════════════════════════════════════════════╗\n");
+  printf("║          Routing Table: Host %s             ║\n", host->ID);
+  printf("║              Network %s                    ║\n", host->net);
+  printf("╠═════════════╦════════════════════════════════╣\n");
+  printf("║ Destination ║            Neighbor            ║\n");
+  printf("╠═════════════╬════════════════════════════════╣\n");
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] != -1) {
-      printf("     %02zu      |     %02d\n", i, host->tab_expedicao[i]);
+      printf("║     %02zu     ║               %02d               ║\n", i,
+             host->tab_expedicao[i]);
     }
   }
-  printf("-------------+-------------\n");
+  printf("╚═════════════╩════════════════════════════════╝\n");
 }

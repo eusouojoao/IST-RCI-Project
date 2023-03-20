@@ -10,7 +10,7 @@
 #define RESET "\x1B[0m"
 
 void usage(char *target);
-void UDP_server_message(int error_flag, char *msg);
+void print_help(void);
 void user_input_error(char *msg, char *input, char *detail);
 void system_error(char *msg);
 

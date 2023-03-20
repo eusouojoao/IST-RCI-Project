@@ -58,8 +58,20 @@ void user_interface_toggle(int toggle) {
   }
 }
 
+void clear_stdout_line() {
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w); // Get the terminal size
+
+  printf("\r"); // Move the cursor to the beginning of the line
+  for (int i = 0; i < w.ws_col; ++i) {
+    printf(" "); // Overwrite the line with spaces
+  }
+  printf("\r"); // Move the cursor back to the beginning of the line
+}
+
 void prompt() {
-  printf(GREEN "\n<USER> " RESET);
+  clear_stdout_line();
+  printf(GREEN "<USER> " RESET);
   fflush(stdout);
 }
 

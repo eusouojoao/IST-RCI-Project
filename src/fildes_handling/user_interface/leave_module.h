@@ -5,7 +5,7 @@
 #include "user_commands.h"
 
 void clear_host(host *host);
-void leave_network(host *host, int flag);
-int exit_program(host *host, int flag);
+void leave_network(host *host, user_command flag);
+int exit_program(host *host, user_command flag);
 
 #endif // !LEAVE_MODULE_H

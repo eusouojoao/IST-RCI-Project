@@ -1,5 +1,7 @@
 #include "retry.h"
 
+#include <stdio.h>
+#include <sys/socket.h>
 #include <time.h>
 
 /**
@@ -19,4 +21,24 @@ void delay(int attempt) {
   struct timespec ts = {0, (long)result};
   // Sleep for the calculated delay duration
   nanosleep(&ts, NULL);
+}
+
+int set_timeouts(int fd) {
+  struct timeval timeout;
+  timeout.tv_sec = TIMEOUT_SEC;
+  timeout.tv_usec = 0;
+
+  // Set the send timeout
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+    perror("setsockopt SO_SNDTIMEO");
+    return -1;
+  }
+
+  // Set the receive timeout
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    perror("setsockopt SO_RCVTIMEO");
+    return -1;
+  }
+
+  return 0;
 }

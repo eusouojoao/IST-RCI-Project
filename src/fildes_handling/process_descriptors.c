@@ -1,14 +1,10 @@
 #include "process_descriptors.h"
 #include "../common/prompts.h"
+#include "../common/retry.h"
 #include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
-#include "socket_protocols_interface/protocol_commands.h"
-#include "socket_protocols_interface/query_module.h"
 #include "socket_protocols_interface/utility.h"
-#include "socket_protocols_interface/withdraw_module.h"
-#include "user_interface/content_module.h"
-#include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
 
 #include <stdio.h>
@@ -37,7 +33,6 @@ user_command get_user_command(char *token) {
       {"leave", LEAVE},      {"exit", EXIT},     {"clear", CLEAR},
   };
 
-  // Calculate the number of elements in the command_lookup array
   size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
 
   // Iterate through the command_lookup array, looking for a pair whose token field
@@ -163,6 +158,11 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
   }
 
   insert_in_forwarding_table(host, atoi(new_ID), atoi(new_ID));
+
+  if (set_timeouts(new_fd) == -1) {
+    return;
+  }
+
   return; // OK
 }
 
