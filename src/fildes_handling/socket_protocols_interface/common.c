@@ -43,6 +43,14 @@ void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
   }
 }
 
+/**
+ * @brief  Check if a name exists on a specific host
+ * @note
+ * @param  *name: name we are looking for
+ * @param  *host: structure host
+ * @retval 1 - Name found
+ *         0 - Name not found
+ */
 int find_name(char *name, host *host) {
   names *list_pointer = host->names_list;
   while (list_pointer != NULL) {

@@ -9,6 +9,16 @@
 #include <string.h>
 #include <unistd.h>
 
+/**
+ * @brief  Reads and saves query message from user
+ * @note   Informs user of error if number of arguments is not correct
+ * @param  *buffer: buffer with the message
+ * @param  *dest: destination node
+ * @param  *orig: origin node
+ * @param  *name: name of the content that is being searched
+ * @retval 1 OK
+ *         0 Error
+ */
 int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
   // Parse the command and store the destination and name.
   if (sscanf(buffer, "QUERY %s %s %s", dest, orig, name) < 3) {
@@ -63,6 +73,7 @@ void process_query(host *host, node *sender, char *buffer) {
   send_message_to_neighbours(host, dest, buffer);
 }
 
+/*! TODO */
 int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {

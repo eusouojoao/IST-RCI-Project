@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
+/*! TODO */
 void delete_node(host *host, int withdraw_fd) {
   node *previous_pointer = NULL, *current_node = host->node_list;
   char *withdraw_msg = NULL;
@@ -42,6 +43,7 @@ void delete_node(host *host, int withdraw_fd) {
   update_external_node(host, withdraw_fd);
 }
 
+/*! TODO */
 void update_external_node(host *host, int withdraw_fd) {
   if (host->ext == NULL || host->ext->fd != withdraw_fd) {
     return;
@@ -60,12 +62,24 @@ void update_external_node(host *host, int withdraw_fd) {
   notify_internal_nodes_of_external_change(host);
 }
 
+/**
+ * @brief  promote a intern node to extern
+ * @note   used when extern node leaves (and backup is NULL)
+ * @param  *host: structure host
+ * @retval None
+ */
 void promote_intr_to_ext(host *host) {
   if (host->ext == NULL) {
     host->ext = host->node_list;
   }
 }
 
+/**
+ * @brief  promote a backup to extern node
+ * @note   that node must be insert in the node_list
+ * @param  *host: structure host
+ * @retval None
+ */
 void promote_bck_to_ext(host *host) {
   if (host->bck != NULL) {
     host->ext = host->bck;
@@ -77,6 +91,7 @@ void promote_bck_to_ext(host *host) {
   host->bck = NULL;
 }
 
+/*! TODO */
 void get_a_new_backup(host *host) {
   char msg_to_send[128] = {'\0'};
   char bckID[64] = {'\0'}, bckIP[64] = {'\0'}, bckTCP[64] = {'\0'};
@@ -101,14 +116,14 @@ void get_a_new_backup(host *host) {
   }
 }
 
+/*! TODO */
 void notify_internal_nodes_of_external_change(host *host) {
   if (host->ext == NULL) {
     return;
   }
 
   char msg_to_send[128] = {'\0'};
-  sprintf(msg_to_send, "EXTERN %s %s %d", host->ext->ID, host->ext->IP,
-          host->ext->TCP);
+  sprintf(msg_to_send, "EXTERN %s %s %d", host->ext->ID, host->ext->IP, host->ext->TCP);
 
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     if (temp->fd == host->ext->fd) {

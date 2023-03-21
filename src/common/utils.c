@@ -118,6 +118,14 @@ void insert_in_forwarding_table(host *host, int dest, int neighbour) {
   host->tab_expedicao[dest] = neighbour;
 }
 
+/**
+ * @brief  Verify if the host knows the rote to another node (with specific ID)
+ * @note
+ * @param  *myH: structure host
+ * @param  *ID: ID of the node we are searching for the rote (destiny)
+ * @retval NULL - there is no information in the expedition table
+ *         auxN - neighbor node to where we must send the information (rote to destiny)
+ */
 node *check_route(host *myH, char *ID) {
   int destino = atoi(ID), vizinho = -1;
   node *auxN = NULL;
