@@ -62,11 +62,12 @@ void clear_stdout_line() {
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w); // Get the terminal size
 
-  printf("\r"); // Move the cursor to the beginning of the line
-  for (int i = 0; i < w.ws_col; ++i) {
-    printf(" "); // Overwrite the line with spaces
-  }
-  printf("\r"); // Move the cursor back to the beginning of the line
+  // Move the cursor to the beginning of the line
+  printf("\r");
+  // Overwrite the line with spaces
+  print_char_n_times(' ', w.ws_col);
+  // Move the cursor back to the beginning of the line
+  printf("\r");
 }
 
 void prompt() {

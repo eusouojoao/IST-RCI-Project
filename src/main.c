@@ -31,44 +31,49 @@ void signal_setup(void) {
 }
 
 int main(int argc, char *argv[]) {
-  int r = 0;
-  srand((unsigned int)time(NULL)); // seed the rand function
-  /* User arguments */
+  // Seed the rand function
+  srand((unsigned int)time(NULL));
+
+  // Parse and setup user arguments
   user_args *uip = NULL;
   uip = arguments_parser(argc, argv);
 
+  // Initialize the host structure with the user supplied arguments
   host *host = init_host(uip);
   host->listen_fd = create_listen_socket(uip);
 
-  fd_set working_set; // read file descriptors set
-  struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // 600s = 10min
+  // select() working variables
+  struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // Timeout of 600s = 10min
+  fd_set working_set;                                     // Read file descriptors set
+  int counter = 0; // Number of descriptors that became ready
 
+  // Setup signal handling
   signal_setup();
 
   // Map SIGQUIT to CTRL+L to clear the terminal
   struct termios original_termios;
   modify_termios(&original_termios);
 
-  /* User interface engage */
+  // User interface engage
   print_header();
   user_interface_toggle(ON);
 
-  while (ON) {
-    int counter = 0; // will receive the number of descriptors that became ready
+  int r = 0; // Stores the return values
 
-    /* Print prompt */
+  while (ON) {
+    // Print prompt
     prompt();
 
-    /* Update the file descriptor's working set */
+    // Update the file descriptor's working set
     update_working_set(host, &working_set);
 
-    /* Wait for input */
+    // Wait for input
     if ((r = wait_for_ready_fildes(host, &working_set, &counter, &timeout)) == -1) {
       // Exiting... fatal error
       break;
     }
 
-    /* Process input */
+    // Process input
     if ((r = fildes_control(host, &working_set, &counter)) == 0) {
       // Exiting...
       break;
