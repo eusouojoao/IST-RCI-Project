@@ -27,10 +27,9 @@ typedef struct {
 user_command get_user_command(char *token) {
   // Static array of struct pairs that maps token strings to user commands
   static const token_command_pair command_lookup[] = {
-      {"join", JOIN},        {"djoin", DJOIN},   {"create", CREATE},
-      {"delete", DELETE},    {"get", GET},       {"show", SHOW},
-      {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES}, {"sr", SHOW_ROUTING},
-      {"leave", LEAVE},      {"exit", EXIT},     {"clear", CLEAR},
+      {"join", JOIN},       {"djoin", DJOIN}, {"create", CREATE},    {"delete", DELETE},
+      {"get", GET},         {"show", SHOW},   {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES},
+      {"sr", SHOW_ROUTING}, {"leave", LEAVE}, {"exit", EXIT},        {"clear", CLEAR},
   };
 
   size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
@@ -52,7 +51,7 @@ int process_keyboard_input(host *host, char *buffer) {
   user_command cmd = UNDEF;
   char token[32] = {'\0'};
   if (sscanf(buffer, "%s", token) < 1) {
-    system_error("In process_stdin_input() ->" RED " sscanf() failed");
+    system_error("sscanf() failed");
     return -1;
   }
 
@@ -235,7 +234,7 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
   case BADFORMAT:
   default:
     /*error*/
-    printf("Something something bad format from NODE: %s\n", node->ID);
+    fprintf(stderr, "Something something bad format from NODE: %s\n", node->ID);
     break;
   }
 }

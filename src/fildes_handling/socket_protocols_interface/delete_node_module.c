@@ -76,7 +76,7 @@ void promote_intr_to_ext(host *host) {
 
 /**
  * @brief  promote a backup to extern node
- * @note   that node must be insert in the node_list
+ * @note   the node must be insert in the node_list
  * @param  *host: structure host
  * @retval None
  */
@@ -99,7 +99,6 @@ void get_a_new_backup(host *host) {
   sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
   char *msg_received = fetch_bck(host, msg_to_send);
   if (msg_received == NULL) {
-    printf("get_a_new_backup() error - teste\n"); // DEBUG - remover
     return;
   }
 
@@ -131,14 +130,14 @@ void notify_internal_nodes_of_external_change(host *host) {
     }
 
     if (write(temp->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
-      system_error("In withdraw_module() ->" RED " write() failed");
+      system_error("write() failed");
     }
   }
 
   /* The promoted internal node (new external node), must also be notified */
   if (host->bck == NULL) {
     if (write(host->ext->fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
-      system_error("In withdraw_module() ->" RED " write() failed");
+      system_error("write() failed");
     }
   }
 }

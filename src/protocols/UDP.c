@@ -19,8 +19,8 @@
  * a newly allocated string.
  *
  * @param uip: pointer to the user_args structure containing the destination IP and
- * port.
- * @param msg: message to send.
+ * port
+ * @param msg: message to send
  *
  * @return A pointer to the received message, or NULL on error.
  */
@@ -77,6 +77,6 @@ char *send_message_UDP(user_args *uip, char *msg) {
   }
 
   close(fd);
-  memcpy(received_msg, buffer, (size_t)n + 1);
+  memcpy(received_msg, buffer, (size_t)n);
   return received_msg;
 }

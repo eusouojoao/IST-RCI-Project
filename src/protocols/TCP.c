@@ -15,6 +15,74 @@
 #define BUFFER_SIZE 256
 
 /**
+ * @brief Sends a message over a TCP socket.
+ *
+ * This function sends a message over a TCP socket using the provided file
+ * descriptor. It ensures that the entire message is sent by repeatedly calling
+ * write() until all bytes are sent or an error occurs.
+ *
+ * @param fd: The file descriptor of the socket to send the message on
+ * @param msg_to_send: The message to be sent
+ * @param msglen: The length of the message to be sent
+ *
+ * @return the total number of bytes sent or -1 if an error occurred.
+ */
+ssize_t send_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
+  ssize_t total_bytes_sent = 0;
+  ssize_t bytes_sent = 0;
+  const char *buffer = msg_to_send;
+
+  // Loop until the entire message is sent
+  while (total_bytes_sent < (ssize_t)msglen) {
+    bytes_sent = write(fd, buffer + total_bytes_sent, msglen - (size_t)total_bytes_sent);
+    if (bytes_sent == -1) {
+      return -1;
+    }
+
+    total_bytes_sent += bytes_sent;
+  }
+
+  return total_bytes_sent;
+}
+
+/**
+ * @brief Receives a message over a TCP socket.
+ *
+ * This function receives a message over a TCP socket using the provided file
+ * descriptor. It reads data one byte at a time into the provided buffer, stopping
+ * when the buffer is full, the connection is closed, or a newline character is
+ * encountered.
+ *
+ * @param fd The file descriptor of the socket to receive the message on
+ * @param buffer The buffer to store the received message in
+ * @param size The size of the buffer
+ *
+ * @return the total number of bytes received or -1 if an error occurred.
+ */
+ssize_t recv_msg_TCP(int fd, char *buffer, size_t size) {
+  ssize_t bytes_received = 0;
+
+  while (bytes_received < (ssize_t)size) {
+    ssize_t result = read(fd, buffer + bytes_received, 1); // Read one byte at a time
+    if (result < 0) {
+      return -1;
+    } else if (result == 0) {
+      // The sender has closed the connection or no more data is available
+      break;
+    }
+
+    bytes_received += result;
+
+    if (buffer[bytes_received - 1] == '\n') {
+      // Newline character encountered, stop reading
+      break;
+    }
+  }
+
+  return bytes_received;
+}
+
+/**
  * @brief Sends a message over a TCP connection and reads the response.
  *
  * This function writes a message to the specified file descriptor and then
@@ -29,16 +97,16 @@
 char *send_message_TCP(int fd, char *msg_to_send) {
   char buffer[BUFFER_SIZE] = {'\0'};
 
-  ssize_t n = write(fd, msg_to_send, strlen(msg_to_send) + 1);
+  ssize_t n = send_msg_TCP(fd, msg_to_send, strlen(msg_to_send));
   if (n == -1) {
     system_error("write() failed");
     close(fd);
     return NULL;
   }
 
-  n = recv(fd, buffer, sizeof(buffer), 0);
+  n = recv_msg_TCP(fd, buffer, sizeof(buffer) - 1);
   if (n == -1) {
-    system_error("recv() failed");
+    system_error("read() failed");
     close(fd);
     return NULL;
   }

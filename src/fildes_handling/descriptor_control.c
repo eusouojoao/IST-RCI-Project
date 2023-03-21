@@ -74,8 +74,8 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout) {
 
   do {
-    *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL,
-                      (fd_set *)NULL, (struct timeval *)timeout);
+    *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL, (fd_set *)NULL,
+                      (struct timeval *)timeout);
   } while (*counter == -1 && errno == EINTR); // Ignore SIGQUIT
 
   if (*counter <= 0) {
@@ -154,15 +154,15 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
  * data.
  */
 int handle_keyboard_input(host *host) {
-  char *buffer = calloc(SIZE, sizeof(char));
+  char *buffer = calloc(SIZE + 1, sizeof(char));
   if (buffer == NULL) {
-    system_error("In process_keyboard_input() -> calloc() failed");
+    system_error("calloc() failed");
     return -1;
   }
 
   ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE);
   if (bytes_read <= 0) {
-    system_error("In process_keyboard_input() -> read() failed");
+    system_error("read() failed");
     free(buffer);
     return -1;
   }
@@ -193,13 +193,13 @@ int handle_new_connection(host *host) {
 
   int new_fd = accept(host->listen_fd, &in_addr, &in_addrlen);
   if (new_fd == -1) {
-    system_error("In process_new_connection() -> accept() failed");
+    system_error("accept() failed");
     return -1;
   }
 
-  char *buffer = calloc(SIZE, sizeof(char));
+  char *buffer = calloc(SIZE + 1, sizeof(char));
   if (buffer == NULL) {
-    system_error("In process_new_connection() -> calloc() failed");
+    system_error("calloc() failed");
     close(new_fd);
     return -1;
   }
@@ -210,7 +210,7 @@ int handle_new_connection(host *host) {
     free(buffer);
     return 1;
   } else if (bytes_read < 0) {
-    system_error("In process_new_connection() -> read() failed");
+    system_error("read() failed");
     close(new_fd);
     free(buffer);
     return -1;
@@ -242,20 +242,20 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
     if (FD_ISSET(temp->fd, working_set)) {
       FD_CLR(temp->fd, working_set);
 
-      char *buffer = calloc(SIZE << 4, sizeof(char));
+      char *buffer = calloc((SIZE << 4) + 1, sizeof(char));
       if (buffer == NULL) {
-        system_error("In process_neighbour_nodes() -> calloc() failed");
+        system_error("calloc() failed");
         return -1;
       }
 
-      ssize_t bytes_read = read(temp->fd, buffer, SIZE);
+      ssize_t bytes_read = read(temp->fd, buffer, SIZE << 4);
       if (bytes_read == 0) {
         // Node left the network
         delete_node(host, temp->fd);
         free(buffer);
         break;
       } else if (bytes_read < 0) {
-        system_error("In process_neighbour_nodes() -> read() failed");
+        system_error("read() failed");
         free(buffer);
         return -1;
       }
