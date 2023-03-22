@@ -3,12 +3,17 @@
 #include "../../error_handling/error_messages.h"
 #include "core_common.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #define MAXREQUESTS 99
 #define BUFFER_SIZE 256
+
+#define WRITE_TIMEOUT_SECONDS 3          // 3 seconds
+#define READ_TIMEOUT_MICROSECONDS 100000 // 100 milliseconds
 
 /**
  * @brief Sends a message over a TCP socket.
@@ -17,28 +22,47 @@
  * descriptor. It ensures that the entire message is sent by repeatedly calling
  * write() until all bytes are sent or an error occurs.
  *
- * @param fd: The file descriptor of the socket to send the message on
- * @param msg_to_send: The message to be sent
- * @param msglen: The length of the message to be sent
+ * @param fd: the file descriptor of the socket to send the message on
+ * @param msg_to_send: the message to be sent
+ * @param msglen: the length of the message to be sent
  *
  * @return the total number of bytes sent or -1 if an error occurred.
  */
 ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
-  ssize_t total_bytes_sent = 0;
+  ssize_t total_sent = 0;
   ssize_t bytes_sent = 0;
-  const char *buffer = msg_to_send;
+  fd_set writefds;
+
+  struct timeval timeout = {
+      .tv_sec = WRITE_TIMEOUT_SECONDS,
+      .tv_usec = 0,
+  };
 
   // Loop until the entire message is sent
-  while (total_bytes_sent < (ssize_t)msglen) {
-    bytes_sent = write(fd, buffer + total_bytes_sent, msglen - (size_t)total_bytes_sent);
-    if (bytes_sent == -1) {
+  while (total_sent < (ssize_t)msglen) {
+    // Initialize the file descriptor set and timeout
+    FD_ZERO(&writefds);
+    FD_SET(fd, &writefds);
+
+    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+    if (ready == -1) {
       return -1;
+    } else if (ready == 0) {
+      // Timeout occurred
+      continue;
     }
 
-    total_bytes_sent += bytes_sent;
+    if (FD_ISSET(fd, &writefds)) {
+      bytes_sent = write(fd, msg_to_send + total_sent, msglen - (size_t)total_sent);
+      if (bytes_sent == -1) {
+        return -1;
+      }
+
+      total_sent += bytes_sent;
+    }
   }
 
-  return total_bytes_sent;
+  return total_sent;
 }
 
 /**
@@ -49,29 +73,49 @@ ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
  * when the buffer is full, the connection is closed, or a newline character is
  * encountered.
  *
- * @param fd The file descriptor of the socket to receive the message on
- * @param buffer The buffer to store the received message in
- * @param size The size of the buffer
+ * @param fd: the file descriptor of the socket to receive the message on
+ * @param buffer: the buffer to store the received message in
+ * @param size: the size of the buffer
  *
  * @return the total number of bytes received or -1 if an error occurred.
  */
 ssize_t read_msg_TCP(int fd, char *buffer, size_t size) {
   ssize_t bytes_received = 0;
+  fd_set readfds;
+
+  struct timeval tv = {
+      .tv_sec = 0,
+      .tv_usec = READ_TIMEOUT_MICROSECONDS,
+  };
 
   while (bytes_received < (ssize_t)size) {
-    ssize_t result = read(fd, buffer + bytes_received, 1); // Read one byte at a time
-    if (result < 0) {
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    int ready = select(fd + 1, &readfds, NULL, NULL, &tv);
+    if (ready == -1) {
       return -1;
-    } else if (result == 0) {
-      // The sender has closed the connection or no more data is available
+    } else if (ready == 0) {
+      // Timeout occurred, break the loop
       break;
-    }
+    } else if (FD_ISSET(fd, &readfds)) {
+      ssize_t result = recv(fd, buffer + bytes_received, 1, MSG_DONTWAIT);
+      if (result < 0) {
+        // Ignore EAGAIN and EWOULDBLOCK errors, as they indicate a non-blocking operation
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+          return -1;
+        }
+      } else if (result == 0) {
+        // The sender has closed the connection or no more data is available
+        break;
+      } else {
+        bytes_received += result;
 
-    bytes_received += result;
-
-    if (buffer[bytes_received - 1] == '\n') {
-      // Newline character encountered, stop reading
-      break;
+        if (buffer[bytes_received - 1] == '\n') {
+          // Newline character encountered, stop reading
+          break;
+        }
+      }
     }
   }
 

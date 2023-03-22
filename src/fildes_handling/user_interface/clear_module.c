@@ -1,17 +1,25 @@
 #include "clear_module.h"
 #include "../../common/prompts.h"
+#include "../../common/utils.h"
 #include "../user_interface/leave_module.h"
 #include "user_commands.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-void clear_window() { CLEAR_STREAM(STDIN_FILENO), user_interface_toggle(ON); }
+void clear_window() {
+  CLEAR_STREAM(STDIN_FILENO);
+  user_interface_toggle(ON);
+}
 
 void clear_names(host *host) { delete_names_list(host); }
 
-void clear_routing(host *host) { reset_forwarding_table(host); }
+void clear_routing(host *host) {
+  reset_forwarding_table(host);
+  insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
+}
 
 void clear_wrapper(host *host, user_command cmd, char *buffer) {
   if (cmd == CLEAR) { // If the subcmd is not provided, parse the parse it from the buffer

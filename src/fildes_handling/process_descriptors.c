@@ -232,6 +232,7 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
     break;
   case CONTENT:
   case NOCONTENT:
+    printf(cmd == CONTENT ? "CONTENT\n" : "NOCONTENT\n");
     handle_content_response(host, node, buffer, cmd);
     break;
   case BADFORMAT:

@@ -113,7 +113,7 @@ int delete_name(host *host, char *buffer) {
  * @return Returns 1 if successfully parsed, 0 otherwise.
  */
 int parse_get_name_command(char *buffer, char *dest, char *name) {
-  if (sscanf(buffer, "get %s %s", dest, name) < 2) {
+  if (sscanf(buffer, "get %s %s\n", dest, name) != 2) {
     printf("Less than 2 arguments\n");
     return 0;
   }

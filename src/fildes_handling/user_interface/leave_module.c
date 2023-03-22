@@ -53,7 +53,6 @@ void delete_nodes_list(host *host) {
 
 void reset_forwarding_table(host *host) {
   memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
-  insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
 }
 
 /**

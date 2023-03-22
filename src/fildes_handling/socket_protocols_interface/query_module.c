@@ -21,7 +21,7 @@
  */
 int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
   // Parse the command and store the destination and name.
-  if (sscanf(buffer, "QUERY %s %s %s", dest, orig, name) < 3) {
+  if (sscanf(buffer, "QUERY %s %s %s\n", dest, orig, name) != 3) {
     printf("Less than 3 arguments\n");
     return 0;
   }
@@ -77,12 +77,12 @@ void process_query(host *host, node *sender, char *buffer) {
 int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {
-    if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) < 3) {
+    if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
       printf("Less than 3 arguments\n");
       return 0;
     }
   } else if (cmd == NOCONTENT) {
-    if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) < 3) {
+    if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
       printf("Less than 3 arguments\n");
       return 0;
     }
