@@ -2,8 +2,8 @@
 #include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
-#include "../../protocols/TCP.h"
-#include "../../protocols/UDP.h"
+#include "../../fildes_handling/core/TCP.h"
+#include "../../fildes_handling/core/UDP.h"
 #include "leave_module.h"
 #include "user_commands.h"
 

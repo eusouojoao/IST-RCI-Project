@@ -2,8 +2,8 @@
 #include "common/handle_terminal.h"
 #include "common/prompts.h"
 #include "common/utils.h"
+#include "fildes_handling/core/TCP.h"
 #include "fildes_handling/descriptor_control.h"
-#include "protocols/TCP.h"
 
 #include <signal.h>
 #include <stdlib.h>

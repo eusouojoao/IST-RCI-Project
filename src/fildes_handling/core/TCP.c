@@ -1,6 +1,6 @@
 #include "TCP.h"
-#include "../common/retry.h"
-#include "../error_handling/error_messages.h"
+#include "../../common/retry.h"
+#include "../../error_handling/error_messages.h"
 
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>

@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-#include "../common/struct.h"
+#include "../../common/struct.h"
 
 ssize_t send_msg_TCP(int fd, char *msg_to_send, size_t msglen);
 ssize_t recv_msg_TCP(int fd, char *buffer, size_t size);
