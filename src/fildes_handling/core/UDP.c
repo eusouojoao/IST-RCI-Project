@@ -1,15 +1,55 @@
 #include "UDP.h"
 #include "../../common/retry.h"
 #include "../../error_handling/error_messages.h"
+#include "core_common.h"
 
-#include <arpa/inet.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
+
+/** @brief Sends a message over a UDP connection.
+ *
+ * This function sends the given message to the specified destination IP and
+ * port using a given UDP socket file descriptor.
+ *
+ * @param fd: socket file descriptor
+ * @param addr: pointer to the sockaddr_in structure containing the destination IP and
+ * port
+ * @param msg: message to send
+ *
+ * @return The number of bytes sent, or -1 on error.
+ */
+ssize_t send_msg_UDP(int fd, struct sockaddr_in *addr, char *msg) {
+  ssize_t n;
+  RETRY(sendto(fd, msg, strlen(msg) + 1, 0, (struct sockaddr *)addr, sizeof(*addr)),
+        MAX_ATTEMPTS, n);
+
+  return n;
+}
+
+/** @brief Receives a message over a UDP connection.
+ *
+ * This function reads a message from a UDP connection using a given socket
+ * file descriptor and stores it in the provided buffer.
+ *
+ * @param fd: socket file descriptor
+ * @param addr: pointer to the sockaddr_in structure to store the sender's address
+ * @param buffer: buffer to store the received message
+ * @param buffer_size: size of the buffer
+ *
+ * @return the number of bytes received, or -1 on error.
+ */
+ssize_t recv_msg_UDP(int fd, struct sockaddr_in *addr, char *buffer, size_t buffer_size) {
+  ssize_t n;
+  socklen_t addrlen = sizeof(*addr);
+  RETRY(recvfrom(fd, buffer, buffer_size, 0, (struct sockaddr *)addr, &addrlen),
+        MAX_ATTEMPTS, n);
+
+  return n;
+}
 
 /** @brief Sends a message over a UDP connection and reads the response.
  *
@@ -24,13 +64,12 @@
  *
  * @return A pointer to the received message, or NULL on error.
  */
-char *send_message_UDP(user_args *uip, char *msg) {
-  ssize_t n = 0;
+char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
   char buffer[BUFFER_SIZE] = {'\0'};
+  ssize_t n = 0;
 
-  int fd = socket(AF_INET, SOCK_DGRAM, 0);
+  int fd = create_socket(UDP);
   if (fd == -1) {
-    system_error("socket() failed");
     return NULL;
   }
 
@@ -39,31 +78,19 @@ char *send_message_UDP(user_args *uip, char *msg) {
   }
 
   struct sockaddr_in addr;
-  memset(&addr, 0, sizeof(addr));
-  if (inet_pton(AF_INET, uip->regIP, &(addr.sin_addr)) != 1) {
-    system_error("inet_pton() failed");
+  if (setup_sockaddr_in(&addr, uip->regIP, uip->regUDP) == -1) {
     close(fd);
     return NULL;
   }
 
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons((in_port_t)uip->regUDP);
-
-  RETRY( // Will retry if it fails...
-      sendto(fd, msg, strlen(msg) + 1, 0, (struct sockaddr *)&addr, sizeof(addr)),
-      MAX_ATTEMPTS, n /* return value */);
-
+  n = send_msg_UDP(fd, &addr, msg);
   if (n == -1) {
     system_error("sendto() failed");
     close(fd);
     return NULL;
   }
 
-  socklen_t addrlen = sizeof(addr);
-  RETRY( // Will retry if it fails...
-      recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &addrlen),
-      MAX_ATTEMPTS, n /* return value */);
-
+  n = recv_msg_UDP(fd, &addr, buffer, sizeof(buffer));
   if (n == -1) {
     system_error("recvfrom() failed");
     close(fd);

@@ -51,6 +51,11 @@ void delete_nodes_list(host *host) {
   host->bck = NULL;
 }
 
+void reset_forwarding_table(host *host) {
+  memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
+  insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
+}
+
 /**
  * @brief Clears the host structure and frees memory allocated for it.
  *
@@ -76,7 +81,7 @@ void clear_host(host *host) {
   delete_names_list(host);
 
   // Resets the forwarding table
-  memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
+  reset_forwarding_table(host);
 }
 
 /**
@@ -102,7 +107,7 @@ void leave_network(host *host, user_command flag) {
   // Send UNREG message to the node server
   char msg_to_send[SIZE];
   snprintf(msg_to_send, SIZE, "UNREG %s %s\n", host->net, host->ID);
-  char *msg_received = send_message_UDP(host->uip, msg_to_send);
+  char *msg_received = send_and_receive_msg_UDP(host->uip, msg_to_send);
 
   // Check if message was successfully sent
   if (!msg_received) {

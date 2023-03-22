@@ -14,6 +14,9 @@ typedef enum user_command {
   LEAVE,
   EXIT,
   CLEAR,
+  CLEAR_ROUTING,
+  CLEAR_NAMES,
+  CLEAR_WINDOW,
   UNDEF
 } user_command;
 

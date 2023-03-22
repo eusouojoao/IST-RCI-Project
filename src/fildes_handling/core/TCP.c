@@ -1,14 +1,10 @@
 #include "TCP.h"
 #include "../../common/retry.h"
 #include "../../error_handling/error_messages.h"
+#include "core_common.h"
 
-#include <arpa/inet.h>
-#include <asm-generic/socket.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #define MAXREQUESTS 99
@@ -27,7 +23,7 @@
  *
  * @return the total number of bytes sent or -1 if an error occurred.
  */
-ssize_t send_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
+ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
   ssize_t total_bytes_sent = 0;
   ssize_t bytes_sent = 0;
   const char *buffer = msg_to_send;
@@ -59,7 +55,7 @@ ssize_t send_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
  *
  * @return the total number of bytes received or -1 if an error occurred.
  */
-ssize_t recv_msg_TCP(int fd, char *buffer, size_t size) {
+ssize_t read_msg_TCP(int fd, char *buffer, size_t size) {
   ssize_t bytes_received = 0;
 
   while (bytes_received < (ssize_t)size) {
@@ -94,27 +90,27 @@ ssize_t recv_msg_TCP(int fd, char *buffer, size_t size) {
  *
  * @return a pointer to the received message, or NULL on error.
  */
-char *send_message_TCP(int fd, char *msg_to_send) {
+char *send_and_receive_msg_TCP(int fd, char *msg_to_send) {
   char buffer[BUFFER_SIZE] = {'\0'};
 
-  ssize_t n = send_msg_TCP(fd, msg_to_send, strlen(msg_to_send));
+  ssize_t n = write_msg_TCP(fd, msg_to_send, strlen(msg_to_send));
   if (n == -1) {
     system_error("write() failed");
     close(fd);
     return NULL;
   }
 
-  n = recv_msg_TCP(fd, buffer, sizeof(buffer) - 1);
+  n = read_msg_TCP(fd, buffer, sizeof(buffer) - 1);
   if (n == -1) {
     system_error("read() failed");
     close(fd);
     return NULL;
   }
 
-  char *received_msg = calloc((size_t)n, sizeof(char));
+  char *received_msg = calloc((size_t)n + 1, sizeof(char));
   if (received_msg == NULL) {
     close(fd);
-    exit(1);
+    return NULL;
   }
 
   memcpy(received_msg, buffer, (size_t)n);
@@ -135,21 +131,23 @@ char *send_message_TCP(int fd, char *msg_to_send) {
  * @return a pointer to the received message, or NULL on error.
  */
 char *fetch_bck(host *host, char *msg_to_send) {
-  int fd = socket(AF_INET, SOCK_STREAM, 0);
+  // Create a new TCP socket
+  int fd = create_socket(TCP);
   if (fd == -1) {
-    system_error("socket() failed");
     return NULL;
   }
 
+  // Set socket timeouts
+  if (set_timeouts(fd) == -1) {
+    return NULL;
+  }
+
+  // Initialize the socket address structure
   struct sockaddr_in addr;
-  memset(&addr, 0, sizeof(addr));
-  if (inet_pton(AF_INET, host->ext->IP, &(addr.sin_addr)) != 1) {
-    system_error("inet_pton() failed");
+  if (setup_sockaddr_in(&addr, host->ext->IP, host->ext->TCP) == -1) {
+    close(fd);
     return NULL;
   }
-
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons((in_port_t)host->ext->TCP);
 
   ssize_t n = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
   if (n == -1) {
@@ -159,7 +157,7 @@ char *fetch_bck(host *host, char *msg_to_send) {
   }
 
   host->ext->fd = fd;
-  return send_message_TCP(host->ext->fd, msg_to_send);
+  return send_and_receive_msg_TCP(host->ext->fd, msg_to_send);
 }
 
 /**
@@ -175,9 +173,9 @@ char *fetch_bck(host *host, char *msg_to_send) {
  */
 int create_listen_socket(user_args *uip) {
   // Create a new TCP socket
-  int fd = socket(AF_INET, SOCK_STREAM, 0);
+  int fd = create_socket(TCP);
   if (fd == -1) {
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   // Set socket options for address reuse
@@ -196,29 +194,23 @@ int create_listen_socket(user_args *uip) {
 
   // Initialize the socket address structure
   struct sockaddr_in addr;
-  memset(&addr, 0, sizeof(addr));
-  if (inet_pton(AF_INET, uip->IP, &(addr.sin_addr)) != 1) {
-    system_error("inet_pton() failed");
+  if (setup_sockaddr_in(&addr, uip->IP, uip->TCP) == -1) {
     close(fd);
-    exit(EXIT_FAILURE);
+    return -1;
   }
-
-  // Set the address family and port number
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons((in_port_t)uip->TCP);
 
   // Bind the socket to the specified address
   if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     system_error("bind() failed");
     close(fd);
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   // Listen for incoming connections
   if (listen(fd, MAXREQUESTS) < 0) {
     system_error("listen() failed");
     close(fd);
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   return fd;

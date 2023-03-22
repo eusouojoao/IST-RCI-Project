@@ -43,7 +43,7 @@ void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
   }
 
   // Extract IP and PORT from the matched pattern
-  if (sscanf(str, "%*s %s %d", IP, &PORT) < 2) {
+  if (sscanf(str, "%*s %s %d", IP, &PORT) != 2) {
     exit(1);
   }
 
@@ -169,7 +169,7 @@ int djoin_network(char *buffer, host *host, int flag) {
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) < 5) {
+  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) != 5) {
     // TODO: Handle error: invalid user input or function failure
     return 0;
   }
@@ -203,7 +203,11 @@ int djoin_network(char *buffer, host *host, int flag) {
 
   insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
 
-  sscanf(received_msg, "EXTERN %s %s %s", node_ID, node_IP, node_TCP);
+  if (sscanf(received_msg, "EXTERN %s %s %s\n", node_ID, node_IP, node_TCP) != 3) {
+    leave_network(host, flag == JOIN ? JOIN : DJOIN);
+    return 0;
+  }
+
   if (strcmp(node_ID, host->ID) != 0) {
     insert_in_forwarding_table(host, atoi(node_ID), atoi(host->ext->ID));
     host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
@@ -232,7 +236,7 @@ int join_network(char *buffer, host *host) {
   char *received_reg_msg = NULL, *received_nodeslist = NULL, *ext_node = NULL;
   char msg_to_send[SIZE << 2] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "join %s %s", net, ID) < 2) {
+  if (sscanf(buffer, "join %s %s\n", net, ID) != 2) {
     system_error("sscanf() failed");
     return 0;
   }
@@ -248,7 +252,7 @@ int join_network(char *buffer, host *host) {
   }
 
   sprintf(msg_to_send, "NODES %s", net);
-  received_nodeslist = send_message_UDP(host->uip, msg_to_send);
+  received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
   if (received_nodeslist == NULL) {
     return 0;
   }
@@ -262,7 +266,7 @@ int join_network(char *buffer, host *host) {
 
   memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
-  received_reg_msg = send_message_UDP(host->uip, msg_to_send);
+  received_reg_msg = send_and_receive_msg_UDP(host->uip, msg_to_send);
   if (received_reg_msg == NULL) {
     free(received_nodeslist);
     return 0;

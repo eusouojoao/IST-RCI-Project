@@ -1,10 +1,10 @@
 #include "process_descriptors.h"
-#include "../common/prompts.h"
 #include "../common/retry.h"
 #include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
 #include "socket_protocols_interface/utility.h"
+#include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
 
 #include <stdio.h>
@@ -27,9 +27,10 @@ typedef struct {
 user_command get_user_command(char *token) {
   // Static array of struct pairs that maps token strings to user commands
   static const token_command_pair command_lookup[] = {
-      {"join", JOIN},       {"djoin", DJOIN}, {"create", CREATE},    {"delete", DELETE},
-      {"get", GET},         {"show", SHOW},   {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES},
-      {"sr", SHOW_ROUTING}, {"leave", LEAVE}, {"exit", EXIT},        {"clear", CLEAR},
+      {"join", JOIN},        {"djoin", DJOIN},    {"leave", LEAVE},     {"exit", EXIT},
+      {"create", CREATE},    {"delete", DELETE},  {"get", GET},         {"show", SHOW},
+      {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES},  {"sr", SHOW_ROUTING}, {"clear", CLEAR},
+      {"cr", CLEAR_ROUTING}, {"cn", CLEAR_NAMES}, {"cw", CLEAR_WINDOW},
   };
 
   size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
@@ -63,7 +64,7 @@ int process_keyboard_input(host *host, char *buffer) {
     }
     break;
   case DJOIN:
-    if (djoin_network(buffer, host, (int)cmd)) {
+    if (djoin_network(buffer, host, cmd)) {
       flag = cmd;
     }
     break;
@@ -80,16 +81,18 @@ int process_keyboard_input(host *host, char *buffer) {
   case SHOW_TOPOLOGY:
   case SHOW_NAMES:
   case SHOW_ROUTING:
-    show_wrapper(host, (int)cmd, buffer);
+    show_wrapper(host, cmd, buffer);
     break;
   case LEAVE:
-    leave_network(host, (int)flag);
+    leave_network(host, flag);
     break;
   case EXIT:
-    return exit_program(host, (int)flag);
+    return exit_program(host, flag);
   case CLEAR:
-    CLEAR_STREAM(STDIN_FILENO);
-    user_interface_toggle(ON);
+  case CLEAR_WINDOW:
+  case CLEAR_NAMES:
+  case CLEAR_ROUTING:
+    clear_wrapper(host, cmd, buffer);
     break;
   case UNDEF:
   default:

@@ -1,6 +1,5 @@
 #include "show_module.h"
 #include "../../common/prompts.h"
-#include "user_commands.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -21,36 +20,40 @@
  * @param buffer[in]: null-terminated string containing the "show" command and its
  * arguments.
  */
-void show_wrapper(host *host, int cmd, char *buffer) {
-  // Check if the command is already provided
-  if (cmd == SHOW_TOPOLOGY || cmd == SHOW_NAMES || cmd == SHOW_ROUTING) {
-    switch (cmd) {
-    case SHOW_TOPOLOGY:
-      show_topology(host);
-      break;
-    case SHOW_NAMES:
-      show_names(host);
-      break;
-    case SHOW_ROUTING:
-      show_routes(host);
-      break;
-    }
-  } else {
+void show_wrapper(host *host, user_command cmd, char *buffer) {
+  if (cmd == SHOW) { // If cmd is not provided, parse the command from the buffer
+
     // Attempt to parse a generic "show" command from the buffer
     char subcmd[128] = {'\0'};
-    if (sscanf(buffer, "show %s", subcmd) == 1) {
+    if (sscanf(buffer, "show %s\n", subcmd) == 1) {
       if (strcmp(subcmd, "topology") == 0) {
-        show_topology(host);
+        cmd = SHOW_TOPOLOGY;
       } else if (strcmp(subcmd, "names") == 0) {
-        show_names(host);
+        cmd = SHOW_NAMES;
       } else if (strcmp(subcmd, "routing") == 0) {
-        show_routes(host);
+        cmd = SHOW_ROUTING;
       } else {
         fprintf(stderr, "Command not found: %s", buffer);
+        return;
       }
     } else {
       fprintf(stderr, "Invalid command format: %s", buffer);
+      return;
     }
+  }
+
+  switch (cmd) {
+  case SHOW_TOPOLOGY:
+    show_topology(host);
+    break;
+  case SHOW_NAMES:
+    show_names(host);
+    break;
+  case SHOW_ROUTING:
+    show_routes(host);
+    break;
+  default:
+    break;
   }
 }
 
