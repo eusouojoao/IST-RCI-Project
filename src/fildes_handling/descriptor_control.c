@@ -1,10 +1,10 @@
 #include "descriptor_control.h"
 #include "../error_handling/error_messages.h"
+#include "core/TCP.h"
 #include "process_descriptors.h"
 #include "socket_protocols_interface/delete_node_module.h"
 
 #include <errno.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -204,7 +204,7 @@ int handle_new_connection(host *host) {
     return -1;
   }
 
-  ssize_t bytes_read = read(new_fd, buffer, SIZE);
+  ssize_t bytes_read = read_msg_TCP(new_fd, buffer, SIZE);
   if (bytes_read == 0) {
     close(new_fd);
     free(buffer);
@@ -248,7 +248,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
         return -1;
       }
 
-      ssize_t bytes_read = read(temp->fd, buffer, SIZE << 4);
+      ssize_t bytes_read = read_msg_TCP(temp->fd, buffer, SIZE << 4);
       if (bytes_read == 0) {
         // Node left the network
         delete_node(host, temp->fd);

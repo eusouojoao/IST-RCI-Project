@@ -84,13 +84,18 @@ int delete_name(host *host, char *buffer) {
     return -1;
   }
 
-  if (check_name(buffer) == -1) {
+  char name_to_delete[128] = {'\0'};
+  if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
+    return -1;
+  }
+
+  if (check_name(name_to_delete) == -1) {
     return -1; // Name too long, or contains non-alphanumeric entries
   }
 
   names **p = &host->names_list;
   while (*p != NULL) {
-    if (strcmp((*p)->name, buffer) == 0) {
+    if (strcmp((*p)->name, name_to_delete) == 0) {
       names *temp = *p;
       *p = (*p)->next;
       printf("temp->name: %s", temp->name);
