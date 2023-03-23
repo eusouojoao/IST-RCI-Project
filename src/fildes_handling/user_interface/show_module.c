@@ -70,14 +70,14 @@ void show_topology(host *host) {
   printf("║           Host Topology: ID %s        ║\n", host->ID);
   printf("║               Network %s             ║\n", host->net);
   printf("╠═══════════════════════════════════════╣\n");
+  printf("║  Backup Node:                         ║\n");
+  if (host->bck == NULL) {
+    printf("   %s\t%s\t%d\n", host->ID, host->uip->IP, host->uip->TCP);
+  } else {
+    printf("   %s\t%s\t%d\n", host->bck->ID, host->bck->IP, host->bck->TCP);
+  }
 
   if (host->ext != NULL) { // If not the only node in the network
-    printf("║  Backup Node:                         ║\n");
-    if (host->bck == NULL) {
-      printf("   %s\t%s\t%d\n", host->ID, host->uip->IP, host->uip->TCP);
-    } else {
-      printf("   %s\t%s\t%d\n", host->bck->ID, host->bck->IP, host->bck->TCP);
-    }
 
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  External Neighbor:                   ║\n");
@@ -93,6 +93,13 @@ void show_topology(host *host) {
       }
       node_ptr = node_ptr->next;
     }
+  } else {
+    printf("╠═══════════════════════════════════════╣\n");
+    printf("║  External Neighbor:                   ║\n");
+    printf("║  (None)                               ║\n");
+    printf("╠═══════════════════════════════════════╣\n");
+    printf("║  Internal Neighbors List:             ║\n");
+    printf("║  (None)                               ║\n");
   }
 
   printf("╚═══════════════════════════════════════╝\n");

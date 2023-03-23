@@ -82,7 +82,7 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
       return 0;
     }
   } else if (cmd == NOCONTENT) {
-    if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
+    if (sscanf(buffer, "NOCONTENT %s %s %s\n", dest, orig, name) != 3) {
       printf("Less than 3 arguments\n");
       return 0;
     }

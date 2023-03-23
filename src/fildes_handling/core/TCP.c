@@ -12,7 +12,7 @@
 #define MAXREQUESTS 99
 #define BUFFER_SIZE 256
 
-#define WRITE_TIMEOUT_SECONDS 3          // 3 seconds
+#define WRITE_TIMEOUT_SECONDS 1          // 1 second
 #define READ_TIMEOUT_MICROSECONDS 100000 // 100 milliseconds
 
 /**
@@ -31,6 +31,7 @@
 ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
   ssize_t total_sent = 0;
   ssize_t bytes_sent = 0;
+  int attempt = 0;
   fd_set writefds;
 
   struct timeval timeout = {
@@ -49,6 +50,10 @@ ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
       return -1;
     } else if (ready == 0) {
       // Timeout occurred
+      if (attempt > MAX_ATTEMPTS) {
+        return 0;
+      }
+      attempt++;
       continue;
     }
 
@@ -59,6 +64,7 @@ ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
       }
 
       total_sent += bytes_sent;
+      attempt = 0;
     }
   }
 
