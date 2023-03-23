@@ -64,7 +64,7 @@ int process_keyboard_input(host *host, char *buffer) {
     }
     break;
   case DJOIN:
-    if (djoin_network(buffer, host, cmd)) {
+    if (djoin_network(buffer, host, (int)cmd)) {
       flag = cmd;
     }
     break;

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <sys/socket.h>
-#include <time.h>
+#include <sys/time.h>
 
 /**
  * @brief Delays the execution of the program based on the given attempt
@@ -18,23 +18,22 @@ void delay(int attempt) {
   result *= 1000000000L; // Convertion from seconds to nanoseconds
 
   // Create a timespec struct for the desired delay in seconds
-  struct timespec ts = {.tv_sec = 0, .tv_nsec = (long)result};
+  struct timespec ts = {0, (long)result};
   // Sleep for the calculated delay duration
   nanosleep(&ts, NULL);
 }
 
 int set_timeouts(int fd) {
   struct timeval timeout = {.tv_sec = TIMEOUT_SEC, .tv_usec = 0};
-  socklen_t len = sizeof(timeout);
 
   // Set the send timeout
-  if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)&timeout, len) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
     perror("setsockopt SO_SNDTIMEO");
     return -1;
   }
 
   // Set the receive timeout
-  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout, len) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     perror("setsockopt SO_RCVTIMEO");
     return -1;
   }
