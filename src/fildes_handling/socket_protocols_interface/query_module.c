@@ -70,7 +70,7 @@ void process_query(host *host, node *sender, char *buffer) {
     return;
   }
 
-  send_message_to_neighbours(host, dest, buffer);
+  send_message_to_neighbours(host, sender->fd, dest, buffer);
 }
 
 /*! TODO */
@@ -126,5 +126,5 @@ void handle_content_response(host *host, node *sender, char *buffer,
     return;
   }
 
-  send_message_to_neighbours(host, dest, buffer);
+  send_message_to_neighbours(host, sender->fd, dest, buffer);
 }

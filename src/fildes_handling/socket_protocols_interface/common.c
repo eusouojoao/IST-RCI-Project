@@ -30,7 +30,7 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
   free(protocol_msg);
 }
 
-void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
+void send_message_to_neighbours(host *host, int fd, char *dest, char *protocol_msg) {
   node *neighbour = check_route(host, dest);
   if (neighbour != NULL) {
     // If the route is known, forward the message to the right neighbour
@@ -39,7 +39,7 @@ void send_message_to_neighbours(host *host, char *dest, char *protocol_msg) {
     }
   } else {
     // Else, it must be broadcasted to all known neighbours
-    broadcast_protocol_message(host, -1, protocol_msg);
+    broadcast_protocol_message(host, fd, protocol_msg);
   }
 }
 

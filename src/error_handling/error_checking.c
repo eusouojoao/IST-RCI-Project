@@ -22,7 +22,6 @@ int number_of_command_arguments(char *str, char delim) {
   for (int i = 0; str[i]; i++) {
     n += (str[i] == delim);
   }
-
   return n;
 }
 
@@ -37,19 +36,19 @@ int number_of_command_arguments(char *str, char delim) {
  */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   if (strlen(node_ID) != 2) {
-    /*error*/ printf("strlen\n");
+    printf("strlen\n");
     return EXIT_FAILURE;
   }
 
   if (!(check_if_number(node_ID) && check_if_number(node_TCP)) ||
       (check_IP_address(node_IP) != 1)) {
-    /*error*/ printf("not a number\n");
+    printf("not a number\n");
     return EXIT_FAILURE;
   }
 
   int int_id = atoi(node_ID), int_tcp = atoi(node_TCP);
   if ((int_id < 0 || int_id > 99) || (int_tcp < 0 || int_tcp > MAXPORT)) {
-    /*error*/ printf("out of range\n");
+    printf("out of range\n");
     return EXIT_FAILURE;
   }
 
@@ -81,11 +80,11 @@ int check_net_and_id(char *net, char *id) {
     return EXIT_FAILURE;
   }
 
-  return EXIT_SUCCESS; // valores dentro do range
+  return EXIT_SUCCESS; // Values within range
 }
 
 int check_if_number(char *src) {
-  for (int i = 0; i < (int)strlen(src); i++) {
+  for (size_t i = 0; i < strlen(src); i++) {
     if (!isdigit(src[i])) {
       return 0;
     }
@@ -142,7 +141,7 @@ int check_name(char *name) {
   }
 
   for (size_t i = 0; i < strlen(name); i++) {
-    if (!isalnum(name[i])) {
+    if (!isalnum(name[i]) || name[i] != '.') {
       return -1;
     }
   }

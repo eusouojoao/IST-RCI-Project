@@ -98,7 +98,6 @@ int delete_name(host *host, char *buffer) {
     if (strcmp((*p)->name, name_to_delete) == 0) {
       names *temp = *p;
       *p = (*p)->next;
-      printf("temp->name: %s", temp->name);
       free(temp->name);
       free(temp);
       return 1; // Success, name deleted
@@ -165,5 +164,5 @@ void get_name(host *host, char *buffer) {
   char protocol_msg[256] = {'\0'};
   snprintf(protocol_msg, 256, "QUERY %s %s %s\n", dest, host->ID, name);
 
-  send_message_to_neighbours(host, dest, protocol_msg);
+  send_message_to_neighbours(host, -1, dest, protocol_msg);
 }

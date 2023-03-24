@@ -123,6 +123,7 @@ void notify_internal_nodes_of_external_change(host *host) {
 
   char msg_to_send[128] = {'\0'};
   sprintf(msg_to_send, "EXTERN %s %s %d", host->ext->ID, host->ext->IP, host->ext->TCP);
+  // printf("notify_internal_nodes_of_external_change:\n%s\n", msg_to_send);
 
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     if (temp->fd == host->ext->fd) {

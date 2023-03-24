@@ -26,7 +26,7 @@ void signal_setup(void) {
 
   // Ignore SIGPIPE, SIGINT and SIGTSTP
   signal(SIGPIPE, SIG_IGN);
-  signal(SIGINT, SIG_IGN);  // CTRL + C
+  // signal(SIGINT, SIG_IGN);  // CTRL + C
   signal(SIGTSTP, SIG_IGN); // CTRL + Z
 }
 
@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
   host->listen_fd = create_listen_socket(uip);
 
   // select() working variables
-  struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // Timeout of 600s = 10min
-  fd_set working_set;                                     // Read file descriptors set
-  int counter = 0; // Number of descriptors that became ready
+  // struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // Timeout of 600s = 10min
+  fd_set working_set; // Read file descriptors set
+  int counter = 0;    // Number of descriptors that became ready
 
   // Setup signal handling
   signal_setup();
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     update_working_set(host, &working_set);
 
     // Wait for input
-    if ((r = wait_for_ready_fildes(host, &working_set, &counter, &timeout)) == -1) {
+    if ((r = wait_for_ready_fildes(host, &working_set, &counter, NULL)) == -1) {
       // Exiting... fatal error
       break;
     }
