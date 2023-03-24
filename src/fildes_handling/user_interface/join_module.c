@@ -274,7 +274,8 @@ int join_network(char *buffer, host *host) {
 
   if (strcmp(received_reg_msg, "OKREG") == 0) {
     memset(msg_to_send, 0, sizeof(msg_to_send));
-    if ((ext_node = fetch_extern_from_nodelist(received_nodeslist)) != NULL) {
+    ext_node = fetch_extern_from_nodelist(received_nodeslist);
+    if (ext_node != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
       djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network
     } else {

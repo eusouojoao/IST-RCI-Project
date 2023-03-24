@@ -141,7 +141,7 @@ void show_routes(host *host) {
   printf("╠═════════════╬════════════════════════════════╣\n");
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] != -1) {
-      printf("║     %02zu     ║               %02d               ║\n", i,
+      printf("║      %02zu     ║               %02d               ║\n", i,
              host->tab_expedicao[i]);
     }
   }
