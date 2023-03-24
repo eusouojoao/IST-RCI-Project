@@ -67,8 +67,8 @@ void show_wrapper(host *host, user_command cmd, char *buffer) {
  */
 void show_topology(host *host) {
   printf("╔═══════════════════════════════════════╗\n");
-  printf("║           Host Topology: ID %s        ║\n", host->ID);
-  printf("║               Network %s             ║\n", host->net);
+  printf("║          Host Topology: ID %s         ║\n", host->ID);
+  printf("║              Network %s              ║\n", host->net);
   printf("╠═══════════════════════════════════════╣\n");
   printf("║  Backup Node:                         ║\n");
   if (host->bck == NULL) {
@@ -96,10 +96,10 @@ void show_topology(host *host) {
   } else {
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  External Neighbor:                   ║\n");
-    printf("║  (None)                               ║\n");
+    printf("║                (None)                 ║\n");
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  Internal Neighbors List:             ║\n");
-    printf("║  (None)                               ║\n");
+    printf("║                (None)                 ║\n");
   }
 
   printf("╚═══════════════════════════════════════╝\n");
@@ -114,8 +114,8 @@ void show_names(host *host) {
   const names *names_ptr = host->names_list;
 
   printf("╔══════════════════════════════════════════════╗\n");
-  printf("║               Host Names: ID %s             ║\n", host->ID);
-  printf("║                  Network %s                ║\n", host->net);
+  printf("║               Host Names: ID %s              ║\n", host->ID);
+  printf("║                  Network %s                 ║\n", host->net);
   printf("╠══════════════════════════════════════════════╣\n");
   printf("║  Names List:                                 ║\n");
 
@@ -134,8 +134,8 @@ void show_names(host *host) {
  */
 void show_routes(host *host) {
   printf("╔══════════════════════════════════════════════╗\n");
-  printf("║          Routing Table: Host %s             ║\n", host->ID);
-  printf("║              Network %s                    ║\n", host->net);
+  printf("║            Routing Table: Host %s            ║\n", host->ID);
+  printf("║                Network %s                   ║\n", host->net);
   printf("╠═════════════╦════════════════════════════════╣\n");
   printf("║ Destination ║            Neighbor            ║\n");
   printf("╠═════════════╬════════════════════════════════╣\n");
