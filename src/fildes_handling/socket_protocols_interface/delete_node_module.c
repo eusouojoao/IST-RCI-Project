@@ -105,7 +105,8 @@ void get_a_new_backup(host *host) {
   sscanf(msg_received, "EXTERN %s %s %s", bckID, bckIP, bckTCP);
 
   if (check_node_parameters(bckID, bckIP, bckTCP) == EXIT_FAILURE) {
-    printf("Error! Bad format!\n");
+    // APAGAR - confirmar se é preciso mandar msg visto que o check_node_paramert ja o faz
+    user_error("Parameters in node are wrong");
     return;
   }
 

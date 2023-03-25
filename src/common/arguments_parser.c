@@ -35,20 +35,12 @@ void init_uip(user_args **uip) {
  */
 int check_input_integrity(int argc, char *argv[], user_args **uip) {
 
-  if (check_IP_address(argv[1]) != 1) {
-    user_input_error("Invalid IPv4", argv[1],
-                     "the IP format must be X.X.X.X, where X must be a "
-                     "decimal value between 0 and 255 (octet).");
-  }
+  check_IP_address(argv[1]);
   (*uip)->IP = argv[1];              // Assign the validated IP
   (*uip)->TCP = check_PORT(argv[2]); // Assign the validated port
 
   if (argc == 5) {
-    if (check_IP_address(argv[3]) != 1) {
-      user_input_error("Invalid IPv4", argv[3],
-                       "the IP format must be X.X.X.X, where X must be a "
-                       "decimal value between 0 and 255 (octet).");
-    }
+    check_IP_address(argv[3]);
     (*uip)->regIP = argv[3];              // Assign the validated IP
     (*uip)->regUDP = check_PORT(argv[4]); // Assign the validated port
   }

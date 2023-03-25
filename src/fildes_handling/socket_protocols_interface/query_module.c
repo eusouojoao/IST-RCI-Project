@@ -1,6 +1,7 @@
 #include "query_module.h"
 #include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
+#include "../../error_handling/error_messages.h"
 #include "common.h"
 #include "protocol_commands.h"
 
@@ -22,7 +23,10 @@
 int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
   // Parse the command and store the destination and name.
   if (sscanf(buffer, "QUERY %s %s %s\n", dest, orig, name) != 3) {
-    printf("Less than 3 arguments\n");
+    user_input_error("Invalid protocol message format", buffer,
+                     "The `query` message must have the destiny node, the origin node "
+                     "and the content. E.g. "
+                     "query 00 01 name");
     return 0;
   }
   return 1;
@@ -48,7 +52,6 @@ void process_query(host *host, node *sender, char *buffer) {
 
   // Check if the name is valid
   if (check_name(name) == -1) {
-    printf("Invalid name\n");
     return;
   }
 
@@ -64,7 +67,8 @@ void process_query(host *host, node *sender, char *buffer) {
     }
     // Send the CONTENT or NOCONTENT message to the sender
     if (write(sender->fd, protocol_msg, 256) == -1) {
-      printf("Error sending CONTENT or NOCONTENT to sender\n");
+      printf("Error sending CONTENT or NOCONTENT to sender\n"); // APAGAR - para testes
+                                                                // (acho eu)
     }
 
     return;
@@ -78,12 +82,20 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {
     if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
-      printf("Less than 3 arguments\n");
+      user_input_error(
+          "Invalid protocol message format", buffer,
+          "The `CONTENT` message must have the destiny node, the origin node "
+          "and the content. E.g. "
+          "CONTENT 00 01 name");
       return 0;
     }
   } else if (cmd == NOCONTENT) {
     if (sscanf(buffer, "NOCONTENT %s %s %s\n", dest, orig, name) != 3) {
-      printf("Less than 3 arguments\n");
+      user_input_error(
+          "Invalid protocol message format", buffer,
+          "The `NOCONTENT` message must have the destiny node, the origin node "
+          "and the content. E.g. "
+          "NOCONTENT 00 01 name");
       return 0;
     }
   }

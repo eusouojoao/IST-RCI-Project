@@ -36,19 +36,23 @@ int number_of_command_arguments(char *str, char delim) {
  */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   if (strlen(node_ID) != 2) {
-    printf("strlen\n");
+    user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
     return EXIT_FAILURE;
   }
 
   if (!(check_if_number(node_ID) && check_if_number(node_TCP)) ||
       (check_IP_address(node_IP) != 1)) {
-    printf("not a number\n");
+    // ID, IP, TCP invalid
     return EXIT_FAILURE;
   }
 
   int int_id = atoi(node_ID), int_tcp = atoi(node_TCP);
-  if ((int_id < 0 || int_id > 99) || (int_tcp < 0 || int_tcp > MAXPORT)) {
-    printf("out of range\n");
+  if ((int_id < 0 || int_id > 99)) {
+    user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
+    return EXIT_FAILURE;
+  }
+  if ((int_tcp < 0 || int_tcp > MAXPORT)) {
+    user_input_error("Invalid TCP", node_TCP, "TCP must be a number between 0 and 65534");
     return EXIT_FAILURE;
   }
 
@@ -65,18 +69,25 @@ int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
  */
 int check_net_and_id(char *net, char *id) {
   if (strlen(net) != 3 || strlen(id) != 2) {
-    /*error*/ printf("strlen\n");
+    if (strlen(id) != 2)
+      user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
+    if (strlen(net) != 3)
+      user_input_error("Invalid net", net, "net must be a number between 000 and 999");
     return EXIT_FAILURE;
   }
 
   if (!(check_if_number(net) && check_if_number(id))) {
-    /*error*/ printf("not a number\n");
+    /*error*/
     return EXIT_FAILURE;
   }
 
   int int_net = atoi(net), int_id = atoi(id);
-  if ((int_net < 0 || int_net > 999) || (int_id < 0 || int_id > 99)) {
-    /*error*/ printf("out of range\n");
+  if ((int_net < 0 || int_net > 999)) {
+    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
+    return EXIT_FAILURE;
+  }
+  if ((int_id < 0 || int_id > 99)) {
+    user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
     return EXIT_FAILURE;
   }
 
@@ -86,6 +97,8 @@ int check_net_and_id(char *net, char *id) {
 int check_if_number(char *src) {
   for (size_t i = 0; i < strlen(src); i++) {
     if (!isdigit(src[i])) {
+      user_input_error("Value not a number", src,
+                       "Inputs like ID, net, TCP must be numbers");
       return 0;
     }
   }
@@ -124,6 +137,11 @@ int check_PORT(char *src) {
  */
 int check_IP_address(char *src) {
   struct sockaddr_in sa;
+  if (inet_pton(AF_INET, src, &(sa.sin_addr)) != 1) {
+    user_input_error("Invalid IPv4", src,
+                     "the IP format must be X.X.X.X, where X must be a "
+                     "decimal value between 0 and 255 (octet).");
+  }
   return inet_pton(AF_INET, src, &(sa.sin_addr));
 }
 

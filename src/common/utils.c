@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "../error_handling/error_checking.h"
+#include "../error_handling/error_messages.h"
 #include "../fildes_handling/core/TCP.h"
 
 #include <stdlib.h>
@@ -16,7 +17,8 @@
 host *init_host(user_args *uip) {
   host *new_host = (host *)malloc(sizeof(host));
   if (new_host == NULL) {
-    /*error*/ exit(EXIT_FAILURE);
+    system_error("malloc() failed");
+    exit(EXIT_FAILURE);
   }
   new_host->ID = NULL;
   new_host->net = NULL;
@@ -44,11 +46,13 @@ host *init_host(user_args *uip) {
 node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   node *new_node = (node *)malloc(sizeof(struct node));
   if (new_node == NULL) {
-    /*error*/ exit(0);
+    system_error("malloc() failed");
+    exit(EXIT_FAILURE);
   }
   new_node->ID = (char *)malloc((strlen(ID) + 1) * sizeof(char));
   if (new_node->ID == NULL) {
-    /*error*/ exit(0);
+    system_error("malloc() failed");
+    exit(EXIT_FAILURE);
   }
   strcpy(new_node->ID, ID);
 
@@ -56,7 +60,8 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   new_node->TCP = TCP;
   new_node->IP = (char *)malloc((strlen(IP) + 1) * sizeof(char));
   if (new_node->IP == NULL) {
-    /*error*/ exit(0);
+    system_error("malloc() failed");
+    exit(EXIT_FAILURE);
   }
   strcpy(new_node->IP, IP);
   new_node->next = NULL;

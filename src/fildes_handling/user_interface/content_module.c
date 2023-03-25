@@ -24,7 +24,7 @@
 names *new_names(char *name, names *next) {
   names *new_name = (names *)malloc(sizeof(struct names));
   if (new_name == NULL) {
-    system_error("malloc failed");
+    system_error("malloc() failed");
     return NULL;
   }
 
@@ -51,7 +51,7 @@ int insert_name(host *host, char *buffer) {
 
   char *name = strdup(buffer + strlen("create "));
   if (name == NULL) {
-    system_error("malloc failed");
+    system_error("strdup() failed");
     return -1;
   }
   name[strlen(name) - 1] = '\0';

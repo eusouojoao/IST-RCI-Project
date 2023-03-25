@@ -103,6 +103,7 @@ int process_keyboard_input(host *host, char *buffer) {
   return 1;
 }
 
+// APAGAR - refazer este comment
 /*
  * @brief Process a new file descriptor for the host
  *
@@ -134,6 +135,7 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
   }
   if (check_node_parameters(new_ID, new_IP, new_TCP) == EXIT_FAILURE) {
     /*error*/
+    // APAGAR - check_node_parameter ja informa do erro, fazer mais alguma cena?
     close(new_fd);
     return;
   }

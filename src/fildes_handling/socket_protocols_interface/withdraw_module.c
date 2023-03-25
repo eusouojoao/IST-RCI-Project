@@ -40,9 +40,8 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
     return;
   }
 
-  if (!(strlen(ID) == 2 && check_if_number(ID))) {
-    /* error, protocol with bad format */
-    printf("Error! Bad format!\n");
+  if (check_net_and_id("000", ID) == 0) {
+    // 000 é uma net válida --> estamos a verificar apenas o ID
     return;
   }
 
@@ -57,7 +56,8 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
   char *withdraw_message = calloc(SIZE, sizeof(char));
   if (withdraw_message == NULL) {
-    /*error*/ exit(1);
+    system_error("calloc() failed");
+    exit(EXIT_FAILURE);
   }
 
   snprintf(withdraw_message, SIZE, "WITHDRAW %02d\n", eraseN);

@@ -1,6 +1,7 @@
 #include "clear_module.h"
 #include "../../common/prompts.h"
 #include "../../common/utils.h"
+#include "../../error_handling/error_messages.h"
 #include "../user_interface/leave_module.h"
 #include "user_commands.h"
 
@@ -34,11 +35,16 @@ void clear_wrapper(host *host, user_command cmd, char *buffer) {
       } else if (strcmp(subcmd, "routing") == 0) {
         cmd = CLEAR_ROUTING;
       } else {
-        fprintf(stderr, "Command not found: %s", buffer);
+        user_input_error("Command not found", buffer,
+                         "The available `clear` commands are: clear names (cn); clear "
+                         "window (cw); clear routing (cr)");
         return;
       }
     } else {
-      fprintf(stderr, "Invalid command format: %s", buffer);
+      user_input_error(
+          "Invalid command format", buffer,
+          "The `clear` commands must have 2 words separated by a space. E.g. "
+          "clear routing (cr)");
       return;
     }
   }

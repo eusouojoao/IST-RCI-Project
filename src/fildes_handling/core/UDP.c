@@ -100,7 +100,8 @@ char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
   char *received_msg = calloc((size_t)n + 1, sizeof(char));
   if (received_msg == NULL) {
     close(fd);
-    exit(1);
+    system_error("calloc() failed");
+    exit(EXIT_FAILURE);
   }
 
   close(fd);
