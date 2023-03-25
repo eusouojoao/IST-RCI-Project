@@ -22,6 +22,7 @@ new_connection *create_new_connection(int new_fd) {
   cb_init(connection->cb);
   connection->new_fd = new_fd;
   connection->next = NULL;
+  connection->last_activity = time(NULL);
 
   return connection;
 }
@@ -73,7 +74,7 @@ void delete_new_connections_list(host *host) {
 
   while (host->new_connections_list != NULL) {
     temp = host->new_connections_list;
-    host->new_connections_list = host->new_connections_list->next;
+    host->new_connections_list = temp->next;
     free(temp->cb), free(temp);
   }
 
