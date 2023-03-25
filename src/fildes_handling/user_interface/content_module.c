@@ -1,6 +1,7 @@
 #include "content_module.h"
 #include "../../common/struct.h"
 #include "../../error_handling/error_checking.h"
+#include "../../error_handling/error_messages.h"
 #include "../socket_protocols_interface/common.h"
 
 #include <stdio.h>
@@ -23,7 +24,7 @@
 names *new_names(char *name, names *next) {
   names *new_name = (names *)malloc(sizeof(struct names));
   if (new_name == NULL) {
-    perror("Error: malloc failed");
+    system_error("malloc failed");
     return NULL;
   }
 
@@ -43,12 +44,14 @@ names *new_names(char *name, names *next) {
  */
 int insert_name(host *host, char *buffer) {
   if (number_of_command_arguments(buffer, ' ') > 1) {
+    user_input_error("Invalid arguments", buffer,
+                     "Create command should be in the format: create name");
     return -1;
   }
 
   char *name = strdup(buffer + strlen("create "));
   if (name == NULL) {
-    perror("Error: malloc failed");
+    system_error("malloc failed");
     return -1;
   }
   name[strlen(name) - 1] = '\0';
@@ -81,11 +84,14 @@ int insert_name(host *host, char *buffer) {
  */
 int delete_name(host *host, char *buffer) {
   if (number_of_command_arguments(buffer, ' ') > 1) {
+    user_input_error("Invalid arguments", buffer,
+                     "Delete command should be in the format: delete name");
     return -1;
   }
 
   char name_to_delete[128] = {'\0'};
   if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
+    system_error("sscanf failed"); // APAGAR - Confirmar isto
     return -1;
   }
 
@@ -105,6 +111,9 @@ int delete_name(host *host, char *buffer) {
     p = &(*p)->next;
   }
 
+  user_input_error("Name was not found", name_to_delete,
+                   "Only a name that was created can be deleted, to check names created "
+                   "use command show names (sn)");
   return 0; // Failure, name not found
 }
 
@@ -118,7 +127,8 @@ int delete_name(host *host, char *buffer) {
  */
 int parse_get_name_command(char *buffer, char *dest, char *name) {
   if (sscanf(buffer, "get %s %s\n", dest, name) != 2) {
-    printf("Less than 2 arguments\n");
+    user_input_error("Invalid arguments", buffer,
+                     "Get command should be in the format: get dest name");
     return 0;
   }
   return 1;
@@ -152,7 +162,6 @@ void get_name(host *host, char *buffer) {
   }
 
   if (check_name(name) == -1) {
-    printf("Invalid name\n");
     return;
   }
 

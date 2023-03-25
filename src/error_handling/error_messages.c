@@ -21,7 +21,7 @@ void usage(char *target) {
         stderr);
 }
 
-void print_help(void) {}
+void print_help(void) {} // APAGAR?
 
 /**
  * @brief Displays a user input error message.
@@ -62,3 +62,5 @@ void system_error(char *msg) {
   fputs(strerror(errno), stderr);
   fputs(RESET, stderr);
 }
+
+void user_error(char *msg) { fprintf(stderr, RED "(!)Error" RESET "%s", msg); }

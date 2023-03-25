@@ -1,5 +1,6 @@
 #include "show_module.h"
 #include "../../common/prompts.h"
+#include "../../error_handling/error_messages.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -33,11 +34,15 @@ void show_wrapper(host *host, user_command cmd, char *buffer) {
       } else if (strcmp(subcmd, "routing") == 0) {
         cmd = SHOW_ROUTING;
       } else {
-        fprintf(stderr, "Command not found: %s", buffer);
+        user_input_error("Command not found", buffer,
+                         "The available `show` commands are: show names (sn); show "
+                         "topology (st); show routing (sr)");
         return;
       }
     } else {
-      fprintf(stderr, "Invalid command format: %s", buffer);
+      user_input_error("Invalid command format", buffer,
+                       "The `show` commands must have 2 words separated by a space. E.g. "
+                       "show names (sn)");
       return;
     }
   }

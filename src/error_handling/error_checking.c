@@ -137,12 +137,20 @@ int check_IP_address(char *src) {
  */
 int check_name(char *name) {
   if (strlen(name) > 100) {
+    user_input_error(
+        "Invalid name", name,
+        "Name must be alphanumeric('.' is an exception) and at most 100 caracter long");
     return -1;
   }
 
   for (size_t i = 0; i < strlen(name); i++) {
-    if (!isalnum(name[i]) || name[i] != '.') {
-      return -1;
+    if (isalnum(name[i]) == 0) { // not alphanumeric caracter
+      if (name[i] != '.') {      // but we want to allow . caracters
+        user_input_error("Invalid name", name,
+                         "Name must be alphanumeric('.' is an exception) and at most 100 "
+                         "caracter long");
+        return -1;
+      }
     }
   }
 
