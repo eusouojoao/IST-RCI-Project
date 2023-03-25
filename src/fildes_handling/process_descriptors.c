@@ -126,12 +126,14 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
     close(new_fd);
     return;
   }
+
   if (strcmp(cmd, "NEW") != 0) {
     /*error*/
     perror("Invalid command");
     close(new_fd);
     return;
   }
+
   if (check_node_parameters(new_ID, new_IP, new_TCP) == EXIT_FAILURE) {
     /*error*/
     close(new_fd);
@@ -140,7 +142,7 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
 
   if (host->ext == NULL) { // anchor node case
     sprintf(msg_to_send, "EXTERN %s %s %s\n", new_ID, new_IP, new_TCP);
-    if (write(new_fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
+    if (write(new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
       /*error*/;
       close(new_fd);
       return;
@@ -150,7 +152,7 @@ void process_new_connection(host *host, int new_fd, char *buffer) {
   } else { // normal case
     sprintf(msg_to_send, "EXTERN %s %s %d\n", host->ext->ID, host->ext->IP,
             host->ext->TCP);
-    if (write(new_fd, msg_to_send, strlen(msg_to_send) + 1) == -1) {
+    if (write(new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
       /*error*/;
       close(new_fd);
       return;

@@ -131,6 +131,10 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
       continue;
     }
 
+    // if (handle_queued_connections(host)) {
+    //   continue;
+    // }
+
     // Handle communication with neighbour nodes
     if (handle_neighbour_nodes(host, working_set) == -1) {
       return -1;
@@ -154,13 +158,13 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
  * data.
  */
 int handle_keyboard_input(host *host) {
-  char *buffer = calloc(SIZE + 1, sizeof(char));
+  char *buffer = calloc(SIZE, sizeof(char));
   if (buffer == NULL) {
     system_error("calloc() failed");
     return -1;
   }
 
-  ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE);
+  ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE - 1);
   if (bytes_read <= 0) {
     system_error("read() failed");
     free(buffer);
@@ -197,14 +201,14 @@ int handle_new_connection(host *host) {
     return -1;
   }
 
-  char *buffer = calloc(SIZE + 1, sizeof(char));
+  char *buffer = calloc(SIZE, sizeof(char));
   if (buffer == NULL) {
     system_error("calloc() failed");
     close(new_fd);
     return -1;
   }
 
-  ssize_t bytes_read = read_msg_TCP(new_fd, buffer, SIZE);
+  ssize_t bytes_read = read_msg_TCP(new_fd, buffer, SIZE - 1);
   if (bytes_read == 0) {
     close(new_fd);
     free(buffer);
@@ -242,13 +246,13 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
     if (FD_ISSET(temp->fd, working_set)) {
       FD_CLR(temp->fd, working_set);
 
-      char *buffer = calloc((SIZE << 4) + 1, sizeof(char));
+      char *buffer = calloc(SIZE, sizeof(char));
       if (buffer == NULL) {
         system_error("calloc() failed");
         return -1;
       }
 
-      ssize_t bytes_read = read_msg_TCP(temp->fd, buffer, SIZE << 4);
+      ssize_t bytes_read = read_msg_TCP(temp->fd, buffer, SIZE - 1);
       if (bytes_read == 0) {
         // Node left the network
         delete_node(host, temp->fd);
@@ -261,11 +265,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set) {
       }
 
       // Process each message in the buffer individually
-      char *token = strtok(buffer, "\n");
-      while (token != NULL) {
-        process_neighbour_nodes(host, temp, token);
-        token = strtok(NULL, "\n");
-      }
+      process_neighbour_nodes(host, temp, NULL);
 
       free(buffer);
       break;

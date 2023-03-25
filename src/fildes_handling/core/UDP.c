@@ -24,7 +24,7 @@
  */
 ssize_t send_msg_UDP(int fd, struct sockaddr_in *addr, char *msg) {
   ssize_t n;
-  RETRY(sendto(fd, msg, strlen(msg) + 1, 0, (struct sockaddr *)addr, sizeof(*addr)),
+  RETRY(sendto(fd, msg, strlen(msg), 0, (struct sockaddr *)addr, sizeof(*addr)),
         MAX_ATTEMPTS, n);
 
   return n;

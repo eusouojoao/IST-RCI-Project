@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
   host->listen_fd = create_listen_socket(uip);
 
   // select() working variables
-  // struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // Timeout of 600s = 10min
   fd_set working_set; // Read file descriptors set
   int counter = 0;    // Number of descriptors that became ready
 

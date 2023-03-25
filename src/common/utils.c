@@ -1,6 +1,8 @@
 #include "utils.h"
 #include "../error_handling/error_checking.h"
+#include "../essentials/circular_buffer.h"
 #include "../fildes_handling/core/TCP.h"
+#include "struct.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,18 +18,20 @@
 host *init_host(user_args *uip) {
   host *new_host = (host *)malloc(sizeof(host));
   if (new_host == NULL) {
-    /*error*/ exit(EXIT_FAILURE);
+    exit(1);
   }
-  new_host->ID = NULL;
+
   new_host->net = NULL;
+  new_host->ID = NULL;
+  memset(new_host->tab_expedicao, -1, sizeof(new_host->tab_expedicao));
 
   new_host->uip = uip;
-  new_host->bck = NULL; // NULL representa que o proprio nó é o backup
-  new_host->ext = NULL; // ... e neighbour externo
+  new_host->bck = NULL;
+  new_host->ext = NULL;
 
+  new_host->new_connections_list = NULL;
   new_host->node_list = NULL;
   new_host->names_list = NULL;
-  memset(new_host->tab_expedicao, -1, sizeof(new_host->tab_expedicao));
 
   return new_host;
 }
@@ -42,25 +46,33 @@ host *init_host(user_args *uip) {
  * @retval apontador para a própria node criada
  */
 node *create_new_node(char *ID, int fd, char *IP, int TCP) {
-  node *new_node = (node *)malloc(sizeof(struct node));
+  node *new_node = (node *)malloc(sizeof(node));
   if (new_node == NULL) {
-    /*error*/ exit(0);
+    exit(1);
   }
-  new_node->ID = (char *)malloc((strlen(ID) + 1) * sizeof(char));
-  if (new_node->ID == NULL) {
-    /*error*/ exit(0);
-  }
-  strcpy(new_node->ID, ID);
 
-  new_node->fd = fd;
+  if ((new_node->ID = strdup(ID)) == NULL) {
+    free(new_node);
+    exit(1);
+  }
+  if ((new_node->IP = strdup(IP)) == NULL) {
+    free(new_node->ID);
+    free(new_node);
+    exit(1);
+  }
+
   new_node->TCP = TCP;
-  new_node->IP = (char *)malloc((strlen(IP) + 1) * sizeof(char));
-  if (new_node->IP == NULL) {
-    /*error*/ exit(0);
-  }
-  strcpy(new_node->IP, IP);
-  new_node->next = NULL;
+  new_node->fd = fd;
 
+  new_node->cb = (circular_buffer_t *)malloc(sizeof(circular_buffer_t));
+  if (new_node->cb == NULL) {
+    free(new_node->ID), free(new_node->IP);
+    free(new_node);
+    exit(1);
+  }
+  cb_init(new_node->cb);
+
+  new_node->next = NULL;
   return new_node;
 }
 
@@ -92,14 +104,17 @@ void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
  * @retval None
  */
 void free_node(node *node) {
-  if (node != NULL) {
-    free(node->ID);
-    free(node->IP);
-    if (node->fd != -1)
-      close(node->fd);
-    free(node);
+  if (node == NULL) {
+    return;
   }
-  return;
+
+  free(node->ID), free(node->IP);
+  if (node->fd != -1) {
+    close(node->fd);
+  }
+  free(node->cb);
+
+  free(node);
 }
 
 /**
