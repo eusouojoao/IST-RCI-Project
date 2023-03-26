@@ -105,6 +105,7 @@ ssize_t read_msg_TCP(int fd, char *buffer, size_t size) {
       // Timeout occurred, break the loop
       break;
     } else if (FD_ISSET(fd, &readfds)) {
+
       ssize_t result = recv(fd, buffer + bytes_received, 1, MSG_DONTWAIT);
       if (result < 0) {
         // Ignore EAGAIN and EWOULDBLOCK errors, as they indicate a non-blocking operation

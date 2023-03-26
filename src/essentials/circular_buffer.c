@@ -29,10 +29,12 @@ size_t cb_write(circular_buffer_t *cb, char *data, size_t len) {
     if (cb->current_size == CBUFFER_SIZE) {
       return i;
     }
+
     cb->data[cb->write_pos++] = data[i];
     cb->write_pos %= CBUFFER_SIZE;
     cb->current_size++;
   }
+
   return len;
 }
 
@@ -44,18 +46,27 @@ size_t cb_write(circular_buffer_t *cb, char *data, size_t len) {
  * @param buffer: pointer to the buffer where the read data will be stored
  * @param len: maximum number of bytes to be read
  *
- * @return The number of bytes read.
+ * @return
  */
-size_t cb_read(circular_buffer_t *cb, char *buffer, size_t len) {
+size_t cb_read_LF(circular_buffer_t *cb, char *buffer, size_t len) {
+  size_t size_bck = cb->current_size, read_pos_bck = cb->read_pos;
   for (size_t i = 0; i < len; i++) {
     if (cb->current_size == 0) {
-      return i;
+      cb->current_size = size_bck, cb->read_pos = read_pos_bck;
+      return 0;
     }
+
     buffer[i] = cb->data[cb->read_pos++];
     cb->read_pos %= CBUFFER_SIZE;
     cb->current_size--;
+
+    if (buffer[i] == '\n') {
+      return 1;
+    }
   }
-  return len;
+
+  cb->current_size = size_bck, cb->read_pos = read_pos_bck;
+  return 0;
 }
 
 /**
@@ -65,7 +76,7 @@ size_t cb_read(circular_buffer_t *cb, char *buffer, size_t len) {
  *
  * @return The number of bytes available in the buffer.
  */
-size_t cb_available(circular_buffer_t *cb) { return cb->current_size; }
+size_t cb_available(circular_buffer_t *cb) { return (CBUFFER_SIZE - cb->current_size); }
 
 /**
  * @brief Flushes the buffer, setting read and write positions to 0, current_size to 0,

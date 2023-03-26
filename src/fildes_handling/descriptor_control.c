@@ -1,5 +1,6 @@
 #include "descriptor_control.h"
 #include "../error_handling/error_messages.h"
+#include "../essentials/new_connections_list.h"
 #include "core/TCP.h"
 #include "process_descriptors.h"
 #include "socket_protocols_interface/delete_node_module.h"
@@ -46,7 +47,7 @@ void update_working_set(host *host, fd_set *working_set) {
  * host's listen file descriptor.
  *
  * @param host: the host structure containing the list of nodes to search.
- * @return The maximum file descriptor in the host's structure
+ * @return the maximum file descriptor in the host's structure
  */
 int get_maxfd(host *host) {
   return host->node_list == NULL ? host->listen_fd : host->node_list->fd;
@@ -79,7 +80,7 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
   } while (*counter == -1 && errno == EINTR); // Ignore SIGQUIT
 
   if (*counter <= 0) {
-    system_error("In wait_for_ready_fildes() -> select() failed");
+    system_error("select() failed");
     return -1;
   }
 
@@ -107,7 +108,7 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * descriptors to monitor.
  * @param[in] counter: pointer to the counter of file descriptors to process.
  *
- * @return (int) Returns 1 if the function processes all file descriptors
+ * @return (int) 1 if the function processes all file descriptors
  * successfully, -1 if an error occurs during processing, or 0 if the application
  * should exit.
  */
@@ -153,7 +154,7 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
  *
  * @param[in] host: pointer to the host structure.
  *
- * @return (int) Returns the result of process_keyboard_input() if the function
+ * @return (int) the result of process_keyboard_input() if the function
  * processes the keyboard input successfully, -1 if an error occurs during reading
  * data.
  */
@@ -188,7 +189,7 @@ int handle_keyboard_input(host *host) {
  * @param[in] host: pointer to the host structure containing the listening file
  * descriptor.
  *
- * @return (int) Returns 1 if the function processes the new connection successfully,
+ * @return (int) 1 if the function processes the new connection successfully,
  * -1 if an error occurs during accepting a connection or reading data.
  */
 int handle_new_connection(host *host) {
@@ -208,7 +209,7 @@ int handle_new_connection(host *host) {
     return -1;
   }
 
-  ssize_t bytes_read = read_msg_TCP(new_fd, buffer, SIZE - 1);
+  ssize_t bytes_read = read(new_fd, buffer, SIZE - 1);
   if (bytes_read == 0) {
     close(new_fd);
     free(buffer);
@@ -220,8 +221,10 @@ int handle_new_connection(host *host) {
     return -1;
   }
 
-  /* Process the new accepted file descriptor */
-  process_new_connection(host, new_fd, buffer);
+  insert_new_connection(host, new_fd, buffer);
+
+  // Process the new accepted file descriptor
+  process_new_connection(host, host->new_connections_list);
   free(buffer);
   return 1;
 }
@@ -238,7 +241,7 @@ int handle_new_connection(host *host) {
  * @param[in] working_set: pointer to a file descriptor set containing the
  * descriptors to monitor.
  *
- * @return (int) Returns 1 if the function processes all messages successfully, -1 if
+ * @return (int) 1 if the function processes all messages successfully, -1 if
  * an error occurs during memory allocation or reading data.
  */
 int handle_neighbour_nodes(host *host, fd_set *working_set) {
