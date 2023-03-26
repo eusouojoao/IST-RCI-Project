@@ -96,6 +96,8 @@ int process_keyboard_input(host *host, char *buffer) {
     break;
   case UNDEF:
   default:
+    user_input_error("Comand Invalid", buffer, "Here are the valid user commands");
+    print_usage();
     return -1; // Error, shouldn't be here
     break;
   }

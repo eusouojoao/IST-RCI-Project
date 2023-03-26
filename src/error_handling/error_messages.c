@@ -64,3 +64,36 @@ void system_error(char *msg) {
 }
 
 void user_error(char *msg) { fprintf(stderr, RED "(!)Error" RESET "%s", msg); }
+
+void print_usage() {
+  printf("╔══════════════════════════════════════════════════════════════════════════════"
+         "═════════════════╗\n");
+  printf("║                                    User Interface Commands                   "
+         "                 ║\n");
+  printf("╠══════════════════════════════════════════════════════════════════════════════"
+         "═════════════════╣\n");
+  printf("║ - join net id : [adds a node to the specify net]                             "
+         "                 ║\n");
+  printf("║ - djoin net id bootid bootIP bootTCP : [adds a node without communication "
+         "with the server]    ║\n");
+  printf("║ - create name : [creates a new content]                                      "
+         "                 ║\n");
+  printf("║ - delete name : [deletes a specific content]                                 "
+         "                 ║\n");
+  printf("║ - get dest name : [searches for a specific content]                          "
+         "                 ║\n");
+  printf("║ - show topology (st) : [shows ID and contact of neighbours and backup nodes] "
+         "                 ║\n");
+  printf("║ - show names (sn) : [shows all contents]                                     "
+         "                 ║\n");
+  printf("║ - show routing (sr) : [shows all known routes]                               "
+         "                 ║\n");
+  printf("║ - leave : [node leaves net]                                                  "
+         "                 ║\n");
+  printf("║ - exit : [closes app]                                                        "
+         "                 ║\n");
+  printf("╚══════════════════════════════════════════════════════════════════════════════"
+         "═════════════════╝\n");
+
+  // printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
+}

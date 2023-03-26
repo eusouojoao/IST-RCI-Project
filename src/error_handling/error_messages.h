@@ -12,5 +12,6 @@ void print_help(void);
 void user_input_error(char *msg, char *input, char *detail);
 void system_error(char *msg);
 void user_error(char *msg);
+void print_usage();
 
 #endif // !error_handling_H
