@@ -17,6 +17,7 @@ typedef enum user_command {
   CLEAR_ROUTING,
   CLEAR_NAMES,
   CLEAR_WINDOW,
+  HELP,
   UNDEF
 } user_command;
 

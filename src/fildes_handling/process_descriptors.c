@@ -30,8 +30,7 @@ user_command get_user_command(char *token) {
       {"join", JOIN},        {"djoin", DJOIN},    {"leave", LEAVE},     {"exit", EXIT},
       {"create", CREATE},    {"delete", DELETE},  {"get", GET},         {"show", SHOW},
       {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES},  {"sr", SHOW_ROUTING}, {"clear", CLEAR},
-      {"cr", CLEAR_ROUTING}, {"cn", CLEAR_NAMES}, {"cw", CLEAR_WINDOW},
-  };
+      {"cr", CLEAR_ROUTING}, {"cn", CLEAR_NAMES}, {"cw", CLEAR_WINDOW}, {"help", HELP}};
 
   size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
 
@@ -93,6 +92,9 @@ int process_keyboard_input(host *host, char *buffer) {
   case CLEAR_NAMES:
   case CLEAR_ROUTING:
     clear_wrapper(host, cmd, buffer);
+    break;
+  case HELP:
+    print_usage();
     break;
   case UNDEF:
   default:

@@ -88,12 +88,21 @@ void print_usage() {
          "                 ║\n");
   printf("║ - show routing (sr) : [shows all known routes]                               "
          "                 ║\n");
+  printf("║ - clear names (cn) : [deletes all contents]                                  "
+         "                 ║\n");
+  printf("║ - clear routing (cr) : [clears rote table]                                   "
+         "                 ║\n");
+  printf("║ - clear window (cw) : [clears terminal window]                               "
+         "                 ║\n");
   printf("║ - leave : [node leaves net]                                                  "
          "                 ║\n");
   printf("║ - exit : [closes app]                                                        "
          "                 ║\n");
+  printf("║ - help : [shows User Interface Commands]                                 "
+         "                 ║\n");
+
   printf("╚══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╝\n");
 
-  // printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
+  printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
 }
