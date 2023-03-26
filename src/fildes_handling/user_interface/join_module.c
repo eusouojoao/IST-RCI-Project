@@ -4,6 +4,7 @@
 #include "../../error_handling/error_messages.h"
 #include "../../fildes_handling/core/TCP.h"
 #include "../../fildes_handling/core/UDP.h"
+#include "../socket_protocols_interface/delete_node_module.h"
 #include "leave_module.h"
 #include "user_commands.h"
 
@@ -160,25 +161,18 @@ int djoin_network(char *buffer, host *host, int flag) {
     return 0;
   }
 
-  if (number_of_command_arguments(buffer, ' ') > 5) {
-    // TODO: Handle error: invalid user input
-    return 0;
-  }
-
-  char msg_to_send[SIZE << 2] = {'\0'}, *received_msg = NULL;
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) != 5) {
+  if (sscanf(buffer, "djoin %s %s %s %s %s\n", net, ID, node_ID, node_IP, node_TCP) !=
+      5) {
     // TODO: Handle error: invalid user input or function failure
     return 0;
   }
 
   // Verify arguments for direct user call to djoin
   if (flag == DJOIN) {
-    if (check_net_and_id(net, ID) == EXIT_FAILURE ||
-        check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
-      printf("Invalid djoin call\n");
+    if (check_net_and_id(net, ID) || check_node_parameters(node_ID, node_IP, node_TCP)) {
       return 0;
     }
   }
@@ -193,27 +187,12 @@ int djoin_network(char *buffer, host *host, int flag) {
   assign_host_ID_and_network(host, ID, net);
 
   // Message exchange between the host and the external node
-  memset(msg_to_send, 0, sizeof(msg_to_send));
-  sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
-  received_msg = fetch_bck(host, msg_to_send);
-  if (received_msg == NULL) {
-    leave_network(host, flag == JOIN ? JOIN : DJOIN);
+  if (get_a_new_backup(host) == -1) {
+    // leave_network(host, flag == JOIN ? JOIN : DJOIN);
     return 0;
   }
 
   insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
-
-  if (sscanf(received_msg, "EXTERN %s %s %s\n", node_ID, node_IP, node_TCP) != 3) {
-    leave_network(host, flag == JOIN ? JOIN : DJOIN);
-    return 0;
-  }
-
-  if (strcmp(node_ID, host->ID) != 0) {
-    insert_in_forwarding_table(host, atoi(node_ID), atoi(host->ext->ID));
-    host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
-  }
-
-  free(received_msg);
   return 1;
 }
 

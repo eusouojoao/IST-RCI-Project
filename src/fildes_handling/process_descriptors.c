@@ -116,62 +116,55 @@ int process_keyboard_input(host *host, char *buffer) {
  * host's node list.
  *
  * @param host: a pointer to the host structure
- * @param new_fd: the new file descriptor
- * @param buffer: a buffer containing the message to process
+ * @param connection: a pointer to a new_connection structure
  */
 void process_new_connection(host *host, new_connection *connection) {
-  char buffer[SIZE << 2] = {'\0'};
-  char msg_to_send[SIZE << 2] = {'\0'}, cmd[SIZE] = {'\0'};
+  char buffer[SIZE << 2] = {'\0'}, msg_to_send[SIZE << 2] = {'\0'};
   char new_ID[SIZE] = {'\0'}, new_IP[SIZE] = {'\0'}, new_TCP[SIZE] = {'\0'};
 
-  if (!cb_read_LF(connection->cb, buffer, sizeof(buffer))) {
+  // Read from the connection's circular buffer until a newline character is found
+  if (!cb_read_LF(connection->cb, buffer, sizeof(buffer) - 1)) {
     return;
   }
 
-  if (sscanf(buffer, "%s %s %s %s\n", cmd, new_ID, new_IP, new_TCP) < 4) {
+  // Parse the "NEW" command from the received message
+  if (sscanf(buffer, "NEW %s %s %s\n", new_ID, new_IP, new_TCP) != 3) {
+    close(connection->new_fd);
     remove_new_connection(host, connection->new_fd);
     return;
   }
 
-  if (strcmp(cmd, "NEW") != 0) {
-    perror("Invalid command");
-    remove_new_connection(host, connection->new_fd);
-    return;
-  }
-
+  // Validate the parsed node parameters
   if (check_node_parameters(new_ID, new_IP, new_TCP) == EXIT_FAILURE) {
+    close(connection->new_fd);
     remove_new_connection(host, connection->new_fd);
     return;
   }
 
-  if (host->ext == NULL) { // anchor node case
+  // Send the "EXTERN" message to the new node
+  // If the host is an anchor node, use the new node's information
+  // Otherwise, use the external node's information
+  if (host->ext == NULL) { // Anchor node case
     sprintf(msg_to_send, "EXTERN %s %s %s\n", new_ID, new_IP, new_TCP);
-    if (write(connection->new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
-      remove_new_connection(host, connection->new_fd);
-      return;
-    }
-
-    insert_node(new_ID, connection->new_fd, new_IP, atoi(new_TCP), host);
-  } else { // normal case
-    sprintf(msg_to_send, "EXTERN %s %s %d\n", host->ext->ID, host->ext->IP,
-            host->ext->TCP);
-    if (write(connection->new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
-      remove_new_connection(host, connection->new_fd);
-      return;
-    }
-
-    insert_node(new_ID, connection->new_fd, new_IP, atoi(new_TCP), host);
+  } else { // Normal case
+    node *ext = host->ext;
+    sprintf(msg_to_send, "EXTERN %s %s %d\n", ext->ID, ext->IP, ext->TCP);
   }
 
+  if (write(connection->new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
+    close(connection->new_fd);
+    remove_new_connection(host, connection->new_fd);
+    return;
+  }
+
+  // Insert the new node into the host's node list
+  insert_node(new_ID, connection->new_fd, new_IP, atoi(new_TCP), host);
+
+  // Update the forwarding table
   insert_in_forwarding_table(host, atoi(new_ID), atoi(new_ID));
 
-  if (set_timeouts(connection->new_fd) == -1) {
-    remove_new_connection(host, connection->new_fd);
-    return;
-  }
-
+  // Remove the new connection from the new_connections_list
   remove_new_connection(host, connection->new_fd);
-  return; // OK
 }
 
 /**
@@ -215,7 +208,6 @@ protocol_command get_protocol_command(char *token) {
 void process_neighbour_nodes(host *host, node *node, char *buffer) {
   protocol_command cmd = BADFORMAT;
   char token[SIZE] = {'\0'};
-  printf("buffer: %s\n", buffer); // DEBUG
 
   // Get the first token from the message
   if (sscanf(buffer, "%s", token) < 1) {
@@ -238,7 +230,6 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
     break;
   case CONTENT:
   case NOCONTENT:
-    printf(cmd == CONTENT ? "CONTENT\n" : "NOCONTENT\n");
     handle_content_response(host, node, buffer, cmd);
     break;
   case BADFORMAT:

@@ -43,7 +43,8 @@ size_t cb_write(circular_buffer_t *cb, char *data, size_t len) {
  * empty.
  *
  * @param cb: pointer to the circular_buffer_t structure
- * @param buffer: pointer to the buffer where the read data will be stored
+ * @param buffer: pointer to the buffer where the read data will be stored (always has
+ * enough space reserved for the null terminator byte)
  * @param len: maximum number of bytes to be read
  *
  * @return
@@ -61,6 +62,7 @@ size_t cb_read_LF(circular_buffer_t *cb, char *buffer, size_t len) {
     cb->current_size--;
 
     if (buffer[i] == '\n') {
+      buffer[i + 1] = '\0';
       return 1;
     }
   }

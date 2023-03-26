@@ -12,7 +12,7 @@
 #define STRUCTS_H
 
 #ifndef CBUFFER_SIZE
-#define CBUFFER_SIZE 256
+#define CBUFFER_SIZE 1024
 #endif // !CBUFFER_SIZE
 
 #include <time.h>

@@ -1,5 +1,6 @@
 #include "descriptor_control.h"
 #include "../error_handling/error_messages.h"
+#include "../essentials/circular_buffer.h"
 #include "../essentials/new_connections_list.h"
 #include "core/TCP.h"
 #include "process_descriptors.h"
@@ -40,17 +41,60 @@ void update_working_set(host *host, fd_set *working_set) {
 }
 
 /**
- * @brief Returns the maximum file descriptor in the host's node list
+ * @brief Helper function that returns the maximum file descriptor
+ *        from the new_connections list.
  *
- * The function returns the maximum file descriptor from the list of nodes contained
- * in the host structure. If the list of nodes is empty, the function returns the
- * host's listen file descriptor.
+ * @param nc: pointer to the head of the new_connections list
+ * @return the maximum file descriptor in the new_connections list.
+ */
+static int max_fd_from_new_connections(new_connection *nc) {
+  int max_fd = -1;
+  while (nc != NULL) {
+    if (nc->new_fd > max_fd) {
+      max_fd = nc->new_fd;
+    }
+    nc = nc->next;
+  }
+  return max_fd;
+}
+
+/**
+ * @brief Helper function that returns the maximum file descriptor
+ *        from the nodes list.
  *
- * @param host: the host structure containing the list of nodes to search.
- * @return the maximum file descriptor in the host's structure
+ * @param n: pointer to the head of the nodes list
+ * @return the maximum file descriptor in the nodes list.
+ */
+static int max_fd_from_nodes(node *n) {
+  int max_fd = -1;
+  while (n != NULL) {
+    if (n->fd > max_fd) {
+      max_fd = n->fd;
+    }
+    n = n->next;
+  }
+  return max_fd;
+}
+
+/**
+ * @brief Returns the maximum file descriptor.
+ *
+ * The function returns the maximum file descriptor from the host's structure.
+ *
+ * @param host: the host structure containing the list of nodes to search
+ * @return the maximum file descriptor in the host's structure.
  */
 int get_maxfd(host *host) {
-  return host->node_list == NULL ? host->listen_fd : host->node_list->fd;
+  int max_fd = host->listen_fd;
+  int nc_max_fd = max_fd_from_new_connections(host->new_connections_list);
+  int node_max_fd = max_fd_from_nodes(host->node_list);
+
+  if (nc_max_fd > max_fd)
+    max_fd = nc_max_fd;
+  if (node_max_fd > max_fd)
+    max_fd = node_max_fd;
+
+  return max_fd;
 }
 
 /**
@@ -112,12 +156,12 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * successfully, -1 if an error occurs during processing, or 0 if the application
  * should exit.
  */
-int fildes_control(host *host, fd_set *working_set, int *counter) {
+int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) {
   while ((*counter)-- > 0) {
     // Handle keyboard input
     if (FD_ISSET(STDIN_FILENO, working_set)) {
       FD_CLR(STDIN_FILENO, working_set);
-      if (handle_keyboard_input(host) == 0) {
+      if (handle_keyboard_input(host, buffer) == 0) {
         return 0;
       }
       continue;
@@ -126,23 +170,25 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
     // Handle new connections
     if (FD_ISSET(host->listen_fd, working_set)) {
       FD_CLR(host->listen_fd, working_set);
-      if (handle_new_connection(host) == -1) {
+      if (handle_new_connection(host, buffer) == -1) {
         return -1;
       }
       continue;
     }
 
-    // if (handle_queued_connections(host)) {
-    //   continue;
-    // }
+    // Handle queued new connections
+    if (handle_queued_connections(host, working_set, buffer)) {
+      continue;
+    }
 
     // Handle communication with neighbour nodes
-    if (handle_neighbour_nodes(host, working_set) == -1) {
+    if (handle_neighbour_nodes(host, working_set, buffer) == -1) {
       return -1;
     }
   }
 
-  return 1; // OK
+  clean_inactive_new_connections(host);
+  return 1;
 }
 
 /**
@@ -158,23 +204,16 @@ int fildes_control(host *host, fd_set *working_set, int *counter) {
  * processes the keyboard input successfully, -1 if an error occurs during reading
  * data.
  */
-int handle_keyboard_input(host *host) {
-  char *buffer = calloc(SIZE, sizeof(char));
-  if (buffer == NULL) {
-    system_error("calloc() failed");
-    return -1;
-  }
-
+int handle_keyboard_input(host *host, char *buffer) {
   ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE - 1);
   if (bytes_read <= 0) {
     system_error("read() failed");
-    free(buffer);
     return -1;
   }
+  buffer[bytes_read] = '\0';
 
   // Process standard input - keyboard
   int r = process_keyboard_input(host, buffer);
-  free(buffer);
   return r;
 }
 
@@ -192,7 +231,7 @@ int handle_keyboard_input(host *host) {
  * @return (int) 1 if the function processes the new connection successfully,
  * -1 if an error occurs during accepting a connection or reading data.
  */
-int handle_new_connection(host *host) {
+int handle_new_connection(host *host, char *buffer) {
   struct sockaddr in_addr;
   socklen_t in_addrlen = sizeof(in_addr);
 
@@ -202,22 +241,13 @@ int handle_new_connection(host *host) {
     return -1;
   }
 
-  char *buffer = calloc(SIZE, sizeof(char));
-  if (buffer == NULL) {
-    system_error("calloc() failed");
-    close(new_fd);
-    return -1;
-  }
-
   ssize_t bytes_read = read(new_fd, buffer, SIZE - 1);
   if (bytes_read == 0) {
     close(new_fd);
-    free(buffer);
     return 1;
   } else if (bytes_read < 0) {
     system_error("read() failed");
     close(new_fd);
-    free(buffer);
     return -1;
   }
 
@@ -225,8 +255,40 @@ int handle_new_connection(host *host) {
 
   // Process the new accepted file descriptor
   process_new_connection(host, host->new_connections_list);
-  free(buffer);
   return 1;
+}
+
+int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
+  new_connection *temp = NULL;
+  for (temp = host->new_connections_list; temp != NULL; temp = temp->next) {
+    if (FD_ISSET(temp->new_fd, working_set)) {
+      FD_CLR(temp->new_fd, working_set);
+
+      ssize_t bytes_read = read(temp->new_fd, buffer, SIZE - 1);
+      if (bytes_read == 0) {
+        close(temp->new_fd);
+        remove_new_connection(host, temp->new_fd);
+        return 1;
+      } else if (bytes_read < 0) {
+        system_error("read() failed");
+        close(temp->new_fd);
+        remove_new_connection(host, temp->new_fd);
+        return -1;
+      }
+
+      size_t len = strlen(buffer);
+      if (cb_write(temp->cb, buffer, len) != len) {
+        close(temp->new_fd);
+        free(temp->cb), free(temp);
+        return -1;
+      }
+
+      process_new_connection(host, host->new_connections_list);
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 /**
@@ -244,33 +306,36 @@ int handle_new_connection(host *host) {
  * @return (int) 1 if the function processes all messages successfully, -1 if
  * an error occurs during memory allocation or reading data.
  */
-int handle_neighbour_nodes(host *host, fd_set *working_set) {
+int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     if (FD_ISSET(temp->fd, working_set)) {
       FD_CLR(temp->fd, working_set);
 
-      char *buffer = calloc(SIZE, sizeof(char));
-      if (buffer == NULL) {
-        system_error("calloc() failed");
-        return -1;
-      }
-
-      ssize_t bytes_read = read_msg_TCP(temp->fd, buffer, SIZE - 1);
+      ssize_t bytes_read = read(temp->fd, buffer, SIZE - 1);
       if (bytes_read == 0) {
         // Node left the network
         delete_node(host, temp->fd);
-        free(buffer);
-        break;
+        return 1;
       } else if (bytes_read < 0) {
         system_error("read() failed");
-        free(buffer);
         return -1;
       }
 
-      // Process each message in the buffer individually
-      process_neighbour_nodes(host, temp, NULL);
+      size_t len = strlen(buffer);
+      if (cb_available(temp->cb) < len) {
+        cb_flush(temp->cb);
+      }
 
-      free(buffer);
+      // Store the read message in the circular buffer
+      if (cb_write(temp->cb, buffer, len) != len) {
+        return -1;
+      }
+
+      // Process each complete message in the buffer individually
+      char read_buffer[SIZE] = {'\0'};
+      while (cb_read_LF(temp->cb, read_buffer, SIZE - 1)) {
+        process_neighbour_nodes(host, temp, buffer);
+      }
       break;
     }
   }

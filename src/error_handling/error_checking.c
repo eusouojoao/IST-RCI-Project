@@ -141,7 +141,7 @@ int check_name(char *name) {
   }
 
   for (size_t i = 0; i < strlen(name); i++) {
-    if (!isalnum(name[i]) || name[i] != '.') {
+    if (!isalnum(name[i]) && name[i] != '.') {
       return -1;
     }
   }

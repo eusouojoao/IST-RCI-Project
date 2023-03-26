@@ -10,9 +10,10 @@ int get_maxfd(host *host);
 int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout);
 
-int fildes_control(host *host, fd_set *working_set, int *counter);
-int handle_keyboard_input(host *host);
-int handle_new_connection(host *host);
-int handle_neighbour_nodes(host *host, fd_set *working_set);
+int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer);
+int handle_keyboard_input(host *host, char *buffer);
+int handle_new_connection(host *host, char *buffer);
+int handle_queued_connections(host *host, fd_set *working_set, char *buffer);
+int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer);
 
 #endif

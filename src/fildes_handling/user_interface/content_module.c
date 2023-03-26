@@ -43,6 +43,7 @@ names *new_names(char *name, names *next) {
  */
 int insert_name(host *host, char *buffer) {
   if (number_of_command_arguments(buffer, ' ') > 1) {
+    printf("enro\n");
     return -1;
   }
 
@@ -51,7 +52,7 @@ int insert_name(host *host, char *buffer) {
     perror("Error: malloc failed");
     return -1;
   }
-  name[strlen(name) - 1] = '\0';
+  name[strlen(name)] = '\0';
 
   if (check_name(name) == -1) {
     free(name);

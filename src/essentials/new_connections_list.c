@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define TIMEOUT_SEC 60
+#define TIMEOUT_SEC 30
 
 /**
  * @brief Create a new connection struct.
@@ -48,7 +48,7 @@ void insert_new_connection(host *host, int new_fd, char *buffer) {
 
   size_t len = strlen(buffer);
   if (cb_write(connection->cb, buffer, len) != len) {
-    // !TODO - error handling
+    close(connection->new_fd);
     free(connection->cb), free(connection);
     return;
   }
@@ -69,8 +69,7 @@ int remove_new_connection(host *host, int new_fd) {
 
   if (temp != NULL && temp->new_fd == new_fd) {
     host->new_connections_list = temp->next;
-    close(temp->new_fd), free(temp->cb);
-    free(temp);
+    free(temp->cb), free(temp);
     return 1;
   }
 
@@ -84,8 +83,7 @@ int remove_new_connection(host *host, int new_fd) {
   }
 
   prev->next = temp->next;
-  close(temp->new_fd), free(temp->cb);
-  free(temp);
+  free(temp->cb), free(temp);
 
   return 1;
 }
@@ -100,7 +98,7 @@ int remove_new_connection(host *host, int new_fd) {
  *
  * @param host: pointer to the host structure
  */
-void clean_inactive_connections(host *host) {
+void clean_inactive_new_connections(host *host) {
   new_connection **current = &host->new_connections_list;
   time_t now = time(NULL);
 
@@ -111,8 +109,8 @@ void clean_inactive_connections(host *host) {
       *current = to_delete->next;
 
       // Close the file descriptor and free the resources
-      close(to_delete->new_fd), free(to_delete->cb);
-      free(to_delete);
+      close(to_delete->new_fd);
+      free(to_delete->cb), free(to_delete);
     } else {
       // Move to the next connection
       current = &((*current)->next);
@@ -130,6 +128,7 @@ void delete_new_connections_list(host *host) {
   while (host->new_connections_list != NULL) {
     temp = host->new_connections_list;
     host->new_connections_list = temp->next;
+    close(temp->new_fd);
     free(temp->cb), free(temp);
   }
 
