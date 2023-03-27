@@ -82,18 +82,10 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {
     if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
-      user_input_error("Invalid protocol message format", buffer,
-                       "The `CONTENT` message must have the destiny node, the origin node "
-                       "and the content. E.g. "
-                       "CONTENT 00 01 name");
       return 0;
     }
   } else if (cmd == NOCONTENT) {
     if (sscanf(buffer, "NOCONTENT %s %s %s\n", dest, orig, name) != 3) {
-      user_input_error("Invalid protocol message format", buffer,
-                       "The `NOCONTENT` message must have the destiny node, the origin node "
-                       "and the content. E.g. "
-                       "NOCONTENT 00 01 name");
       return 0;
     }
   }

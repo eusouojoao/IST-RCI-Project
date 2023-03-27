@@ -238,7 +238,7 @@ int djoin_network(char *buffer, host *host, int flag) {
 
   // Verify arguments for direct user call to djoin
   if (flag == DJOIN) {
-    if (check_net_and_id(net, ID) || check_node_parameters(node_ID, node_IP, node_TCP)) {
+    if (!check_net_and_id(net, ID) || check_node_parameters(node_ID, node_IP, node_TCP)) {
       return 0;
     }
   }
@@ -269,7 +269,6 @@ int djoin_network(char *buffer, host *host, int flag) {
 
     int r = djoin_network(new_djoin_msg, host, JOIN);
     free(new_djoin_msg);
-    printf("retval djoin: %d\n", r);
     return r;
   }
 
@@ -300,7 +299,7 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
-  if (check_net_and_id(net, ID) == EXIT_FAILURE) {
+  if (!check_net_and_id(net, ID)) {
     return 0;
   }
 

@@ -166,7 +166,7 @@ void get_name(host *host, char *buffer) {
     return;
   }
 
-  if (check_net_and_id(host->net, dest)) {
+  if (!check_id(dest)) {
     return;
   }
 

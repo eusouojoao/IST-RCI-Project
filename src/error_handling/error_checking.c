@@ -61,39 +61,55 @@ int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
 }
 
 /**
+ * @brief Checks if the network parameter is in the correct format.
+ *
+ * @param net: the network parameter
+ * @return 1 if the network parameter is invalid, 0 otherwise
+ */
+int check_net(char *net) {
+  if (strlen(net) != 3 || !check_if_number(net)) {
+    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
+    return 0;
+  }
+
+  int int_net = atoi(net);
+  if (int_net < 0 || int_net > 999) {
+    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
+    return 0;
+  }
+
+  return 1; // Value within range
+}
+
+/**
+ * @brief Checks if the ID parameter is in the correct format.
+ *
+ * @param id: the ID parameter
+ * @return 1 if the ID parameter is invalid, 0 otherwise
+ */
+int check_id(char *id) {
+  if (strlen(id) != 2 || !check_if_number(id)) {
+    user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
+    return 0;
+  }
+
+  int int_id = atoi(id);
+  if (int_id < 0 || int_id > 99) {
+    user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
+    return 0;
+  }
+
+  return 1; // Value within range
+}
+
+/**
  * @brief Checks if the network and ID parameters are in the correct format.
  *
  * @param net: the network parameter
  * @param id: the ID parameter
  *
- * @return EXIT_SUCCESS if the parameters are correct, EXIT_FAILURE otherwise.
  */
-int check_net_and_id(char *net, char *id) {
-  if (strlen(net) != 3 || strlen(id) != 2) {
-    if (strlen(id) != 2)
-      user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
-    if (strlen(net) != 3)
-      user_input_error("Invalid net", net, "net must be a number between 000 and 999");
-    return EXIT_FAILURE;
-  }
-
-  if (!(check_if_number(net) && check_if_number(id))) {
-    /*error*/
-    return EXIT_FAILURE;
-  }
-
-  int int_net = atoi(net), int_id = atoi(id);
-  if ((int_net < 0 || int_net > 999)) {
-    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
-    return EXIT_FAILURE;
-  }
-  if ((int_id < 0 || int_id > 99)) {
-    user_input_error("Invalid ID", id, "ID must be a number between 00 and 99");
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS; // Values within range
-}
+int check_net_and_id(char *net, char *id) { return check_net(net) && check_id(id); }
 
 int check_if_number(char *src) {
   for (size_t i = 0; i < strlen(src); i++) {
