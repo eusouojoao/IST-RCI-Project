@@ -1,7 +1,7 @@
 #include "content_module.h"
-#include "../../essentials/struct.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/struct.h"
 #include "../custom_protocols_interface/common.h"
 
 #include <stdio.h>
@@ -43,18 +43,16 @@ names *new_names(char *name, names *next) {
  * exists in the list.
  */
 int insert_name(host *host, char *buffer) {
-  if (number_of_command_arguments(buffer, ' ') > 1) {
-    user_input_error("Invalid arguments", buffer,
-                     "Create command should be in the format: create name");
+  char *name = (char *)malloc(128 * sizeof(char));
+  if (name == NULL) {
+    system_error("malloc() failed");
     return -1;
   }
 
-  char *name = strdup(buffer + strlen("create "));
-  if (name == NULL) {
-    system_error("strdup() failed");
+  if (sscanf(buffer, "create %127s\n", name) != 1) {
+    free(name);
     return -1;
   }
-  name[strlen(name) - 1] = '\0';
 
   if (check_name(name) == -1) {
     free(name);
@@ -83,12 +81,6 @@ int insert_name(host *host, char *buffer) {
  * exist in the list.
  */
 int delete_name(host *host, char *buffer) {
-  if (number_of_command_arguments(buffer, ' ') > 1) {
-    user_input_error("Invalid arguments", buffer,
-                     "Delete command should be in the format: delete name");
-    return -1;
-  }
-
   char name_to_delete[128] = {'\0'};
   if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
     system_error("sscanf failed"); // APAGAR - Confirmar isto
@@ -111,7 +103,7 @@ int delete_name(host *host, char *buffer) {
     p = &(*p)->next;
   }
 
-  user_input_error("Name was not found", name_to_delete,
+  user_input_error("Name not found", name_to_delete,
                    "Only a name that was created can be deleted, to check names created "
                    "use command show names (sn)");
   return 0; // Failure, name not found

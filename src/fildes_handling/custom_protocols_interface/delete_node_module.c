@@ -1,7 +1,7 @@
 #include "delete_node_module.h"
-#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/host_handling.h"
 #include "../core/TCP.h"
 #include "common.h"
 #include "withdraw_module.h"
@@ -68,7 +68,10 @@ void update_external_node(host *host, int withdraw_fd) {
     promote_intr_to_ext(host);
   } else {
     promote_bck_to_ext(host);
-    get_a_new_backup(host);
+    if (!get_a_new_backup(host)) {
+      delete_node(host, host->ext->fd);
+      return;
+    }
   }
 
   notify_internal_nodes_of_external_change(host);
@@ -109,7 +112,6 @@ int get_a_new_backup(host *host) {
   char msg_to_send[128] = {'\0'};
   sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
   if (fetch_bck(host, msg_to_send) == -1) {
-    /*! TODO: O que fazer neste caso? Delete node? */
     return 0;
   }
   return 1;
@@ -132,14 +134,14 @@ void notify_internal_nodes_of_external_change(host *host) {
       continue;
     }
 
-    if (write(temp->fd, msg_to_send, strlen(msg_to_send)) == -1) {
+    if (write_msg_TCP(temp->fd, msg_to_send, strlen(msg_to_send)) == -1) {
       system_error("write() failed");
     }
   }
 
   /* The promoted internal node (new external node), must also be notified */
   if (host->bck == NULL) {
-    if (write(host->ext->fd, msg_to_send, strlen(msg_to_send)) == -1) {
+    if (write_msg_TCP(host->ext->fd, msg_to_send, strlen(msg_to_send)) == -1) {
       system_error("write() failed");
     }
   }

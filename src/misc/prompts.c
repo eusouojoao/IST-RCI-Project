@@ -5,12 +5,21 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+/**
+ * @brief Print a character 'c' 'n' times
+ *
+ * @param c Character to be printed
+ * @param n Number of times to print the character
+ */
 void print_char_n_times(char c, int n) {
   for (int i = 0; i < n; i++) {
     putchar(c);
   }
 }
 
+/**
+ * @brief Print a formatted header to the terminal
+ */
 void print_header() {
   struct winsize w;
   // Get terminal width
@@ -24,6 +33,7 @@ void print_header() {
     return;
   }
 
+  // Clear the output stream and center the header
   CLEAR_STREAM(STDOUT_FILENO);
   printf("%*s", (w.ws_col - 60) / 2, "");
   putchar('/'), print_char_n_times('-', 58), putchar('\\'), putchar('\n');
@@ -37,6 +47,11 @@ void print_header() {
   putchar('\\'), print_char_n_times('-', 58), putchar('/'), putchar('\n');
 }
 
+/**
+ * @brief Toggle the user interface on or off
+ *
+ * @param toggle ON or OFF state
+ */
 void user_interface_toggle(int toggle) {
   struct winsize w;
   // Get terminal width
@@ -45,11 +60,12 @@ void user_interface_toggle(int toggle) {
     return;
   }
 
-  // If terminal width is less than 60, do nothing
+  // If terminal width is less than 20, do nothing
   if (w.ws_col < 20) {
     return;
   }
 
+  // Center the output and display the user interface status
   printf("%*s", (w.ws_col - 20) / 2, "");
   if (toggle == ON) {
     printf(BLUE " User interface [" GREEN "ON" BLUE "]\n" RESET);
@@ -58,6 +74,9 @@ void user_interface_toggle(int toggle) {
   }
 }
 
+/**
+ * @brief Clear the current line in stdout
+ */
 void clear_stdout_line() {
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w); // Get the terminal size
@@ -70,12 +89,18 @@ void clear_stdout_line() {
   printf("\r");
 }
 
+/**
+ * @brief Display the user prompt
+ */
 void prompt() {
   clear_stdout_line();
   printf(GREEN "<USER> " RESET);
   fflush(stdout);
 }
 
+/**
+ * @brief Handle the SIGQUIT signal by clearing the output stream and displaying the prompt
+ */
 void handle_sigquit() {
   CLEAR_STREAM(STDOUT_FILENO);
   prompt();

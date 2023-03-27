@@ -1,7 +1,8 @@
 #include "common.h"
-#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/host_handling.h"
+#include "../core/TCP.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,8 +21,8 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
       continue;
     }
 
-    if (write(current_node->fd, protocol_msg, len) == -1) {
-      system_error("In withdraw_module() ->" RED " write() failed");
+    if (write_msg_TCP(current_node->fd, protocol_msg, len) == -1) {
+      system_error("write() failed");
     }
 
     current_node = current_node->next;
@@ -32,7 +33,7 @@ void send_message_to_neighbours(host *host, int fd, char *dest, char *protocol_m
   node *neighbour = check_route(host, dest);
   if (neighbour != NULL) {
     // If the route is known, forward the message to the right neighbour
-    if (write(neighbour->fd, protocol_msg, 256) == -1) {
+    if (write_msg_TCP(neighbour->fd, protocol_msg, 256) == -1) {
       printf("Error sending QUERY to known neighbor\n");
     }
   } else {

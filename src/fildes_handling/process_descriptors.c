@@ -4,6 +4,7 @@
 #include "../essentials/circular_buffer.h"
 #include "../essentials/host_handling.h"
 #include "../essentials/new_connections_list.h"
+#include "core/TCP.h"
 #include "custom_protocols_interface/utility.h"
 #include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
@@ -156,7 +157,7 @@ void process_new_connection(host *host, new_connection *connection) {
     sprintf(msg_to_send, "EXTERN %s %s %d\n", ext->ID, ext->IP, ext->TCP);
   }
 
-  if (write(connection->new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
+  if (write_msg_TCP(connection->new_fd, msg_to_send, strlen(msg_to_send)) == -1) {
     close(connection->new_fd);
     remove_new_connection(host, connection->new_fd);
     return;
@@ -216,7 +217,7 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
 
   // Get the first token from the message
   if (sscanf(buffer, "%s", token) < 1) {
-    system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
+    system_error("sscanf() failed");
     return;
   }
 

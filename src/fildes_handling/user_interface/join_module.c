@@ -1,7 +1,7 @@
 #include "join_module.h"
-#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/host_handling.h"
 #include "../../fildes_handling/core/TCP.h"
 #include "../../fildes_handling/core/UDP.h"
 #include "../custom_protocols_interface/delete_node_module.h"
@@ -287,10 +287,6 @@ int djoin_network(char *buffer, host *host, int flag) {
  * @return 1 if the host successfully joined the network, 0 otherwise
  */
 int join_network(char *buffer, host *host) {
-  if (number_of_command_arguments(buffer, ' ') > 2) {
-    return 0;
-  }
-
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
   if (sscanf(buffer, "join %s %s\n", net, ID) != 2) {

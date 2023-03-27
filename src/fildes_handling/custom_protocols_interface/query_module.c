@@ -1,7 +1,8 @@
 #include "query_module.h"
-#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/host_handling.h"
+#include "../core/TCP.h"
 #include "common.h"
 #include "protocol_commands.h"
 
@@ -66,7 +67,7 @@ void process_query(host *host, node *sender, char *buffer) {
       snprintf(protocol_msg, 256, "NOCONTENT %s %s %s\n", orig, dest, name);
     }
     // Send the CONTENT or NOCONTENT message to the sender
-    if (write(sender->fd, protocol_msg, 256) == -1) {
+    if (write_msg_TCP(sender->fd, protocol_msg, 256) == -1) {
       printf("Error sending CONTENT or NOCONTENT to sender\n"); // APAGAR - para testes
                                                                 // (acho eu)
     }
