@@ -8,7 +8,7 @@
 user_command get_user_command(char *token);
 int process_keyboard_input(host *host, char *buffer);
 
-void process_new_connection(host *host, int new_fd, char *buffer);
+void process_new_connection(host *host, new_connection *connection);
 
 protocol_command get_protocol_command(char *token);
 void process_neighbour_nodes(host *host, node *node, char *buffer);

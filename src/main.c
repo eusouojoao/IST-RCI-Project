@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
   host->listen_fd = create_listen_socket(uip);
 
   // select() working variables
-  // struct timeval timeout = {.tv_sec = 600, .tv_usec = 0}; // Timeout of 600s = 10min
   fd_set working_set; // Read file descriptors set
   int counter = 0;    // Number of descriptors that became ready
 
@@ -59,6 +58,7 @@ int main(int argc, char *argv[]) {
   user_interface_toggle(ON);
 
   int r = 0; // Stores the return values
+  char buffer[256] = {'\0'};
 
   while (ON) {
     // Print prompt
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Process input
-    if ((r = fildes_control(host, &working_set, &counter)) == 0) {
+    if ((r = fildes_control(host, &working_set, &counter, buffer)) == 0) {
       // Exiting...
       break;
     }

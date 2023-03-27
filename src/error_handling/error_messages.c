@@ -14,14 +14,11 @@
  * @param target: pointer to the program's target name
  */
 void usage(char *target) {
-  fprintf(stderr, RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET,
-          target);
+  fprintf(stderr, RED "(!) Usage:" RESET BLUE " %s IP TCP [regIP] [regTCP]\n\n" RESET, target);
   fputs(BLUE "NOTE:" RESET " The arguments [regIP] & [regTCP] are optional, defaulting\n"
              "to 193.136.138.142 & 59000 respectively.\n",
         stderr);
 }
-
-void print_help(void) {} // APAGAR?
 
 /**
  * @brief Displays a user input error message.
@@ -63,9 +60,9 @@ void system_error(char *msg) {
   fputs(RESET, stderr);
 }
 
-void user_error(char *msg) { fprintf(stderr, RED "(!)Error" RESET "%s", msg); }
+void user_error(char *msg) { fprintf(stderr, RED "(!) Error" RESET "%s", msg); }
 
-void print_usage() {
+void print_help(void) {
   printf("╔══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╗\n");
   printf("║                                    User Interface Commands                   "
@@ -96,10 +93,10 @@ void print_usage() {
          "                 ║\n");
   printf("║ - leave : [node leaves net]                                                  "
          "                 ║\n");
-  printf("║ - exit : [closes app]                                                        "
-         "                 ║\n");
-  printf("║ - help : [shows User Interface Commands]                                 "
-         "                 ║\n");
+  printf("║ - exit : [closes app]                                                             "
+         "            ║\n");
+  printf("║ - help : [shows User Interface Commands]                                          "
+         "            ║\n");
 
   printf("╚══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╝\n");

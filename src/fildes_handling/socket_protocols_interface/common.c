@@ -12,7 +12,7 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
   // Initialize a pointer to the first node in the network
   node *current_node = host->node_list;
   // Calculate the length of the protocol message string + the null terminator
-  size_t len = strlen(protocol_msg) + 1;
+  size_t len = strlen(protocol_msg);
   // Iterate over all neighbour nodes
   while (current_node != NULL) {
     if (current_node->fd == sender_fd) { // Skip the sender node
@@ -26,8 +26,6 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
 
     current_node = current_node->next;
   }
-
-  free(protocol_msg);
 }
 
 void send_message_to_neighbours(host *host, int fd, char *dest, char *protocol_msg) {

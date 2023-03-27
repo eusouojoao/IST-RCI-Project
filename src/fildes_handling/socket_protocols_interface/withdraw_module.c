@@ -3,6 +3,7 @@
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "common.h"
+#include "delete_node_module.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,35 +13,51 @@
 #define SIZE 128
 #define ELEMENTS sizeof(host->tab_expedicao) / sizeof(host->tab_expedicao[0])
 
+/**
+ * @brief Update the backup node information in the host structure.
+ * @param host: Pointer to the host structure.
+ * @param buffer: A buffer containing the new backup node information.
+ */
 void update_backup(host *host, char *buffer) {
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  sscanf(buffer, "EXTERN %s %s %s", node_ID, node_IP, node_TCP);
-  if (check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
-    /* error */
+  free_node(host->bck), host->bck = NULL;
+
+  if (sscanf(buffer, "EXTERN %s %s %s\n", node_ID, node_IP, node_TCP) != 3) {
+    /*! TODO: Perguntar o que fazer nesta situaç~ao */
+    delete_node(host, host->ext->fd);
     return;
   }
 
-  free_node(host->bck);
+  if (check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
+    delete_node(host, host->ext->fd);
+    return;
+  }
+
   if (strcmp(host->ID, node_ID) != 0) {
     host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
     insert_in_forwarding_table(host, atoi(node_ID), atoi(node_ID));
-  } else {
-    host->bck = NULL;
   }
 
   return;
 }
 
+/**
+ * @brief Handle the WITHDRAW command and update the forwarding table.
+ * @param host: Pointer to the host structure.
+ * @param sender: Pointer to the node that sent the WITHDRAW command.
+ * @param buffer: A buffer containing the WITHDRAW command and the node ID to be
+ * withdrawn.
+ */
 void withdraw_wrapper(host *host, node *sender, char *buffer) {
   char ID[32] = {'\0'};
   // If the command is WITHDRAW, withdraw the node with the specified ID
-  if (sscanf(buffer, "WITHDRAW %s", ID) < 1) {
-    system_error("In process_neighbour_node_fd() ->" RED " sscanf() failed");
+  if (sscanf(buffer, "WITHDRAW %s\n", ID) != 1) {
+    system_error("sscanf() failed");
     return;
   }
 
-  if (check_net_and_id("000", ID) == 0) {
+  if (!check_net_and_id(host->net, ID)) {
     // 000 é uma net válida --> estamos a verificar apenas o ID
     return;
   }
@@ -51,13 +68,20 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
   }
 
   broadcast_protocol_message(host, sender->fd, withdraw_msg);
+  free(withdraw_msg);
 }
 
+/**
+ * @brief Remove a node from the host's forwarding table.
+ * @param host: Pointer to the host structure.
+ * @param eraseN: Node ID to be removed from the forwarding table.
+ * @return A pointer to the WITHDRAW message to be broadcasted to other nodes.
+ */
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
   char *withdraw_message = calloc(SIZE, sizeof(char));
   if (withdraw_message == NULL) {
     system_error("calloc() failed");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   snprintf(withdraw_message, SIZE, "WITHDRAW %02d\n", eraseN);

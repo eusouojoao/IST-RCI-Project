@@ -1,14 +1,13 @@
 #ifndef TCP_utils_H
 #define TCP_utils_H
 
+#include <stdio.h>
 #include <sys/types.h>
 
 #include "../../common/struct.h"
 
-ssize_t send_msg_TCP(int fd, char *msg_to_send, size_t msglen);
-ssize_t read_msg_TCP(int fd, char *buffer, size_t size);
-char *send_and_receive_msg_TCP(int fd, char *msg);
-char *fetch_bck(host *host, char *msg);
+ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen);
+ssize_t fetch_bck(host *host, char *msg);
 int create_listen_socket(user_args *uip);
 
 #endif // !TCP_utils_H
