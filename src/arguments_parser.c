@@ -1,6 +1,6 @@
 #include "arguments_parser.h"
-#include "../error_handling/error_checking.h"
-#include "../error_handling/error_messages.h"
+#include "error_handling/error_checking.h"
+#include "error_handling/error_messages.h"
 
 #include <stdlib.h>
 

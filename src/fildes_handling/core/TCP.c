@@ -1,5 +1,4 @@
 #include "TCP.h"
-#include "../../common/retry.h"
 #include "../../error_handling/error_messages.h"
 #include "core_common.h"
 
@@ -11,9 +10,6 @@
 
 #define MAXREQUESTS 99
 #define BUFFER_SIZE 256
-
-#define WRITE_TIMEOUT_SECONDS 1          // 1 second
-#define READ_TIMEOUT_MICROSECONDS 100000 // 100 milliseconds
 
 /**
  * @brief Sends a message over a TCP socket.
@@ -29,43 +25,16 @@
  * @return the total number of bytes sent or -1 if an error occurred.
  */
 ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
-  ssize_t total_sent = 0;
-  ssize_t bytes_sent = 0;
-  int attempt = 0;
-  fd_set writefds;
+  ssize_t total_sent = 0, bytes_sent = 0;
 
-  struct timeval timeout = {
-      .tv_sec = WRITE_TIMEOUT_SECONDS,
-      .tv_usec = 0,
-  };
-
-  // Loop until the entire message is sent
+  // loop until the entire message is sent
   while (total_sent < (ssize_t)msglen) {
-    // Initialize the file descriptor set and timeout
-    FD_ZERO(&writefds);
-    FD_SET(fd, &writefds);
-
-    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
-    if (ready == -1) {
+    bytes_sent = write(fd, msg_to_send + total_sent, msglen - (size_t)total_sent);
+    if (bytes_sent == -1) {
       return -1;
-    } else if (ready == 0) {
-      // Timeout occurred
-      if (attempt > MAX_ATTEMPTS) {
-        return 0;
-      }
-      attempt++;
-      continue;
     }
 
-    if (FD_ISSET(fd, &writefds)) {
-      bytes_sent = write(fd, msg_to_send + total_sent, msglen - (size_t)total_sent);
-      if (bytes_sent == -1) {
-        return -1;
-      }
-
-      total_sent += bytes_sent;
-      attempt = 0;
-    }
+    total_sent += bytes_sent;
   }
 
   return total_sent;
@@ -130,12 +99,6 @@ int create_listen_socket(user_args *uip) {
   int optval = 1;
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
     system_error("setsockopt() failed");
-    close(fd);
-    return -1;
-  }
-
-  // Set socket timeouts
-  if (set_timeouts(fd) == -1) {
     close(fd);
     return -1;
   }

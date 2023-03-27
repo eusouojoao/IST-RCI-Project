@@ -1,5 +1,5 @@
 #include "delete_node_module.h"
-#include "../../common/utils.h"
+#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../core/TCP.h"
@@ -109,7 +109,6 @@ int get_a_new_backup(host *host) {
   char msg_to_send[128] = {'\0'};
   sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
   if (fetch_bck(host, msg_to_send) == -1) {
-    system_error("write() failed");
     /*! TODO: O que fazer neste caso? Delete node? */
     return 0;
   }

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 
 ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen);
 ssize_t fetch_bck(host *host, char *msg);

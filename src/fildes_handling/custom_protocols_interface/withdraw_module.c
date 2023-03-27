@@ -1,46 +1,13 @@
 #include "withdraw_module.h"
-#include "../../common/utils.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "common.h"
-#include "delete_node_module.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #define SIZE 128
 #define ELEMENTS sizeof(host->tab_expedicao) / sizeof(host->tab_expedicao[0])
-
-/**
- * @brief Update the backup node information in the host structure.
- * @param host: Pointer to the host structure.
- * @param buffer: A buffer containing the new backup node information.
- */
-void update_backup(host *host, char *buffer) {
-  char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
-
-  free_node(host->bck), host->bck = NULL;
-
-  if (sscanf(buffer, "EXTERN %s %s %s\n", node_ID, node_IP, node_TCP) != 3) {
-    /*! TODO: Perguntar o que fazer nesta situaç~ao */
-    delete_node(host, host->ext->fd);
-    return;
-  }
-
-  if (check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
-    delete_node(host, host->ext->fd);
-    return;
-  }
-
-  if (strcmp(host->ID, node_ID) != 0) {
-    host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
-    insert_in_forwarding_table(host, atoi(node_ID), atoi(node_ID));
-  }
-
-  return;
-}
 
 /**
  * @brief Handle the WITHDRAW command and update the forwarding table.
@@ -57,8 +24,7 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
     return;
   }
 
-  if (!check_net_and_id(host->net, ID)) {
-    // 000 é uma net válida --> estamos a verificar apenas o ID
+  if (!check_id(ID)) {
     return;
   }
 

@@ -1,7 +1,7 @@
 #ifndef DESCRIPTOR_CONTROL_H
 #define DESCRIPTOR_CONTROL_H
 
-#include "../common/struct.h"
+#include "../essentials/struct.h"
 
 #include <sys/select.h>
 

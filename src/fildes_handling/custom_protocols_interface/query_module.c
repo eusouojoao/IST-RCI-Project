@@ -1,5 +1,5 @@
 #include "query_module.h"
-#include "../../common/utils.h"
+#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "common.h"

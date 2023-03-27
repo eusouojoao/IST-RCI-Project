@@ -1,8 +1,8 @@
 #include "content_module.h"
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
-#include "../socket_protocols_interface/common.h"
+#include "../custom_protocols_interface/common.h"
 
 #include <stdio.h>
 #include <stdlib.h>

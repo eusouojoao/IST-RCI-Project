@@ -1,11 +1,10 @@
 #include "process_descriptors.h"
-#include "../common/retry.h"
-#include "../common/utils.h"
 #include "../error_handling/error_checking.h"
 #include "../error_handling/error_messages.h"
 #include "../essentials/circular_buffer.h"
+#include "../essentials/host_handling.h"
 #include "../essentials/new_connections_list.h"
-#include "socket_protocols_interface/utility.h"
+#include "custom_protocols_interface/utility.h"
 #include "user_interface/user_commands.h"
 #include "user_interface/utility.h"
 

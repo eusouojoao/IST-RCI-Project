@@ -1,7 +1,7 @@
 #ifndef CIRCULAR_BUFFER_H
 #define CIRCULAR_BUFFER_H
 
-#include "../common/struct.h"
+#include "../essentials/struct.h"
 #include <sys/types.h>
 
 void cb_init(circular_buffer_t *cb);

@@ -1,7 +1,7 @@
 #ifndef CLEAR_MODULES_H
 #define CLEAR_MODULES_H
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 #include "user_commands.h"
 
 void show_wrapper(host *host, user_command cmd, char *buffer);

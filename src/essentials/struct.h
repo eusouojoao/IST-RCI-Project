@@ -70,10 +70,10 @@ typedef struct host {
   int listen_fd; // File descriptor of the listening socket
   new_connection *new_connections_list;
 
-  node *bck;       // Pointer to the backup node (not in the node_list)
-  node *ext;       // Pointer to the external node (also available in the node_list)
-  node *node_list; // List of neighbor nodes, i.e., internal and external
+  node *bck; // Pointer to the backup node (not in the node_list)
+  node *ext; // Pointer to the external node (also available in the node_list)
 
+  node *node_list;   // List of neighbor nodes, i.e., internal and external
   names *names_list; // List of names associated with the host
 } host;
 

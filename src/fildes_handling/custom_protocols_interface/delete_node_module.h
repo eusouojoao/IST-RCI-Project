@@ -1,7 +1,7 @@
 #ifndef DELETE_NODE_MODULE_H
 #define DELETE_NODE_MODULE_H
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 
 void delete_node(host *host, int withdraw_fd);
 void update_external_node(host *host, int withdraw_fd);

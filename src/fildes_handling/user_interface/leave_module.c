@@ -1,7 +1,7 @@
 #include "leave_module.h"
-#include "../../common/prompts.h"
-#include "../../common/utils.h"
 #include "../../error_handling/error_messages.h"
+#include "../../essentials/host_handling.h"
+#include "../../misc/prompts.h"
 #include "../core/UDP.h"
 #include "user_commands.h"
 

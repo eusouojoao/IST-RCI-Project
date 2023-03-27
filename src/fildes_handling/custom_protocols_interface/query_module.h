@@ -1,7 +1,7 @@
 #ifndef QUERY_MODULE_H
 #define QUERY_MODULE_H
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 #include "protocol_commands.h"
 
 void process_query(host *host, node *sender, char *buffer);

@@ -1,7 +1,7 @@
 #ifndef CONTENT_MODULES_H
 #define CONTENT_MODULES_H
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 
 names *new_names(char *name, names *next);
 int insert_name(host *host, char *name);

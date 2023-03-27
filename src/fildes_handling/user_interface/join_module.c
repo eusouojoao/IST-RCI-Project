@@ -1,10 +1,10 @@
 #include "join_module.h"
-#include "../../common/utils.h"
+#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../../fildes_handling/core/TCP.h"
 #include "../../fildes_handling/core/UDP.h"
-#include "../socket_protocols_interface/delete_node_module.h"
+#include "../custom_protocols_interface/delete_node_module.h"
 #include "leave_module.h"
 #include "user_commands.h"
 
@@ -73,7 +73,6 @@ static char *find_new_extern(host *host, int blacklist_ID) {
         sprintf(msg_to_send, "djoin %s %s %s %s %s\n", host->net, host->ID, ID, IP, TCP);
         free(received_nodeslist);
 
-        printf("msg_to_send: %s\n", msg_to_send);
         return msg_to_send;
       }
     }
@@ -341,7 +340,11 @@ int join_network(char *buffer, host *host) {
       assign_host_ID_and_network(host, ID, net);
     }
   } else {
-    // ???
+    fprintf(stderr, YELLOW "[NOTICE] " RESET);
+    fprintf(stderr,
+            "Unexpected `%s`. "
+            "Couldn't register in the network (%s).\n",
+            received_reg_msg, net);
     return 0;
   }
 

@@ -1,6 +1,6 @@
 #include "show_module.h"
-#include "../../common/prompts.h"
 #include "../../error_handling/error_messages.h"
+#include "../../misc/prompts.h"
 
 #include <stdio.h>
 #include <string.h>

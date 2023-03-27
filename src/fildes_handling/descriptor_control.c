@@ -3,12 +3,10 @@
 #include "../essentials/circular_buffer.h"
 #include "../essentials/new_connections_list.h"
 #include "core/TCP.h"
+#include "custom_protocols_interface/delete_node_module.h"
 #include "process_descriptors.h"
-#include "socket_protocols_interface/delete_node_module.h"
 
 #include <errno.h>
-#include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -89,10 +87,12 @@ int get_maxfd(host *host) {
   int nc_max_fd = max_fd_from_new_connections(host->new_connections_list);
   int node_max_fd = max_fd_from_nodes(host->node_list);
 
-  if (nc_max_fd > max_fd)
+  if (nc_max_fd > max_fd) {
     max_fd = nc_max_fd;
-  if (node_max_fd > max_fd)
+  }
+  if (node_max_fd > max_fd) {
     max_fd = node_max_fd;
+  }
 
   return max_fd;
 }
@@ -333,7 +333,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
 
       // Process each complete message in the buffer individually
       char read_buffer[SIZE] = {'\0'};
-      while (cb_read_LF(temp->cb, read_buffer, SIZE - 1)) {
+      while (cb_read_LF(temp->cb, read_buffer, sizeof(read_buffer) - 1)) {
         process_neighbour_nodes(host, temp, buffer);
       }
       break;

@@ -1,8 +1,8 @@
 #ifndef PROCESS_DESCRIPTORS_H
 #define PROCESS_DESCRIPTORS_H
 
-#include "../common/struct.h"
-#include "socket_protocols_interface/protocol_commands.h"
+#include "../essentials/struct.h"
+#include "custom_protocols_interface/protocol_commands.h"
 #include "user_interface/user_commands.h"
 
 user_command get_user_command(char *token);

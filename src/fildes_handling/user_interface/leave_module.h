@@ -1,7 +1,7 @@
 #ifndef LEAVE_MODULE_H
 #define LEAVE_MODULE_H
 
-#include "../../common/struct.h"
+#include "../../essentials/struct.h"
 #include "user_commands.h"
 
 void delete_names_list(host *host);

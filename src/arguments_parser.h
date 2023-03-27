@@ -1,7 +1,7 @@
 #ifndef PARSER
 #define PARSER
 
-#include "struct.h"
+#include "essentials/struct.h"
 
 void init_uip(user_args **uip);
 int check_input_integrity(int argc, char *argv[], user_args **uip);

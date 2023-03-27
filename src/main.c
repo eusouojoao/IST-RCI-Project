@@ -1,16 +1,13 @@
-#include "common/arguments_parser.h"
-#include "common/handle_terminal.h"
-#include "common/prompts.h"
-#include "common/utils.h"
+#include "arguments_parser.h"
+#include "essentials/host_handling.h"
 #include "fildes_handling/core/TCP.h"
 #include "fildes_handling/descriptor_control.h"
+#include "misc/handle_terminal.h"
+#include "misc/prompts.h"
 
 #include <signal.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
-
-#include <stdio.h>
 
 void signal_setup(void) {
   // Set up the custom signal handler and enable SA_RESTART
@@ -21,7 +18,7 @@ void signal_setup(void) {
 
   // Register the signal handler
   if (sigaction(SIGQUIT, &action, NULL) == -1) {
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   // Ignore SIGPIPE, SIGINT and SIGTSTP
@@ -31,6 +28,13 @@ void signal_setup(void) {
 int main(int argc, char *argv[]) {
   // Seed the rand function
   srand((unsigned int)time(NULL));
+
+  // Setup signal handling
+  signal_setup();
+
+  // Map SIGQUIT to CTRL+L to clear the terminal
+  struct termios original_termios;
+  modify_termios(&original_termios);
 
   // Parse and setup user arguments
   user_args *uip = NULL;
@@ -44,20 +48,14 @@ int main(int argc, char *argv[]) {
   fd_set working_set; // Read file descriptors set
   int counter = 0;    // Number of descriptors that became ready
 
-  // Setup signal handling
-  signal_setup();
-
-  // Map SIGQUIT to CTRL+L to clear the terminal
-  struct termios original_termios;
-  modify_termios(&original_termios);
-
   // User interface engage
   print_header();
   user_interface_toggle(ON);
 
-  int r = 0; // Stores the return values
+  // Working buffer
   char buffer[256] = {'\0'};
 
+  int r = 0; // Stores the return values
   while (ON) {
     // Print prompt
     prompt();
