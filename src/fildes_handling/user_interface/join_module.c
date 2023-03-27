@@ -4,6 +4,7 @@
 #include "../../error_handling/error_messages.h"
 #include "../../fildes_handling/core/TCP.h"
 #include "../../fildes_handling/core/UDP.h"
+#include "../socket_protocols_interface/delete_node_module.h"
 #include "leave_module.h"
 #include "user_commands.h"
 
@@ -18,6 +19,73 @@
 #define SIZE 64
 
 /**
+ * @brief Find a new external node for the host, skipping nodes in the blacklist
+ * @note The blacklist is reset if the host's network has changed since the last call
+ *
+ * @param host: the host structure containing network information and the ID to blacklist
+ * @param blacklist_ID: the ID of the node to add to the blacklist
+ * @return A dynamically allocated string containing the found node information or NULL if not
+ * found
+ */
+static char *find_new_extern(host *host, int blacklist_ID) {
+  static int last_net = -1;
+  static int blacklist[100] = {0};
+  int current_net = atoi(host->net);
+
+  // Reset the blacklist if the network has changed
+  if (last_net != current_net) {
+    memset(blacklist, 0, sizeof(blacklist));
+    blacklist[atoi(host->ID)] = 1;
+    last_net = current_net;
+  }
+
+  // Add the specified node ID to the blacklist
+  blacklist[blacklist_ID] = 1;
+
+  // Allocate memory for the message to send
+  char *msg_to_send = calloc(SIZE, sizeof(char));
+  if (msg_to_send == NULL) {
+    return NULL;
+  }
+
+  // Prepare the message to request the list of nodes
+  sprintf(msg_to_send, "NODES %s", host->net);
+  char *received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  if (received_nodeslist == NULL) {
+    free(msg_to_send);
+    return NULL;
+  }
+
+  char ID[8], IP[16], TCP[8];
+  const char *p = received_nodeslist;
+
+  // Iterate through the list of nodes
+  while (p) {
+    p = strchr(p, '\n');
+    if (p) {
+      p++; // Move to the character after the newline
+      if (sscanf(p, "%2s %15s %5s", ID, IP, TCP) == 3) {
+        if (blacklist[atoi(ID)]) {
+          continue; // Skip the blacklisted node
+        }
+
+        // Prepare the message to send with the found node information
+        sprintf(msg_to_send, "djoin %s %s %s %s %s\n", host->net, host->ID, ID, IP, TCP);
+        free(received_nodeslist);
+
+        printf("msg_to_send: %s\n", msg_to_send);
+        return msg_to_send;
+      }
+    }
+  }
+
+  // No suitable node found
+  free(msg_to_send);
+  free(received_nodeslist);
+  return NULL;
+}
+
+/**
  * @brief Checks and updates an ID to ensure its uniqueness in the network.
  *
  * This function verifies if the given ID is unique within the specified node list.
@@ -29,7 +97,7 @@
  * @param node_list: null-terminated string containing the list of nodes to check.
  * @param ID: pointer to a string containing the ID to check and/or modify.
  */
-void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
+static void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
   int new_id = 0, PORT = 0;
   char pattern[SIZE] = {'\0'}, IP[16] = {'\0'};
 
@@ -44,7 +112,7 @@ void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
 
   // Extract IP and PORT from the matched pattern
   if (sscanf(str, "%*s %s %d", IP, &PORT) != 2) {
-    exit(1);
+    return;
   }
 
   // Check if the IP and PORT match the host's IP and TCP port
@@ -79,7 +147,7 @@ void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
  * @return pointer to a string containing the needed information of the randomly
  * selected external node. Returns NULL if no suitable external node is found.
  */
-char *fetch_extern_from_nodelist(char *node_list) {
+static char *fetch_extern_from_nodelist(char *node_list) {
   char *token = strtok(node_list, "\n");
   char *array[MAXNODES] = {NULL};
   int node_count = 0;
@@ -109,7 +177,7 @@ char *fetch_extern_from_nodelist(char *node_list) {
  * @param ID: The host's ID to be assigned.
  * @param net: The network value to be assigned to the host.
  */
-void assign_host_ID_and_network(host *host, const char *ID, const char *net) {
+static void assign_host_ID_and_network(host *host, const char *ID, const char *net) {
   // Allocate memory for the host ID
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
@@ -160,25 +228,17 @@ int djoin_network(char *buffer, host *host, int flag) {
     return 0;
   }
 
-  if (number_of_command_arguments(buffer, ' ') > 5) {
-    // TODO: Handle error: invalid user input
-    return 0;
-  }
-
-  char msg_to_send[SIZE << 2] = {'\0'}, *received_msg = NULL;
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
-  if (sscanf(buffer, "djoin %s %s %s %s %s", net, ID, node_ID, node_IP, node_TCP) != 5) {
+  if (sscanf(buffer, "djoin %s %s %s %s %s\n", net, ID, node_ID, node_IP, node_TCP) != 5) {
     // TODO: Handle error: invalid user input or function failure
     return 0;
   }
 
   // Verify arguments for direct user call to djoin
   if (flag == DJOIN) {
-    if (check_net_and_id(net, ID) == EXIT_FAILURE ||
-        check_node_parameters(node_ID, node_IP, node_TCP) == EXIT_FAILURE) {
-      printf("Invalid djoin call\n");
+    if (check_net_and_id(net, ID) || check_node_parameters(node_ID, node_IP, node_TCP)) {
       return 0;
     }
   }
@@ -193,27 +253,27 @@ int djoin_network(char *buffer, host *host, int flag) {
   assign_host_ID_and_network(host, ID, net);
 
   // Message exchange between the host and the external node
-  memset(msg_to_send, 0, sizeof(msg_to_send));
-  sprintf(msg_to_send, "NEW %s %s %d\n", host->ID, host->uip->IP, host->uip->TCP);
-  received_msg = fetch_bck(host, msg_to_send);
-  if (received_msg == NULL) {
-    leave_network(host, flag == JOIN ? JOIN : DJOIN);
-    return 0;
+  if (!get_a_new_backup(host)) {
+    free_node(host->ext);
+    host->node_list = host->ext = NULL;
+
+    if (flag == DJOIN) {
+      /*! TODO: Avisar o utilizador */
+      return 0;
+    }
+
+    char *new_djoin_msg = find_new_extern(host, atoi(node_ID));
+    if (new_djoin_msg == NULL) {
+      return 1;
+    }
+
+    int r = djoin_network(new_djoin_msg, host, JOIN);
+    free(new_djoin_msg);
+    printf("retval djoin: %d\n", r);
+    return r;
   }
 
   insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
-
-  if (sscanf(received_msg, "EXTERN %s %s %s\n", node_ID, node_IP, node_TCP) != 3) {
-    leave_network(host, flag == JOIN ? JOIN : DJOIN);
-    return 0;
-  }
-
-  if (strcmp(node_ID, host->ID) != 0) {
-    insert_in_forwarding_table(host, atoi(node_ID), atoi(host->ext->ID));
-    host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
-  }
-
-  free(received_msg);
   return 1;
 }
 
@@ -233,8 +293,7 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
-  char *received_reg_msg = NULL, *received_nodeslist = NULL, *ext_node = NULL;
-  char msg_to_send[SIZE << 2] = {'\0'}, net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
+  char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
   if (sscanf(buffer, "join %s %s\n", net, ID) != 2) {
     system_error("sscanf() failed");
@@ -251,8 +310,9 @@ int join_network(char *buffer, host *host) {
     return 0;
   }
 
+  char msg_to_send[SIZE << 2] = {'\0'};
   sprintf(msg_to_send, "NODES %s", net);
-  received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
   if (received_nodeslist == NULL) {
     return 0;
   }
@@ -266,7 +326,7 @@ int join_network(char *buffer, host *host) {
 
   memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
-  received_reg_msg = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *received_reg_msg = send_and_receive_msg_UDP(host->uip, msg_to_send);
   if (received_reg_msg == NULL) {
     free(received_nodeslist);
     return 0;
@@ -274,7 +334,7 @@ int join_network(char *buffer, host *host) {
 
   if (strcmp(received_reg_msg, "OKREG") == 0) {
     memset(msg_to_send, 0, sizeof(msg_to_send));
-    ext_node = fetch_extern_from_nodelist(received_nodeslist);
+    char *ext_node = fetch_extern_from_nodelist(received_nodeslist);
     if (ext_node != NULL) {
       sprintf(msg_to_send, "djoin %s %s %s", net, ID, ext_node);
       djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network

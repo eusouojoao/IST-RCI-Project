@@ -97,8 +97,7 @@ int check_net_and_id(char *net, char *id) {
 int check_if_number(char *src) {
   for (size_t i = 0; i < strlen(src); i++) {
     if (!isdigit(src[i])) {
-      user_input_error("Value not a number", src,
-                       "Inputs like ID, net, TCP must be numbers");
+      user_input_error("Value not a number", src, "Inputs like ID, net, TCP must be numbers");
       return 0;
     }
   }
@@ -162,13 +161,11 @@ int check_name(char *name) {
   }
 
   for (size_t i = 0; i < strlen(name); i++) {
-    if (isalnum(name[i]) == 0) { // not alphanumeric caracter
-      if (name[i] != '.') {      // but we want to allow . caracters
-        user_input_error("Invalid name", name,
-                         "Name must be alphanumeric('.' is an exception) and at most 100 "
-                         "caracter long");
-        return -1;
-      }
+    if (!isalnum(name[i]) && name[i] != '.') {
+      user_input_error("Invalid name", name,
+                       "Name must be alphanumeric ('.' is an exception) and at most 100 "
+                       "caracter long");
+      return -1;
     }
   }
 

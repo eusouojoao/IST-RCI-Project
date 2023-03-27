@@ -54,7 +54,7 @@ int insert_name(host *host, char *buffer) {
     system_error("strdup() failed");
     return -1;
   }
-  name[strlen(name) - 1] = '\0';
+  name[strlen(name)] = '\0';
 
   if (check_name(name) == -1) {
     free(name);
