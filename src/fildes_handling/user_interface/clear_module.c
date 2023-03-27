@@ -18,6 +18,11 @@ void clear_window() {
 void clear_names(host *host) { delete_names_list(host); }
 
 void clear_routing(host *host) {
+  if (host->net == NULL) {
+    user_error("Host must be registered in a network to clear the forwarding table.");
+    return;
+  }
+
   reset_forwarding_table(host);
   insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
 }
@@ -41,10 +46,9 @@ void clear_wrapper(host *host, user_command cmd, char *buffer) {
         return;
       }
     } else {
-      user_input_error(
-          "Invalid command format", buffer,
-          "The `clear` commands must have 2 words separated by a space. E.g. "
-          "clear routing (cr)");
+      user_input_error("Invalid command format", buffer,
+                       "The `clear` commands must have 2 words separated by a space. E.g. "
+                       "clear routing (cr)");
       return;
     }
   }

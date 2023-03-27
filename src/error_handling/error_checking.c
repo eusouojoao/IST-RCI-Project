@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -109,19 +110,19 @@ int check_if_number(char *src) {
  *
  * @param src: the input port string to check
  *
- * @return The port number as an integer if the format is correct, EXIT_FAILURE otherwise.
+ * @return The port number as an integer if the format is correct, -1 otherwise.
  */
 int check_PORT(char *src) {
   char *end = NULL;
   long PORT = strtol(src, &end, 10);
   if ((end == src) || (*end != '\0')) {
     user_input_error("Bad port format", src, "must be an integer within 0 and 65535.");
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   if (PORT < 0 || PORT > MAXPORT) {
     user_input_error("Port out of range", src, "does not lie within 0 and 65535.");
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   return (int)PORT;
@@ -135,13 +136,14 @@ int check_PORT(char *src) {
  * @return 1 if the IP address is in the correct format, 0 otherwise.
  */
 int check_IP_address(char *src) {
+  int r;
   struct sockaddr_in sa;
-  if (inet_pton(AF_INET, src, &(sa.sin_addr)) != 1) {
+  if (!(r = inet_pton(AF_INET, src, &(sa.sin_addr)))) {
     user_input_error("Invalid IPv4", src,
                      "the IP format must be X.X.X.X, where X must be a "
                      "decimal value between 0 and 255 (octet).");
   }
-  return inet_pton(AF_INET, src, &(sa.sin_addr));
+  return r;
 }
 
 /**
@@ -153,14 +155,15 @@ int check_IP_address(char *src) {
  * @return 0 if the name is valid, -1 otherwise.
  */
 int check_name(char *name) {
-  if (strlen(name) > 100) {
+  size_t len = strlen(name);
+  if (len <= 0 || len > 100) {
     user_input_error(
         "Invalid name", name,
         "Name must be alphanumeric('.' is an exception) and at most 100 caracter long");
     return -1;
   }
 
-  for (size_t i = 0; i < strlen(name); i++) {
+  for (size_t i = 0; i < len; i++) {
     if (!isalnum(name[i]) && name[i] != '.') {
       user_input_error("Invalid name", name,
                        "Name must be alphanumeric ('.' is an exception) and at most 100 "

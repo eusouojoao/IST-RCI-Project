@@ -71,6 +71,11 @@ void show_wrapper(host *host, user_command cmd, char *buffer) {
  * @param host Pointer to the host struct.
  */
 void show_topology(host *host) {
+  if (host->net == NULL) {
+    user_error("Host must be registered in a network to have a topology.");
+    return;
+  }
+
   printf("╔═══════════════════════════════════════╗\n");
   printf("║          Host Topology: ID %s         ║\n", host->ID);
   printf("║              Network %s              ║\n", host->net);
@@ -138,6 +143,11 @@ void show_names(host *host) {
  * @param host Pointer to the host struct.
  */
 void show_routes(host *host) {
+  if (host->net == NULL) {
+    user_error("Host must be registered in a network to have a forwarding table.");
+    return;
+  }
+
   printf("╔══════════════════════════════════════════════╗\n");
   printf("║            Routing Table: Host %s            ║\n", host->ID);
   printf("║                Network %s                   ║\n", host->net);

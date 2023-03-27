@@ -54,7 +54,7 @@ int insert_name(host *host, char *buffer) {
     system_error("strdup() failed");
     return -1;
   }
-  name[strlen(name)] = '\0';
+  name[strlen(name) - 1] = '\0';
 
   if (check_name(name) == -1) {
     free(name);
@@ -155,9 +155,18 @@ int handle_destination_is_current_host(host *host, char *dest, char *name) {
 }
 
 void get_name(host *host, char *buffer) {
+  if (host->net == NULL) {
+    user_input_error("Invalid get", buffer, "Host must be registered in a network");
+    return;
+  }
+
   char dest[32] = {'\0'}, name[100] = {'\0'};
 
   if (!parse_get_name_command(buffer, dest, name)) {
+    return;
+  }
+
+  if (check_net_and_id(host->net, dest)) {
     return;
   }
 

@@ -82,20 +82,18 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {
     if (sscanf(buffer, "CONTENT %s %s %s\n", dest, orig, name) != 3) {
-      user_input_error(
-          "Invalid protocol message format", buffer,
-          "The `CONTENT` message must have the destiny node, the origin node "
-          "and the content. E.g. "
-          "CONTENT 00 01 name");
+      user_input_error("Invalid protocol message format", buffer,
+                       "The `CONTENT` message must have the destiny node, the origin node "
+                       "and the content. E.g. "
+                       "CONTENT 00 01 name");
       return 0;
     }
   } else if (cmd == NOCONTENT) {
     if (sscanf(buffer, "NOCONTENT %s %s %s\n", dest, orig, name) != 3) {
-      user_input_error(
-          "Invalid protocol message format", buffer,
-          "The `NOCONTENT` message must have the destiny node, the origin node "
-          "and the content. E.g. "
-          "NOCONTENT 00 01 name");
+      user_input_error("Invalid protocol message format", buffer,
+                       "The `NOCONTENT` message must have the destiny node, the origin node "
+                       "and the content. E.g. "
+                       "NOCONTENT 00 01 name");
       return 0;
     }
   }
@@ -117,8 +115,7 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
  * @param[in] cmd: Enum value representing the protocol command (CONTENT or
  * NOCONTENT).
  */
-void handle_content_response(host *host, node *sender, char *buffer,
-                             protocol_command cmd) {
+void handle_content_response(host *host, node *sender, char *buffer, protocol_command cmd) {
   char dest[32] = {'\0'}, orig[32] = {'\0'}, name[100] = {'\0'};
 
   if (!parse_content_message(buffer, orig, dest, name, cmd)) {
@@ -130,9 +127,9 @@ void handle_content_response(host *host, node *sender, char *buffer,
   // If the origin matches the current host ID, print the response
   if (strcmp(host->ID, dest) == 0) {
     if (cmd == CONTENT) {
-      printf("CONTENT %s %s %s\n", dest, orig, name);
-    } else if (cmd == NOCONTENT) {
-      printf("NOCONTENT %s %s %s\n", dest, orig, name);
+      printf("Name: `%s` found on node %s\n", name, orig);
+    } else {
+      printf("Name: `%s` not found on node %s\n", name, orig);
     }
 
     return;

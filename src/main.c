@@ -26,8 +26,6 @@ void signal_setup(void) {
 
   // Ignore SIGPIPE, SIGINT and SIGTSTP
   signal(SIGPIPE, SIG_IGN);
-  // signal(SIGINT, SIG_IGN);  // CTRL + C
-  signal(SIGTSTP, SIG_IGN); // CTRL + Z
 }
 
 int main(int argc, char *argv[]) {

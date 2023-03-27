@@ -101,5 +101,5 @@ void print_help(void) {
   printf("╚══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╝\n");
 
-  printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
+  // printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
 }
