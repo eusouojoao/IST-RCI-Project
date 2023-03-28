@@ -57,7 +57,7 @@ void system_error(char *msg) {
   fputs(": ", stderr);
   fputs(RED, stderr);
   fputs(strerror(errno), stderr);
-  fputs(RESET, stderr);
+  fputs(RESET "\n", stderr);
 }
 
 void user_error(char *msg) {
