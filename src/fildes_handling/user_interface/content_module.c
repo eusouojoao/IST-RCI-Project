@@ -44,6 +44,7 @@ names *new_names(char *name, names *next) {
  */
 int insert_name(host *host, char *buffer) {
   char *name = (char *)malloc(128 * sizeof(char));
+
   if (name == NULL) {
     system_error("malloc() failed");
     return -1;
