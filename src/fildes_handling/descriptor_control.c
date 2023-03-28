@@ -250,6 +250,7 @@ int handle_new_connection(host *host, char *buffer) {
     close(new_fd);
     return -1;
   }
+  buffer[bytes_read] = '\0';
 
   insert_new_connection(host, new_fd, buffer);
 
@@ -275,6 +276,7 @@ int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
         remove_new_connection(host, temp->new_fd);
         return -1;
       }
+      buffer[bytes_read] = '\0';
 
       size_t len = strlen(buffer);
       if (cb_write(temp->cb, buffer, len) != len) {
@@ -320,6 +322,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
         system_error("read() failed");
         return -1;
       }
+      buffer[bytes_read] = '\0';
 
       size_t len = strlen(buffer);
       if (cb_available(temp->cb) < len) {
