@@ -24,10 +24,6 @@
 int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
   // Parse the command and store the destination and name.
   if (sscanf(buffer, "QUERY %s %s %s\n", dest, orig, name) != 3) {
-    user_input_error("Invalid protocol message format", buffer,
-                     "The `query` message must have the destiny node, the origin node "
-                     "and the content. E.g. "
-                     "query 00 01 name");
     return 0;
   }
   return 1;
@@ -48,13 +44,17 @@ void process_query(host *host, node *sender, char *buffer) {
     return;
   }
 
-  // Update forwarding table with the sender node
-  insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
+  if (!check_id(dest) || !check_id(orig)) {
+    return;
+  }
 
   // Check if the name is valid
   if (check_name(name) == -1) {
     return;
   }
+
+  // Update forwarding table with the sender node
+  insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // Initialize the protocol message buffer
   char protocol_msg[256] = {'\0'};
@@ -115,6 +115,15 @@ void handle_content_response(host *host, node *sender, char *buffer, protocol_co
     return;
   }
 
+  if (!check_id(dest) || !check_id(orig)) {
+    return;
+  }
+
+  if (check_name(name) == -1) {
+    return;
+  }
+
+  // Update forwarding table with the sender node
   insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // If the origin matches the current host ID, print the response
