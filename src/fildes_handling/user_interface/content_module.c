@@ -50,6 +50,7 @@ int insert_name(host *host, char *buffer) {
   }
 
   if (sscanf(buffer, "create %127s\n", name) != 1) {
+    user_error("The command `create` requires a content name. E.g. create alunos");
     free(name);
     return -1;
   }
@@ -83,7 +84,7 @@ int insert_name(host *host, char *buffer) {
 int delete_name(host *host, char *buffer) {
   char name_to_delete[128] = {'\0'};
   if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
-    system_error("sscanf failed"); // APAGAR - Confirmar isto
+    user_error("The command `delete` requires a content name. E.g. delete alunos");
     return -1;
   }
 

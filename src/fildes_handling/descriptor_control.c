@@ -33,6 +33,11 @@ void update_working_set(host *host, fd_set *working_set) {
   FD_SET(STDIN_FILENO, working_set);
 
   FD_SET(host->listen_fd, working_set);
+
+  for (new_connection *nc = host->new_connections_list; nc != NULL; nc = nc->next) {
+    FD_SET(nc->new_fd, working_set);
+  }
+
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     FD_SET(temp->fd, working_set);
   }
@@ -250,6 +255,7 @@ int handle_new_connection(host *host, char *buffer) {
     close(new_fd);
     return -1;
   }
+  buffer[bytes_read] = '\0';
 
   insert_new_connection(host, new_fd, buffer);
 
@@ -275,11 +281,12 @@ int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
         remove_new_connection(host, temp->new_fd);
         return -1;
       }
+      buffer[bytes_read] = '\0';
 
       size_t len = strlen(buffer);
       if (cb_write(temp->cb, buffer, len) != len) {
         close(temp->new_fd);
-        free(temp->cb), free(temp);
+        remove_new_connection(host, temp->new_fd);
         return -1;
       }
 
@@ -320,6 +327,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
         system_error("read() failed");
         return -1;
       }
+      buffer[bytes_read] = '\0';
 
       size_t len = strlen(buffer);
       if (cb_available(temp->cb) < len) {
@@ -331,7 +339,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
         return -1;
       }
 
-      // Process each complete message in the buffer individually
+      // Process each complete message in the circular buffer individually
       char read_buffer[SIZE] = {'\0'};
       while (cb_read_LF(temp->cb, read_buffer, sizeof(read_buffer) - 1)) {
         process_neighbour_nodes(host, temp, buffer);
