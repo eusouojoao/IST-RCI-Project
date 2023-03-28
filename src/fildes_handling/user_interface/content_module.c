@@ -64,6 +64,9 @@ int insert_name(host *host, char *buffer) {
   // Check if name already exists in the list
   for (names *current = host->names_list; current != NULL; current = current->next) {
     if (strcmp(current->name, name) == 0) {
+      user_input_error("Invalid create", name,
+                       "Only a name unique names can be added, to check names created use "
+                       "command show names (sn)");
       free(name);
       return 0; // Failure, name already exists in the list
     }
