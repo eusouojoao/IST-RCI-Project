@@ -60,7 +60,10 @@ void system_error(char *msg) {
   fputs(RESET, stderr);
 }
 
-void user_error(char *msg) { fprintf(stderr, RED "(!) Error" RESET "%s", msg); }
+void user_error(char *msg) {
+  fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg);
+  ;
+}
 
 void print_help(void) {
   printf("╔══════════════════════════════════════════════════════════════════════════════"
