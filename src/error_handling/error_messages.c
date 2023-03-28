@@ -60,10 +60,12 @@ void system_error(char *msg) {
   fputs(RESET "\n", stderr);
 }
 
-void user_error(char *msg) {
-  fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg);
-  ;
-}
+/**
+ * @brief  Displays a simple user input error message
+ * @note   Print in the format fprintf
+ * @param  *msg: pointer to the main error message
+ */
+void user_error(char *msg) { fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg); }
 
 /**
  * @brief  Print help command to inform user of the commands of the program

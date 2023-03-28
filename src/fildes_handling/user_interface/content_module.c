@@ -53,7 +53,6 @@ int insert_name(host *host, char *buffer) {
   if (sscanf(buffer, "create %127s\n", name) != 1) {
     user_error("The command `create` requires a content name. E.g. create alunos");
     free(name);
-    user_error("The command `create` requires a content name. E.g. create alunos");
     return -1;
   }
 
