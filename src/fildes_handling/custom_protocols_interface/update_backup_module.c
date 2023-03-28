@@ -1,6 +1,6 @@
 #include "update_backup_module.h"
-#include "../../essentials/host_handling.h"
 #include "../../error_handling/error_checking.h"
+#include "../../essentials/host_handling.h"
 #include "delete_node_module.h"
 
 #include <stdio.h>
@@ -24,7 +24,7 @@ void update_backup(host *host, char *buffer) {
     return;
   }
 
-  if (check_node_parameters(node_ID, node_IP, node_TCP)) {
+  if (!check_node_parameters(node_ID, node_IP, node_TCP)) {
     delete_node(host, host->ext->fd);
     return;
   }

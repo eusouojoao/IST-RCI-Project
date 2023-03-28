@@ -21,7 +21,7 @@ void signal_setup(void) {
     exit(1);
   }
 
-  // Ignore SIGPIPE, SIGINT and SIGTSTP
+  // Ignore SIGPIPE
   signal(SIGPIPE, SIG_IGN);
 }
 

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define TIMEOUT_SEC 30
+#define TIMEOUT_SEC 300
 
 /**
  * @brief Create a new connection struct.

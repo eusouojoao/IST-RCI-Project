@@ -7,7 +7,6 @@
  *              nodes in the network, names, and host information.
  *
  *****************************************************************************/
-
 #ifndef STRUCTS_H
 #define STRUCTS_H
 

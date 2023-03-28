@@ -237,7 +237,7 @@ int djoin_network(char *buffer, host *host, int flag) {
 
   // Verify arguments for direct user call to djoin
   if (flag == DJOIN) {
-    if (!check_net_and_id(net, ID) || check_node_parameters(node_ID, node_IP, node_TCP)) {
+    if (!check_net_and_id(net, ID) || !check_node_parameters(node_ID, node_IP, node_TCP)) {
       return 0;
     }
   }

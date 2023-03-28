@@ -3,8 +3,6 @@
 
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,31 +31,30 @@ int number_of_command_arguments(char *str, char delim) {
  * @param node_IP: the node IP address
  * @param node_TCP: the node TCP port number
  *
- * @return EXIT_SUCCESS if the parameters are correct, EXIT_FAILURE otherwise.
+ * @return 1 if the parameters are correct, 0 otherwise.
  */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
   if (strlen(node_ID) != 2) {
     user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
-    return EXIT_FAILURE;
+    return 0;
   }
 
   if (!(check_if_number(node_ID) && check_if_number(node_TCP)) ||
       (check_IP_address(node_IP) != 1)) {
-    // ID, IP, TCP invalid
-    return EXIT_FAILURE;
+    return 0;
   }
 
   int int_id = atoi(node_ID), int_tcp = atoi(node_TCP);
   if ((int_id < 0 || int_id > 99)) {
     user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
-    return EXIT_FAILURE;
+    return 0;
   }
   if ((int_tcp < 0 || int_tcp > MAXPORT)) {
     user_input_error("Invalid TCP", node_TCP, "TCP must be a number between 0 and 65534");
-    return EXIT_FAILURE;
+    return 0;
   }
 
-  return EXIT_SUCCESS;
+  return 1;
 }
 
 /**
@@ -111,6 +108,12 @@ int check_id(char *id) {
  */
 int check_net_and_id(char *net, char *id) { return check_net(net) && check_id(id); }
 
+/**
+ * @brief Check if the source string only has numbers
+ *
+ * @param src: string to be checked
+ * @return 1 if successful, 0 otherwise
+ **/
 int check_if_number(char *src) {
   for (size_t i = 0; i < strlen(src); i++) {
     if (!isdigit(src[i])) {
@@ -125,8 +128,7 @@ int check_if_number(char *src) {
  * @brief Checks if the given port is in the correct format and within range.
  *
  * @param src: the input port string to check
- *
- * @return The port number as an integer if the format is correct, -1 otherwise.
+ * @return the port number as an integer if the format is correct, -1 otherwise.
  */
 int check_PORT(char *src) {
   char *end = NULL;
@@ -148,18 +150,17 @@ int check_PORT(char *src) {
  * @brief Checks if the given IP address is in the correct format.
  *
  * @param src: the input IP address string to check
- *
  * @return 1 if the IP address is in the correct format, 0 otherwise.
  */
 int check_IP_address(char *src) {
-  int r;
   struct sockaddr_in sa;
-  if (!(r = inet_pton(AF_INET, src, &(sa.sin_addr)))) {
+  int retval = inet_pton(AF_INET, src, &(sa.sin_addr));
+  if (!retval) {
     user_input_error("Invalid IPv4", src,
                      "the IP format must be X.X.X.X, where X must be a "
                      "decimal value between 0 and 255 (octet).");
   }
-  return r;
+  return retval;
 }
 
 /**

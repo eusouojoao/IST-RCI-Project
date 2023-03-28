@@ -107,9 +107,6 @@ void print_help(void) {
          "            ║\n");
   printf("║ - help : [shows User Interface Commands]                                          "
          "            ║\n");
-
   printf("╚══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╝\n");
-
-  // printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
 }
