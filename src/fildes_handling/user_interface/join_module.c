@@ -20,7 +20,8 @@
 
 /**
  * @brief Find a new external node for the host, skipping nodes in the blacklist
- * @note The blacklist is reset if the host's network has changed since the last call
+ * @note The blacklist is reset if the host's network has changed since the last call or if no
+ * suitable extern node has been found
  *
  * @param host: the host structure containing network information and the ID to blacklist
  * @param blacklist_ID: the ID of the node to add to the blacklist
@@ -32,10 +33,12 @@ static char *find_new_extern(host *host, int blacklist_ID) {
   static int blacklist[100] = {0};
   int current_net = atoi(host->net);
 
+  // Add itself to the blacklist
+  blacklist[atoi(host->ID)] = 1;
+
   // Reset the blacklist if the network has changed
   if (last_net != current_net) {
     memset(blacklist, 0, sizeof(blacklist));
-    blacklist[atoi(host->ID)] = 1;
     last_net = current_net;
   }
 
@@ -56,8 +59,8 @@ static char *find_new_extern(host *host, int blacklist_ID) {
     return NULL;
   }
 
-  char ID[8], IP[16], TCP[8];
   const char *p = received_nodeslist;
+  char ID[8], IP[16], TCP[8];
 
   // Iterate through the list of nodes
   while (p) {
@@ -81,6 +84,9 @@ static char *find_new_extern(host *host, int blacklist_ID) {
   // No suitable node found
   free(msg_to_send);
   free(received_nodeslist);
+
+  // Reset blacklist for future attempts
+  memset(blacklist, 0, sizeof(blacklist));
   return NULL;
 }
 
@@ -177,6 +183,10 @@ static char *fetch_extern_from_nodelist(char *node_list) {
  * @param net: The network value to be assigned to the host.
  */
 static void assign_host_ID_and_network(host *host, const char *ID, const char *net) {
+  if (host->net != NULL) {
+    return;
+  }
+
   // Allocate memory for the host ID
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
@@ -231,7 +241,8 @@ int djoin_network(char *buffer, host *host, int flag) {
   char node_ID[SIZE] = {'\0'}, node_IP[SIZE] = {'\0'}, node_TCP[SIZE] = {'\0'};
 
   if (sscanf(buffer, "djoin %s %s %s %s %s\n", net, ID, node_ID, node_IP, node_TCP) != 5) {
-    // TODO: Handle error: invalid user input or function failure
+    user_input_error("Invalid `djoin` call", buffer,
+                     "Type 'help' or '?' for more information.\n");
     return 0;
   }
 
@@ -257,12 +268,18 @@ int djoin_network(char *buffer, host *host, int flag) {
     host->node_list = host->ext = NULL;
 
     if (flag == DJOIN) {
-      /*! TODO: Avisar o utilizador */
+      fprintf(stderr, YELLOW "[NOTICE] " RESET);
+      fprintf(stderr,
+              "Unable to connect to the request node %s!\n"
+              "\tCouldn't register in the network (%s).\n",
+              node_ID, net);
       return 0;
     }
 
     char *new_djoin_msg = find_new_extern(host, atoi(node_ID));
     if (new_djoin_msg == NULL) {
+      fprintf(stderr, YELLOW "[NOTICE] " RESET);
+      fprintf(stderr, "Unable to connect to any node in the network (%s)!\n", net);
       return 1;
     }
 
@@ -337,10 +354,9 @@ int join_network(char *buffer, host *host) {
     }
   } else {
     fprintf(stderr, YELLOW "[NOTICE] " RESET);
-    fprintf(stderr,
-            "Unexpected `%s`. "
-            "Couldn't register in the network (%s).\n",
-            received_reg_msg, net);
+    fprintf(stderr, "Unexpected server response. Couldn't register in the network (%s).\n",
+            net);
+    free(received_nodeslist), free(received_reg_msg);
     return 0;
   }
 

@@ -14,10 +14,10 @@
 /**
  * @brief  Reads and saves query message from user
  * @note   Informs user of error if number of arguments is not correct
- * @param  *buffer: buffer with the message
- * @param  *dest: destination node
- * @param  *orig: origin node
- * @param  *name: name of the content that is being searched
+ * @param  buffer: buffer with the message
+ * @param  dest: destination node
+ * @param  orig: origin node
+ * @param  name: name of the content that is being searched
  * @retval 1 OK
  *         0 Error
  */
@@ -33,9 +33,9 @@ int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
  * @brief Processes a QUERY message, forwards it if needed, and generates a
  * response.
  *
- * @param[in] host: Pointer to the host structure.
- * @param[in] sender: Pointer to the sender node structure.
- * @param[in] buffer: Pointer to the buffer containing the QUERY message.
+ * @param host: Pointer to the host structure.
+ * @param sender: Pointer to the sender node structure.
+ * @param buffer: Pointer to the buffer containing the QUERY message.
  */
 void process_query(host *host, node *sender, char *buffer) {
   char dest[32] = {'\0'}, orig[32] = {'\0'}, name[100] = {'\0'};
@@ -102,10 +102,10 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
  * host. It is called when a CONTENT or NOCONTENT message is received by the
  * host.
  *
- * @param[in] host: Pointer to the current host structure.
- * @param[in] sender: Pointer to the sender node structure.
- * @param[in] buffer: Buffer containing the received message.
- * @param[in] cmd: Enum value representing the protocol command (CONTENT or
+ * @param host: Pointer to the current host structure.
+ * @param sender: Pointer to the sender node structure.
+ * @param buffer: Buffer containing the received message.
+ * @param cmd: Enum value representing the protocol command (CONTENT or
  * NOCONTENT).
  */
 void handle_content_response(host *host, node *sender, char *buffer, protocol_command cmd) {

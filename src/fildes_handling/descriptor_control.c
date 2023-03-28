@@ -353,7 +353,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
       // Process each complete message in the circular buffer individually
       char read_buffer[SIZE] = {'\0'};
       while (cb_read_LF(temp->cb, read_buffer, sizeof(read_buffer) - 1)) {
-        process_neighbour_nodes(host, temp, buffer);
+        process_neighbour_nodes(host, temp, read_buffer);
       }
       break;
     }
