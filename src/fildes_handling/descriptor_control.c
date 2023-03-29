@@ -21,7 +21,7 @@
  * stream (STDIN_FILENO) and the listening socket file descriptor (host->listen_fd)
  * to the working_set using FD_SET(). After that, it iterates over a linked list of
  * nodes in the host structure and adds their file descriptors to the working_set
- * using FD_SET().
+ * using FD_SET(), it acts similarly to the new_connection's list.
  *
  * @param host: a pointer to a host structure that contains the node list and
  * listening socket file descriptor
@@ -109,16 +109,16 @@ int get_maxfd(host *host) {
  * becomes ready for I/O, or until the specified timeout expires. It uses the
  * select() system call to wait for events on the file descriptors.
  *
- * @param working_set[in]: pointer to a file descriptor set to wait for events
+ * @param working_set: pointer to a file descriptor set to wait for events
  * on. On return, this set will contain only the descriptors that became ready during
  * the wait.
- * @param host[in]: pointer to a host representing the system to wait on.
- * @param timeout[in]: pointer to a timeval struct specifying the maximum time to
+ * @param host: pointer to a host representing the system to wait on.
+ * @param timeout: pointer to a timeval struct specifying the maximum time to
  * wait for events. If this value is NULL, the function will block indefinitely.
  * @param counter[out]: pointer to an integer that will receive the number of
  * descriptors that became ready during the wait.
  *
- * @return (int) 0 on success, -1 on failure.
+ * @return 0 on success, -1 on failure.
  */
 int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout) {
@@ -140,26 +140,23 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * @brief Manages file descriptors for keyboard input, new connections, and neighbor
  * nodes in a distributed network.
  *
- * This function iterates through the file descriptors of interest and handles the
- * following cases:
- * 1. Keyboard input: processes user input using the handle_keyboard_input()
+ * This function iterates through the file descriptors of interest and handles the following
+ * cases:
+ * 1. Keyboard input: processes user input using the handle_keyboard_input() function.
+ * 2. New connections: processes new incoming connections using the handle_new_connection()
  * function.
- * 2. New connections: processes new incoming connections using the
- * handle_new_connection() function.
- * 3. Neighbor nodes: processes messages from neighbor nodes using the
- * handle_neighbour_nodes() function.
+ * 3. Neighbor nodes: processes messages from neighbor nodes using the handle_neighbour_nodes()
+ * function.
  *
  * The function stops when the counter reaches zero or an error occurs during
  * processing.
  *
- * @param[in] host: pointer to the host structure.
- * @param[in] working_set: pointer to a file descriptor set containing the
- * descriptors to monitor.
- * @param[in] counter: pointer to the counter of file descriptors to process.
+ * @param host: pointer to the host structure.
+ * @param working_set: pointer to a file descriptor set containing the descriptors to monitor.
+ * @param counter: pointer to the counter of file descriptors to process.
  *
- * @return (int) 1 if the function processes all file descriptors
- * successfully, -1 if an error occurs during processing, or 0 if the application
- * should exit.
+ * @return 1 if the function processes all file descriptors successfully, -1 if an error occurs
+ * during processing, or 0 if the application should exit.
  */
 int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) {
   while ((*counter)-- > 0) {
@@ -203,11 +200,11 @@ int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) 
  * processes the data using the process_keyboard_input() function. In case of any
  * error during reading, the function handles the error appropriately.
  *
- * @param[in] host: pointer to the host structure.
+ * @param host: pointer to the host structure
+ * @param buffer: temporary buffer to read() from the file descriptor
  *
- * @return (int) the result of process_keyboard_input() if the function
- * processes the keyboard input successfully, -1 if an error occurs during reading
- * data.
+ * @return the result of process_keyboard_input() if the function processes the keyboard input
+ * successfully, -1 if an error occurs during reading data.
  */
 int handle_keyboard_input(host *host, char *buffer) {
   ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE - 1);
@@ -230,11 +227,12 @@ int handle_keyboard_input(host *host, char *buffer) {
  * process_new_connection() function. In case of any error or if the connection is
  * closed, the function handles these cases appropriately.
  *
- * @param[in] host: pointer to the host structure containing the listening file
+ * @param host: pointer to the host structure containing the listening file
  * descriptor.
+ * @param buffer: temporary buffer to read() from the file descriptor
  *
- * @return (int) 1 if the function processes the new connection successfully,
- * -1 if an error occurs during accepting a connection or reading data.
+ * @return 1 if the function processes the new connection successfully, -1 if an error occurs
+ * during accepting a connection or reading data.
  */
 int handle_new_connection(host *host, char *buffer) {
   struct sockaddr in_addr;
@@ -264,6 +262,20 @@ int handle_new_connection(host *host, char *buffer) {
   return 1;
 }
 
+/**
+ * @brief Processes new incoming connections that provided incomplete messages.
+ *
+ * This function reads data from the newly connected node into a circular buffer, attempting to
+ * complete a message, and processes the data using the process_new_connection() function. In
+ * case of any error or if the connection is closed, the function handles these cases
+ * appropriately.
+ *
+ * @param host: pointer to the host structure.
+ * @param working_set: pointer to a file descriptor set containing the descriptors to monitor.
+ * @param buffer: temporary buffer to read() from the file descriptor
+ *
+ * @return 1 if the function processes the new connection successfully, -1 if an error occurs
+ */
 int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
   new_connection *temp = NULL;
   for (temp = host->new_connections_list; temp != NULL; temp = temp->next) {
@@ -306,12 +318,11 @@ int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
  * buffer, and processes the messages in the buffer. If a node leaves the network or
  * an error occurs during reading, the function handles these cases appropriately.
  *
- * @param[in] host: pointer to the host structure containing the node list.
- * @param[in] working_set: pointer to a file descriptor set containing the
- * descriptors to monitor.
+ * @param host: pointer to the host structure containing the node list.
+ * @param working_set: pointer to a file descriptor set containing the descriptors to monitor.
+ * @param buffer: temporary buffer to read() from the file descriptor
  *
- * @return (int) 1 if the function processes all messages successfully, -1 if
- * an error occurs during memory allocation or reading data.
+ * @return 1 if the function processes all messages successfully, -1 if an error occurs
  */
 int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
@@ -342,7 +353,7 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
       // Process each complete message in the circular buffer individually
       char read_buffer[SIZE] = {'\0'};
       while (cb_read_LF(temp->cb, read_buffer, sizeof(read_buffer) - 1)) {
-        process_neighbour_nodes(host, temp, buffer);
+        process_neighbour_nodes(host, temp, read_buffer);
       }
       break;
     }

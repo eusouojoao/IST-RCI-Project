@@ -91,7 +91,7 @@ void show_topology(host *host) {
 
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  External Neighbor:                   ║\n");
-    printf("║  %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
+    printf("║                (None)                 ║\n");
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  Internal Neighbors List:             ║\n");
 
@@ -129,6 +129,10 @@ void show_names(host *host) {
   printf("╠══════════════════════════════════════════════╣\n");
   printf("║  Names List:                                 ║\n");
 
+  if (names_ptr == NULL) {
+    printf("║                   (None)                     ║\n");
+  }
+
   while (names_ptr != NULL) {
     printf("║  %-100s\n", names_ptr->name);
     names_ptr = names_ptr->next;
@@ -156,7 +160,7 @@ void show_routes(host *host) {
   printf("╠═════════════╬════════════════════════════════╣\n");
   for (size_t i = 0; i < ELEMENTS; i++) {
     if (host->tab_expedicao[i] != -1) {
-      printf("║      %02zu     ║               %02d               ║\n", i,
+      printf("║     %02zu      ║               %02d               ║\n", i,
              host->tab_expedicao[i]);
     }
   }

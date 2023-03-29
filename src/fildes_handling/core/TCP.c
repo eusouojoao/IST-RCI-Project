@@ -51,7 +51,7 @@ ssize_t write_msg_TCP(int fd, char *msg_to_send, size_t msglen) {
  * node.
  * @param msg_to_send: the message to send to the external node.
  *
- * @return
+ * @return the total number of bytes sent or -1 if an error occurred (call to write_msg_TCP()).
  */
 ssize_t fetch_bck(host *host, char *msg_to_send) {
   // Create a new TCP socket

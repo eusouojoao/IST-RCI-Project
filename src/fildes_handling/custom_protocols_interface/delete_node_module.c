@@ -129,17 +129,11 @@ void notify_internal_nodes_of_external_change(host *host) {
   char msg_to_send[128] = {'\0'};
   sprintf(msg_to_send, "EXTERN %s %s %d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
 
-  for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
-    if (temp->fd == host->ext->fd) {
-      continue;
-    }
+  // Notify internal nodes
+  broadcast_protocol_message(host, host->ext->fd, msg_to_send);
 
-    if (write_msg_TCP(temp->fd, msg_to_send, strlen(msg_to_send)) == -1) {
-      system_error("write() failed");
-    }
-  }
-
-  /* The promoted internal node (new external node), must also be notified */
+  // The promoted internal node (new external node), must also be notified
+  // if the host is not an anchor node
   if (host->bck == NULL) {
     if (write_msg_TCP(host->ext->fd, msg_to_send, strlen(msg_to_send)) == -1) {
       system_error("write() failed");

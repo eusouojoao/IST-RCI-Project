@@ -14,20 +14,16 @@
 /**
  * @brief  Reads and saves query message from user
  * @note   Informs user of error if number of arguments is not correct
- * @param  *buffer: buffer with the message
- * @param  *dest: destination node
- * @param  *orig: origin node
- * @param  *name: name of the content that is being searched
+ * @param  buffer: buffer with the message
+ * @param  dest: destination node
+ * @param  orig: origin node
+ * @param  name: name of the content that is being searched
  * @retval 1 OK
  *         0 Error
  */
 int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
   // Parse the command and store the destination and name.
   if (sscanf(buffer, "QUERY %s %s %s\n", dest, orig, name) != 3) {
-    user_input_error("Invalid protocol message format", buffer,
-                     "The `query` message must have the destiny node, the origin node "
-                     "and the content. E.g. "
-                     "query 00 01 name");
     return 0;
   }
   return 1;
@@ -37,9 +33,9 @@ int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
  * @brief Processes a QUERY message, forwards it if needed, and generates a
  * response.
  *
- * @param[in] host: Pointer to the host structure.
- * @param[in] sender: Pointer to the sender node structure.
- * @param[in] buffer: Pointer to the buffer containing the QUERY message.
+ * @param host: pointer to the host structure.
+ * @param sender: pointer to the sender node structure.
+ * @param buffer: pointer to the buffer containing the QUERY message.
  */
 void process_query(host *host, node *sender, char *buffer) {
   char dest[32] = {'\0'}, orig[32] = {'\0'}, name[100] = {'\0'};
@@ -48,13 +44,17 @@ void process_query(host *host, node *sender, char *buffer) {
     return;
   }
 
-  // Update forwarding table with the sender node
-  insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
+  if (!check_id(dest) || !check_id(orig)) {
+    return;
+  }
 
   // Check if the name is valid
   if (check_name(name) == -1) {
     return;
   }
+
+  // Update forwarding table with the sender node
+  insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // Initialize the protocol message buffer
   char protocol_msg[256] = {'\0'};
@@ -102,10 +102,10 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
  * host. It is called when a CONTENT or NOCONTENT message is received by the
  * host.
  *
- * @param[in] host: Pointer to the current host structure.
- * @param[in] sender: Pointer to the sender node structure.
- * @param[in] buffer: Buffer containing the received message.
- * @param[in] cmd: Enum value representing the protocol command (CONTENT or
+ * @param host: Pointer to the current host structure.
+ * @param sender: Pointer to the sender node structure.
+ * @param buffer: Buffer containing the received message.
+ * @param cmd: Enum value representing the protocol command (CONTENT or
  * NOCONTENT).
  */
 void handle_content_response(host *host, node *sender, char *buffer, protocol_command cmd) {
@@ -115,6 +115,15 @@ void handle_content_response(host *host, node *sender, char *buffer, protocol_co
     return;
   }
 
+  if (!check_id(dest) || !check_id(orig)) {
+    return;
+  }
+
+  if (check_name(name) == -1) {
+    return;
+  }
+
+  // Update forwarding table with the sender node
   insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // If the origin matches the current host ID, print the response

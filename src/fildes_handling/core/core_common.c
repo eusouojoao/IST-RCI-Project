@@ -1,5 +1,5 @@
-#include "../../error_handling/error_messages.h"
 #include "core_common.h"
+#include "../../error_handling/error_messages.h"
 
 #include <string.h>
 #include <sys/socket.h>
@@ -7,9 +7,9 @@
 /**
  * @brief Creates a new UDP socket.
  *
- * This helper function creates a new UDP socket by calling the socket() function
- * with the appropriate parameters for a UDP socket. It also handles error checking
- * in case the socket creation fails.
+ * This helper function creates a new UDP socket by calling the socket() function with the
+ * appropriate parameters for a UDP socket. It also handles error checking in case the socket
+ * creation fails.
  *
  * @return The file descriptor of the created UDP socket, or -1 on error.
  */
@@ -26,9 +26,9 @@ int create_socket(socket_type type) {
 /**
  * @brief Initializes a sockaddr_in structure with the given IP and port.
  *
- * This helper function sets up a sockaddr_in structure by filling in its
- * fields with the provided IP address and port. It also handles the
- * conversion of the IP address from a string to the binary form.
+ * This helper function sets up a sockaddr_in structure by filling in its fields with the
+ * provided IP address and port. It also handles the conversion of the IP address from a string
+ * to the binary form.
  *
  * @param addr: pointer to the sockaddr_in structure to be initialized
  * @param ip: IP address as a string

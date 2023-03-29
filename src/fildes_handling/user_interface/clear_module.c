@@ -10,13 +10,26 @@
 #include <string.h>
 #include <unistd.h>
 
+/**
+ * @brief Clears the terminal window.
+ */
 void clear_window() {
   CLEAR_STREAM(STDIN_FILENO);
   user_interface_toggle(ON);
 }
 
+/**
+ * @brief Clears the names list of the host.
+ *
+ * @param host: pointer to the host structure
+ */
 void clear_names(host *host) { delete_names_list(host); }
 
+/**
+ * @brief Resets the forwarding table of the host.
+ *
+ * @param host: pointer to the host structure
+ */
 void clear_routing(host *host) {
   if (host->net == NULL) {
     user_error("Host must be registered in a network to clear the forwarding table.");
@@ -27,6 +40,16 @@ void clear_routing(host *host) {
   insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
 }
 
+/**
+ * @brief Wrapper function for handling 'clear' commands.
+ *
+ * This function handles different 'clear' commands, such as clear window, clear names, and
+ * clear routing, based on the parsed command.
+ *
+ * @param host: pointer to the host structure
+ * @param cmd: user command, indicating the clear operation to perform
+ * @param buffer: the command buffer containing the user input
+ */
 void clear_wrapper(host *host, user_command cmd, char *buffer) {
   if (cmd == CLEAR) { // If the subcmd is not provided, parse the parse it from the buffer
 

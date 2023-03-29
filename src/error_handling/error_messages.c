@@ -57,14 +57,21 @@ void system_error(char *msg) {
   fputs(": ", stderr);
   fputs(RED, stderr);
   fputs(strerror(errno), stderr);
-  fputs(RESET, stderr);
+  fputs(RESET "\n", stderr);
 }
 
-void user_error(char *msg) {
-  fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg);
-  ;
-}
+/**
+ * @brief  Displays a simple user input error message
+ * @note   Print in the format fprintf
+ * @param  *msg: pointer to the main error message
+ */
+void user_error(char *msg) { fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg); }
 
+/**
+ * @brief  Print help command to inform user of the commands of the program
+ * @note
+ * @retval None
+ */
 void print_help(void) {
   printf("╔══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╗\n");
@@ -100,9 +107,6 @@ void print_help(void) {
          "            ║\n");
   printf("║ - help : [shows User Interface Commands]                                          "
          "            ║\n");
-
   printf("╚══════════════════════════════════════════════════════════════════════════════"
          "═════════════════╝\n");
-
-  // printf("Type 'help' or '?' for more information.\n"); // APAGAR - acho q n é preciso
 }

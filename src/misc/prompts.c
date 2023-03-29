@@ -8,8 +8,8 @@
 /**
  * @brief Print a character 'c' 'n' times
  *
- * @param c Character to be printed
- * @param n Number of times to print the character
+ * @param c: character to be printed
+ * @param n: number of times to print the character
  */
 void print_char_n_times(char c, int n) {
   for (int i = 0; i < n; i++) {

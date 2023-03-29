@@ -26,7 +26,14 @@ typedef struct {
   protocol_command protocol;
 } token_protocol_pair;
 
-user_command get_user_command(char *token) {
+/**
+ * @brief Returns the corresponding user command for a given token
+ *
+ * @param token: the token to be checked
+ *
+ * @return the user command corresponding to the token
+ */
+static user_command get_user_command(char *token) {
   // Static array of struct pairs that maps token strings to user commands
   static const token_command_pair command_lookup[] = {
       {"join", JOIN},        {"djoin", DJOIN},     {"leave", LEAVE},
@@ -50,12 +57,20 @@ user_command get_user_command(char *token) {
   return UNDEF;
 }
 
+/**
+ * @brief Processes a message received from the keyboard
+ *
+ * @param host: the host that received the message
+ * @param buffer: working buffer with the received message
+ *
+ * @return 1 in case of success, -1 in case of an invalid command or sscanf() failure
+ */
 int process_keyboard_input(host *host, char *buffer) {
   static user_command flag = UNDEF;
   user_command cmd = UNDEF;
   char token[32] = {'\0'};
-  if (sscanf(buffer, "%s", token) < 1) {
-    system_error("sscanf() failed");
+  if (sscanf(buffer, "%s", token) != 1) {
+    user_input_error("Invalid Command", buffer, "Type 'help' or '?' for more information.\n");
     return -1;
   }
 
@@ -102,16 +117,14 @@ int process_keyboard_input(host *host, char *buffer) {
     break;
   case UNDEF:
   default:
-    user_input_error("Command Invalid", buffer, "Here are the valid user commands:");
-    print_help();
+    user_input_error("Invalid Command", buffer, "Type 'help' or '?' for more information.\n");
     return -1;
   }
 
   return 1;
 }
 
-// APAGAR - refazer este comment
-/*
+/**
  * @brief Process a new file descriptor for the host
  *
  * This function processes a new file descriptor received by the host. The function
@@ -119,7 +132,7 @@ int process_keyboard_input(host *host, char *buffer) {
  * command. If the message is invalid or the command is not "NEW", the function
  * closes the file descriptor and returns. If the message is valid, the function
  * sends an "EXTERN" message to the new node and inserts the new node in the
- * host's node list.
+ * host's nodes list.
  *
  * @param host: a pointer to the host structure
  * @param connection: a pointer to a new_connection structure
@@ -141,7 +154,7 @@ void process_new_connection(host *host, new_connection *connection) {
   }
 
   // Validate the parsed node parameters
-  if (check_node_parameters(new_ID, new_IP, new_TCP) == EXIT_FAILURE) {
+  if (!check_node_parameters(new_ID, new_IP, new_TCP)) {
     close(connection->new_fd);
     remove_new_connection(host, connection->new_fd);
     return;
@@ -180,7 +193,7 @@ void process_new_connection(host *host, new_connection *connection) {
  *
  * @return the protocol command corresponding to the token
  */
-protocol_command get_protocol_command(char *token) {
+static protocol_command get_protocol_command(char *token) {
   //  Static array of struct pairs that maps token strings to protocol commands
   static const token_protocol_pair protocol_lookup[] = {
       {"EXTERN", EXTERN},   {"WITHDRAW", WITHDRAW},   {"QUERY", QUERY},
@@ -216,8 +229,7 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
   char token[SIZE] = {'\0'};
 
   // Get the first token from the message
-  if (sscanf(buffer, "%s", token) < 1) {
-    system_error("sscanf() failed");
+  if (sscanf(buffer, "%s", token) != 1) {
     return;
   }
 
@@ -240,8 +252,6 @@ void process_neighbour_nodes(host *host, node *node, char *buffer) {
     break;
   case BADFORMAT:
   default:
-    /*error*/
-    fprintf(stderr, "Something something bad format from NODE: %s\n", node->ID);
     break;
   }
 }

@@ -7,9 +7,8 @@
 /**
  * @brief Initializes a dynamically allocated user_args structure.
  *
- * Initializes a user_args structure with default values to facilitate
- * subsequent user input evaluation (will be overwritten if the parameters
- * pass the next evaluation stage).
+ * Initializes a user_args structure with default values to facilitate subsequent user input
+ * evaluation (will be overwritten if the parameters pass the next evaluation stage).
  *
  * @param uip: pointer to the user_args structure to be initialized.
  */
@@ -23,8 +22,8 @@ void init_uip(user_args **uip) {
 /**
  * @brief Checks the integrity of user-supplied input arguments.
  *
- * Verifies if the given command-line arguments are valid (IP, TCP, regIP, regTCP)
- * and assigns them to the user_args structure if they pass validation.
+ * Verifies if the given command-line arguments are valid (IP, TCP, regIP, regTCP) and assigns
+ * them to the user_args structure if they pass validation.
  *
  * @param argc: number of command-line arguments
  * @param argv: array of command-line arguments

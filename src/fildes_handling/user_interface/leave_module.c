@@ -51,6 +51,12 @@ void delete_nodes_list(host *host) {
   host->bck = NULL;
 }
 
+/**
+ * @brief  Resets forwarding table (clears all known paths)
+ * @note
+ * @param  *host: Pointer to the host structure
+ * @retval None
+ */
 void reset_forwarding_table(host *host) {
   memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
 }

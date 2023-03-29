@@ -44,12 +44,14 @@ names *new_names(char *name, names *next) {
  */
 int insert_name(host *host, char *buffer) {
   char *name = (char *)malloc(128 * sizeof(char));
+
   if (name == NULL) {
     system_error("malloc() failed");
     return -1;
   }
 
   if (sscanf(buffer, "create %127s\n", name) != 1) {
+    user_error("The command `create` requires a content name. E.g. create alunos");
     free(name);
     return -1;
   }
@@ -62,6 +64,9 @@ int insert_name(host *host, char *buffer) {
   // Check if name already exists in the list
   for (names *current = host->names_list; current != NULL; current = current->next) {
     if (strcmp(current->name, name) == 0) {
+      user_input_error("Invalid create", name,
+                       "Only a name unique names can be added, to check names created use "
+                       "command show names (sn)");
       free(name);
       return 0; // Failure, name already exists in the list
     }
@@ -69,6 +74,7 @@ int insert_name(host *host, char *buffer) {
 
   // Insert new name at the beginning of the list
   host->names_list = new_names(name, host->names_list);
+  printf("Successfully create new content: `%s` \n", name);
   return 1; // Success, name was inserted
 }
 
@@ -83,7 +89,7 @@ int insert_name(host *host, char *buffer) {
 int delete_name(host *host, char *buffer) {
   char name_to_delete[128] = {'\0'};
   if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
-    system_error("sscanf failed"); // APAGAR - Confirmar isto
+    user_error("The command `delete` requires a content name. E.g. delete alunos");
     return -1;
   }
 
@@ -98,6 +104,7 @@ int delete_name(host *host, char *buffer) {
       *p = (*p)->next;
       free(temp->name);
       free(temp);
+      printf("Successfully deleted content: `%s` \n", name_to_delete);
       return 1; // Success, name deleted
     }
     p = &(*p)->next;
@@ -146,6 +153,16 @@ int handle_destination_is_current_host(host *host, char *dest, char *name) {
   return 0;
 }
 
+/**
+ * @brief Handles the 'get name' command for a host.
+ *
+ * This function processes the 'get name' command to retrieve the name of a host in the
+ * network. It checks if the host is registered in a network and parses the command. If the
+ * destination host is not the current host, it sends a QUERY message to the neighbors.
+ *
+ * @param host: pointer to the host structure
+ * @param buffer: the command buffer containing the user input
+ */
 void get_name(host *host, char *buffer) {
   if (host->net == NULL) {
     user_input_error("Invalid get", buffer, "Host must be registered in a network");

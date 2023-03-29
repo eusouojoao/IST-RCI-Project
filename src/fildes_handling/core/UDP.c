@@ -12,6 +12,11 @@
 #define UDP_BUFFER_SIZE 4096
 #define TIMEOUT_SEC 1
 
+/**
+ * @brief setsockopt() wrapper that sets timeout options
+ *
+ * @return 0 on success, -1 in the event of a failure
+ **/
 static int set_timeouts(int fd) {
   struct timeval timeout = {
       .tv_sec = TIMEOUT_SEC,
