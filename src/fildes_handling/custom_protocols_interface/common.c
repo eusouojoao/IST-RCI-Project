@@ -44,19 +44,19 @@ void broadcast_protocol_message(host *host, int sender_fd, char *protocol_msg) {
  *
  * This function checks if the route to the destination is known. If it is, the message is
  * forwarded to the appropriate neighbor. Otherwise, the message is broadcast to all known
- * neighbors.
+ * neighbours.
  *
- * @param host: pointer to the host structure.
- * @param fd: the file descriptor of the sender node.
- * @param dest: the destination node ID.
- * @param protocol_msg: the protocol message to be sent to the neighbors.
+ * @param host: pointer to the host structure
+ * @param fd: the file descriptor of the sender node
+ * @param dest: the destination node ID
+ * @param protocol_msg: the protocol message to be sent to the neighbors
  */
 void send_message_to_neighbours(host *host, int fd, char *dest, char *protocol_msg) {
   node *neighbour = check_route(host, dest);
   if (neighbour != NULL) {
     // If the route is known, forward the message to the right neighbour
-    if (write_msg_TCP(neighbour->fd, protocol_msg, 256) == -1) {
-      printf("Error sending QUERY to known neighbor\n"); // APAGAR
+    if (write_msg_TCP(neighbour->fd, protocol_msg, strlen(protocol_msg)) == -1) {
+      return;
     }
   } else {
     // Else, it must be broadcasted to all known neighbours
@@ -78,11 +78,11 @@ int find_name(char *name, host *host) {
   names *list_pointer = host->names_list;
   while (list_pointer != NULL) {
     if (strcmp(list_pointer->name, name) == 0) {
-      return 1; // Sucesso, name encontrado
+      return 1; // Success, name was added to the list
     }
 
     list_pointer = list_pointer->next;
   }
 
-  return 0; // Falha, não existia name com tal nome
+  return 0; // Failure
 }

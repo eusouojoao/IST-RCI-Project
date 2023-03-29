@@ -13,7 +13,6 @@
 
 /**
  * @brief  Reads and saves query message from user
- * @note   Informs user of error if number of arguments is not correct
  * @param  buffer: buffer with the message
  * @param  dest: destination node
  * @param  orig: origin node
@@ -68,9 +67,8 @@ void process_query(host *host, node *sender, char *buffer) {
       snprintf(protocol_msg, 256, "NOCONTENT %s %s %s\n", orig, dest, name);
     }
     // Send the CONTENT or NOCONTENT message to the sender
-    if (write_msg_TCP(sender->fd, protocol_msg, 256) == -1) {
-      printf("Error sending CONTENT or NOCONTENT to sender\n"); // APAGAR - para testes
-                                                                // (acho eu)
+    if (write_msg_TCP(sender->fd, protocol_msg, strlen(protocol_msg)) == -1) {
+      return;
     }
 
     return;
@@ -79,7 +77,15 @@ void process_query(host *host, node *sender, char *buffer) {
   send_message_to_neighbours(host, sender->fd, dest, buffer);
 }
 
-/*! TODO */
+/**
+ * @brief  Reads and saves the arguments of a CONTENT/NOCONTENT protocol message
+ * @param  buffer: buffer with the message
+ * @param  dest: destination node
+ * @param  orig: origin node
+ * @param  name: name of the content that was searched
+ * @retval 1 OK
+ *         0 Error
+ */
 int parse_content_message(char *buffer, char *orig, char *dest, char *name,
                           protocol_command cmd) {
   if (cmd == CONTENT) {
@@ -103,11 +109,11 @@ int parse_content_message(char *buffer, char *orig, char *dest, char *name,
  * host. It is called when a CONTENT or NOCONTENT message is received by the
  * host.
  *
- * @param host: Pointer to the current host structure.
- * @param sender: Pointer to the sender node structure.
- * @param buffer: Buffer containing the received message.
- * @param cmd: Enum value representing the protocol command (CONTENT or
- * NOCONTENT).
+ * @param host: pointer to the current host structure
+ * @param sender: pointer to the sender node structure
+ * @param buffer: buffer containing the received message
+ * @param cmd: enum value representing the protocol command (CONTENT or
+ * NOCONTENT)
  */
 void handle_content_response(host *host, node *sender, char *buffer, protocol_command cmd) {
   char dest[32] = {'\0'}, orig[32] = {'\0'}, name[100] = {'\0'};

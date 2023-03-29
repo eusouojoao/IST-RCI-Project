@@ -25,22 +25,22 @@
  *
  * @param host: the host structure containing network information and the ID to blacklist
  * @param blacklist_ID: the ID of the node to add to the blacklist
- * @return A dynamically allocated string containing the found node information or NULL if not
- * found
+ * @return a dynamically allocated string containing the found node information or NULL if no
+ * suitable node is found
  */
 static char *find_new_extern(host *host, int blacklist_ID) {
   static int last_net = -1;
   static int blacklist[100] = {0};
   int current_net = atoi(host->net);
 
-  // Add itself to the blacklist
-  blacklist[atoi(host->ID)] = 1;
-
   // Reset the blacklist if the network has changed
   if (last_net != current_net) {
     memset(blacklist, 0, sizeof(blacklist));
     last_net = current_net;
   }
+
+  // Add itself to the blacklist
+  blacklist[atoi(host->ID)] = 1;
 
   // Add the specified node ID to the blacklist
   blacklist[blacklist_ID] = 1;
@@ -98,9 +98,9 @@ static char *find_new_extern(host *host, int blacklist_ID) {
  * their uniqueness until a unique ID is found or the maximum number of collisions is
  * reached.
  *
- * @param host: pointer to the host structure.
- * @param node_list: null-terminated string containing the list of nodes to check.
- * @param ID: pointer to a string containing the ID to check and/or modify.
+ * @param host: pointer to the host structure
+ * @param node_list: null-terminated string containing the list of nodes to check
+ * @param ID: pointer to a string containing the ID to check and/or modify
  */
 static void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]) {
   int new_id = 0, PORT = 0;
@@ -136,6 +136,7 @@ static void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]
 
     // Check if the new pattern is unique
     if (strstr(node_list, pattern) == NULL) {
+      printf(YELLOW "[NOTICE]" RESET " ID already in use. Using ID: %s\n", (*ID));
       break;
     }
 
@@ -191,26 +192,26 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
     perror("Failed to allocate memory for host ID");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   // Allocate memory for the host network
   host->net = (char *)malloc((NETSIZE + 1) * sizeof(char));
   if (host->net == NULL) {
     perror("Failed to allocate memory for host network");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   // Copy the ID value to the host
   if (snprintf(host->ID, IDSIZE + 1, "%2s", ID) < IDSIZE) {
     perror("Failed to copy ID to host");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   // Copy the network value to the host
   if (snprintf(host->net, NETSIZE + 1, "%3s", net) < NETSIZE) {
     perror("Failed to copy network to host");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   // Initialize the forwarding table with the host ID
@@ -256,6 +257,8 @@ int djoin_network(char *buffer, host *host, int flag) {
   // Single node in the network
   if (strcmp(ID, node_ID) == 0) {
     assign_host_ID_and_network(host, ID, net);
+    printf(YELLOW "[NOTICE]" RESET " Successfully connected node %s in net %s\n", ID,
+           host->net);
     return 1;
   }
 
@@ -288,8 +291,8 @@ int djoin_network(char *buffer, host *host, int flag) {
     return r;
   }
 
-  insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID)); // APAGAR
-  printf("Successfully connected node %s in net %s \n", ID, host->net);
+  insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
+  printf(YELLOW "[NOTICE]" RESET " Successfully connected node %s in net %s\n", ID, host->net);
   return 1;
 }
 
@@ -352,6 +355,8 @@ int join_network(char *buffer, host *host) {
       djoin_network(msg_to_send, host, JOIN); // connects to the ext node in the network
     } else {
       assign_host_ID_and_network(host, ID, net);
+      printf(YELLOW "[NOTICE]" RESET " Successfully connected node %s in net %s\n", ID,
+             host->net);
     }
   } else {
     fprintf(stderr, YELLOW "[NOTICE] " RESET);

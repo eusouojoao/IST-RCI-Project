@@ -14,7 +14,6 @@
 
 /**
  * @brief Deletes the names list in the host structure and frees memory.
- *
  * @param host: pointer to the host structure containing the names list to be deleted
  */
 void delete_names_list(host *host) {
@@ -33,7 +32,6 @@ void delete_names_list(host *host) {
 
 /**
  * @brief Deletes the nodes list in the host structure and frees memory.
- *
  * @param host: pointer to the host structure containing the nodes list to be deleted
  */
 void delete_nodes_list(host *host) {
@@ -53,9 +51,7 @@ void delete_nodes_list(host *host) {
 
 /**
  * @brief  Resets forwarding table (clears all known paths)
- * @note
- * @param  *host: Pointer to the host structure
- * @retval None
+ * @param  host: Pointer to the host structure
  */
 void reset_forwarding_table(host *host) {
   memset(host->tab_expedicao, -1, sizeof(host->tab_expedicao));
@@ -63,15 +59,12 @@ void reset_forwarding_table(host *host) {
 
 /**
  * @brief Clears the host structure and frees memory allocated for it.
- *
- * @param host: Pointer to the host structure to be cleared
+ * @param host: pointer to the host structure to be cleared
  */
 void clear_host(host *host) {
   // Free memory for network and ID
-  free(host->net);
-  free(host->ID);
-  host->net = NULL;
-  host->ID = NULL;
+  free(host->net), host->net = NULL;
+  free(host->ID), host->ID = NULL;
 
   // Close external connection if it exists
   if (host->ext != NULL && host->ext->fd != -1) {
@@ -112,7 +105,7 @@ void leave_network(host *host, user_command flag) {
   char *msg_received = send_and_receive_msg_UDP(host->uip, msg_to_send);
 
   // Check if message was successfully sent
-  if (!msg_received) {
+  if (msg_received == NULL) {
     fprintf(stderr, YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
             host->net);
     return;
@@ -120,8 +113,7 @@ void leave_network(host *host, user_command flag) {
 
   // Check if the received message is "OKUNREG"
   if (strcmp(msg_received, "OKUNREG") != 0) {
-    fprintf(stderr, YELLOW "[NOTICE]" RESET " Failed to unregister from the network %s\n",
-            host->net);
+    fprintf(stderr, YELLOW "[NOTICE]" RESET " Failed to unregister from the node server.\n");
     free(msg_received);
     return;
   }

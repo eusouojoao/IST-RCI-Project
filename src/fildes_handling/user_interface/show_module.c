@@ -117,24 +117,21 @@ void show_topology(host *host) {
 
 /**
  * @brief Prints the names of a host.
- *
  * @param host: pointer to the host struct.
  */
 void show_names(host *host) {
   const names *names_ptr = host->names_list;
 
   printf("╔══════════════════════════════════════════════╗\n");
-  printf("║               Host Names: ID %s              ║\n", host->ID);
-  printf("║                  Network %s                 ║\n", host->net);
-  printf("╠══════════════════════════════════════════════╣\n");
   printf("║  Names List:                                 ║\n");
+  printf("╠══════════════════════════════════════════════╣\n");
 
   if (names_ptr == NULL) {
     printf("║                   (None)                     ║\n");
   }
 
   while (names_ptr != NULL) {
-    printf("║  %s\n", names_ptr->name);
+    printf("║ -> %s\n", names_ptr->name);
     names_ptr = names_ptr->next;
   }
 
@@ -143,7 +140,6 @@ void show_names(host *host) {
 
 /**
  * @brief Prints the routing table the current host.
- *
  * @param host: pointer to the host struct.
  */
 void show_routes(host *host) {

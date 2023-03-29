@@ -11,10 +11,10 @@
 
 /**
  * @brief Handle the WITHDRAW command and update the forwarding table.
- * @param host: Pointer to the host structure.
- * @param sender: Pointer to the node that sent the WITHDRAW command.
- * @param buffer: A buffer containing the WITHDRAW command and the node ID to be
- * withdrawn.
+ * @param host: pointer to the host structure
+ * @param sender: pointer to the node that sent the WITHDRAW command
+ * @param buffer: buffer containing the WITHDRAW command and the node ID to be
+ * withdrawn
  */
 void withdraw_wrapper(host *host, node *sender, char *buffer) {
   char ID[32] = {'\0'};
@@ -39,9 +39,9 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
 
 /**
  * @brief Remove a node from the host's forwarding table.
- * @param host: Pointer to the host structure.
- * @param eraseN: Node ID to be removed from the forwarding table.
- * @return A pointer to the WITHDRAW message to be broadcasted to other nodes.
+ * @param host: pointer to the host structure
+ * @param eraseN: node ID to be removed from the forwarding table
+ * @return a pointer to the WITHDRAW message to be broadcasted to other nodes.
  */
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
   char *withdraw_message = calloc(SIZE, sizeof(char));

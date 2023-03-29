@@ -1,15 +1,12 @@
 #include "delete_node_module.h"
-#include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../../essentials/host_handling.h"
 #include "../core/TCP.h"
 #include "common.h"
 #include "withdraw_module.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 /**
  * @brief Delete a node from the host's node_list and update the external node if

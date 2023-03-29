@@ -64,14 +64,12 @@ void clear_wrapper(host *host, user_command cmd, char *buffer) {
         cmd = CLEAR_ROUTING;
       } else {
         user_input_error("Command not found", buffer,
-                         "The available `clear` commands are: clear names (cn); clear "
-                         "window (cw); clear routing (cr)");
+                         "Type 'help' or '?' for more information.\n");
         return;
       }
     } else {
-      user_input_error("Invalid command format", buffer,
-                       "The `clear` commands must have 2 words separated by a space. E.g. "
-                       "clear routing (cr)");
+      user_input_error("Invalid command", buffer,
+                       "Type 'help' or '?' for more information.\n");
       return;
     }
   }

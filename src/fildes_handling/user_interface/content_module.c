@@ -16,10 +16,10 @@
  * names, initializes its fields with the given name and next node, and returns a
  * pointer to the new node. If memory allocation fails, ...
  *
- * @param name A pointer to a string containing the name to store in the new node.
- * @param next A pointer to the next node in the linked list.
+ * @param name: pointer to a string containing the name to store in the new node
+ * @param next: pointer to the next node in the linked list
  *
- * @return A pointer to the newly created node.
+ * @return pointer to the newly created node, NULL on failure.
  */
 names *new_names(char *name, names *next) {
   names *new_name = (names *)malloc(sizeof(struct names));
@@ -37,10 +37,10 @@ names *new_names(char *name, names *next) {
 
 /**
  * @brief Insert a name in the names list of the host.
+ *
  * @param name The name to be inserted.
  * @param host The host where the name should be inserted.
- * @return 1 on success, -1 if the name is too long, 0 if the name already
- * exists in the list.
+ * @return 1 on success, -1 if the name is too long, 0 if the name already exists in the list.
  */
 int insert_name(host *host, char *buffer) {
   char *name = (char *)malloc(128 * sizeof(char));
@@ -51,7 +51,7 @@ int insert_name(host *host, char *buffer) {
   }
 
   if (sscanf(buffer, "create %127s\n", name) != 1) {
-    user_error("The command `create` requires a content name. E.g. create alunos");
+    user_error("The command `create` requires a content name. E.g. `create file.txt`.");
     free(name);
     return -1;
   }
@@ -65,8 +65,8 @@ int insert_name(host *host, char *buffer) {
   for (names *current = host->names_list; current != NULL; current = current->next) {
     if (strcmp(current->name, name) == 0) {
       user_input_error("Invalid create", name,
-                       "Only a name unique names can be added, to check names created use "
-                       "command show names (sn)");
+                       "Only unique names can be added. To check the names created use the "
+                       "command `show names` (sn).");
       free(name);
       return 0; // Failure, name already exists in the list
     }
@@ -74,7 +74,7 @@ int insert_name(host *host, char *buffer) {
 
   // Insert new name at the beginning of the list
   host->names_list = new_names(name, host->names_list);
-  printf("Successfully create new content: `%s` \n", name);
+  printf("Successfully created new content: `%s` \n", name);
   return 1; // Success, name was inserted
 }
 
@@ -83,13 +83,12 @@ int insert_name(host *host, char *buffer) {
  *
  * @param name_to_delete The name to be deleted.
  * @param host The host where the name should be deleted from.
- * @return Returns 1 on success, -1 if the name is too long, 0 if the name does not
- * exist in the list.
+ * @return 1 on success, -1 if the name is too long, 0 if the name does not exist in the list.
  */
 int delete_name(host *host, char *buffer) {
   char name_to_delete[128] = {'\0'};
   if (sscanf(buffer, "delete %127s\n", name_to_delete) != 1) {
-    user_error("The command `delete` requires a content name. E.g. delete alunos");
+    user_error("The command `delete` requires a content name. E.g. `delete file.txt`.");
     return -1;
   }
 
@@ -111,23 +110,22 @@ int delete_name(host *host, char *buffer) {
   }
 
   user_input_error("Name not found", name_to_delete,
-                   "Only a name that was created can be deleted, to check names created "
-                   "use command show names (sn)");
+                   "Only created names can be deleted. To check the names created "
+                   "use the command `show names` (sn).");
   return 0; // Failure, name not found
 }
 
 /**
  * @brief Parses the input buffer and extracts destination and name.
  *
- * @param buffer Input buffer.
- * @param dest Destination buffer.
- * @param name Name buffer.
- * @return Returns 1 if successfully parsed, 0 otherwise.
+ * @param buffer: input buffer
+ * @param dest: destination buffer
+ * @param name: name buffer
+ * @return 1 if successfully parsed, 0 otherwise.
  */
 int parse_get_name_command(char *buffer, char *dest, char *name) {
   if (sscanf(buffer, "get %s %s\n", dest, name) != 2) {
-    user_input_error("Invalid arguments", buffer,
-                     "Get command should be in the format: get dest name");
+    user_input_error("Invalid command", buffer, "Type 'help' or '?' for more information.\n");
     return 0;
   }
   return 1;
@@ -136,7 +134,7 @@ int parse_get_name_command(char *buffer, char *dest, char *name) {
 /**
  * @brief Handles the case where the destination node is the current host.
  *
- * @param host: Pointer to the host structure.
+ * @param host: pointer to the host structure
  * @param dest: destination
  * @param name: name buffer
  * @return 1 if the destination is the current host, 0 otherwise.
@@ -165,7 +163,7 @@ int handle_destination_is_current_host(host *host, char *dest, char *name) {
  */
 void get_name(host *host, char *buffer) {
   if (host->net == NULL) {
-    user_input_error("Invalid get", buffer, "Host must be registered in a network");
+    user_input_error("Invalid `get` command", buffer, "Host must be registered in a network.");
     return;
   }
 

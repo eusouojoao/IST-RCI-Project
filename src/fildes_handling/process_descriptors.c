@@ -30,7 +30,6 @@ typedef struct {
  * @brief Returns the corresponding user command for a given token
  *
  * @param token: the token to be checked
- *
  * @return the user command corresponding to the token
  */
 static user_command get_user_command(char *token) {
@@ -190,7 +189,6 @@ void process_new_connection(host *host, new_connection *connection) {
  * @brief Returns the corresponding protocol command for a given token
  *
  * @param token: the token to be checked
- *
  * @return the protocol command corresponding to the token
  */
 static protocol_command get_protocol_command(char *token) {
