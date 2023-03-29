@@ -151,6 +151,16 @@ int handle_destination_is_current_host(host *host, char *dest, char *name) {
   return 0;
 }
 
+/**
+ * @brief Handles the 'get name' command for a host.
+ *
+ * This function processes the 'get name' command to retrieve the name of a host in the
+ * network. It checks if the host is registered in a network and parses the command. If the
+ * destination host is not the current host, it sends a QUERY message to the neighbors.
+ *
+ * @param host: pointer to the host structure
+ * @param buffer: the command buffer containing the user input
+ */
 void get_name(host *host, char *buffer) {
   if (host->net == NULL) {
     user_input_error("Invalid get", buffer, "Host must be registered in a network");

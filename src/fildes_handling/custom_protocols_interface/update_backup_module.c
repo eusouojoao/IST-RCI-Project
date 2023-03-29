@@ -10,6 +10,46 @@
 #define SIZE 128
 
 /**
+ * @brief A wrapper function for handling a flag with set and get operations.
+ * @param value: the value to set the flag to if the set operation is requested
+ * @param set: if non-zero, sets the flag to the provided value; otherwise, retrieves the
+ * current flag value
+ * @return the current value of the flag.
+ */
+int flag_wrapper(int value, int set) {
+  // Declare a static flag variable that maintains its value between function calls
+  static int flag = 0;
+
+  // If the 'set' parameter is non-zero, set the flag to the provided value
+  if (set) {
+    flag = value;
+  }
+
+  // Return the current value of the flag
+  return flag;
+}
+
+/**
+ * @brief Sets the flag to a specified value.
+ * @param value: The value to set the flag to.
+ */
+void set_flag(int value) {
+  // Call the flag_wrapper() function with 'set' parameter as 1 to set the flag to the
+  // specified value
+  flag_wrapper(value, 1);
+}
+
+/**
+ * @brief Retrieves the current value of the flag.
+ * @return The current value of the flag.
+ */
+int get_flag() {
+  // Call the flag_wrapper() function with 'set' parameter as 0 to retrieve the current value
+  // of the flag
+  return flag_wrapper(0, 0);
+}
+
+/**
  * @brief Update the backup node information in the host structure.
  * @param host: pointer to the host structure.
  * @param buffer: buffer containing the new backup node information.

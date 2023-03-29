@@ -33,9 +33,9 @@ int parse_query_message(char *buffer, char *dest, char *orig, char *name) {
  * @brief Processes a QUERY message, forwards it if needed, and generates a
  * response.
  *
- * @param host: Pointer to the host structure.
- * @param sender: Pointer to the sender node structure.
- * @param buffer: Pointer to the buffer containing the QUERY message.
+ * @param host: pointer to the host structure.
+ * @param sender: pointer to the sender node structure.
+ * @param buffer: pointer to the buffer containing the QUERY message.
  */
 void process_query(host *host, node *sender, char *buffer) {
   char dest[32] = {'\0'}, orig[32] = {'\0'}, name[100] = {'\0'};
