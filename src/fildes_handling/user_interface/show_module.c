@@ -129,13 +129,13 @@ void show_names(host *host) {
   printf("╠══════════════════════════════════════════════╣\n");
   printf("║  Names List:                                 ║\n");
 
+  if (names_ptr == NULL) {
+    printf("║                   (None)                     ║\n");
+  }
+
   while (names_ptr != NULL) {
     printf("║  %-100s\n", names_ptr->name);
     names_ptr = names_ptr->next;
-  }
-
-  if (!names_ptr) {
-    printf("║                   (None)                     ║\n");
   }
 
   printf("╚══════════════════════════════════════════════╝\n");

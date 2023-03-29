@@ -74,6 +74,8 @@ int insert_name(host *host, char *buffer) {
 
   // Insert new name at the beginning of the list
   host->names_list = new_names(name, host->names_list);
+  printf("Successfully create new content: `%s` \n", name);
+  // free(name); //APAGAR
   return 1; // Success, name was inserted
 }
 
@@ -103,6 +105,7 @@ int delete_name(host *host, char *buffer) {
       *p = (*p)->next;
       free(temp->name);
       free(temp);
+      printf("Successfully deleted content: `%s` \n", name_to_delete);
       return 1; // Success, name deleted
     }
     p = &(*p)->next;

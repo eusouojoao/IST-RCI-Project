@@ -10,11 +10,10 @@
 #include <unistd.h>
 
 /**
- * @brief  inicializa host
- * @note   quando se cria o nó (host) bck e o exp é o proprio nó (representado
- *         por NULL)
- * @param  *uip: argumentos do utilizador
- * @retval apontador para o próprio host criado
+ * @brief  Initialize host
+ * @note   when the backup or extern nodes are the host they appear as NULL
+ * @param  *uip: user arguments
+ * @retval pointer to the new host
  */
 host *init_host(user_args *uip) {
   host *new_host = (host *)malloc(sizeof(host));
@@ -39,13 +38,13 @@ host *init_host(user_args *uip) {
 }
 
 /**
- * @brief  cria um novo node
+ * @brief  Creates node
  * @note
- * @param  ID: ID do novo node
- * @param  fd: fd associado à ligação com o novo node
- * @param  *IP: endereço do novo node
- * @param  TCP: porto do novo node
- * @retval apontador para a própria node criada
+ * @param  ID: new node ID
+ * @param  fd: new node fd
+ * @param  *IP: adress of new node
+ * @param  TCP: port of new node
+ * @retval pointer to new node
  */
 node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   node *new_node = (node *)malloc(sizeof(node));

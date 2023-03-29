@@ -288,7 +288,8 @@ int djoin_network(char *buffer, host *host, int flag) {
     return r;
   }
 
-  insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID));
+  insert_in_forwarding_table(host, atoi(host->ext->ID), atoi(host->ext->ID)); // APAGAR
+  printf("Successfully connected node %s in net %s \n", ID, host->net);
   return 1;
 }
 
@@ -361,5 +362,6 @@ int join_network(char *buffer, host *host) {
   }
 
   free(received_nodeslist), free(received_reg_msg);
+  printf("Successfully connected node %s in net %s \n", ID, host->net);
   return 1;
 }
