@@ -28,12 +28,7 @@ names *new_names(char *name, names *next) {
     return NULL;
   }
 
-  if ((new_name->name = strdup(name)) == NULL) {
-    system_error("strdup() failed");
-    free(new_name->name);
-    free(new_name);
-    exit(1);
-  }
+  new_name->name = name;
   new_name->next = next;
 
   // Return a pointer to the new node
@@ -80,7 +75,6 @@ int insert_name(host *host, char *buffer) {
   // Insert new name at the beginning of the list
   host->names_list = new_names(name, host->names_list);
   printf("Successfully create new content: `%s` \n", name);
-  free(name);
   return 1; // Success, name was inserted
 }
 
