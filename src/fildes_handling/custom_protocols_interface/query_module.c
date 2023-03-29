@@ -54,6 +54,7 @@ void process_query(host *host, node *sender, char *buffer) {
   }
 
   // Update forwarding table with the sender node
+  insert_in_forwarding_table(host, atoi(sender->ID), atoi(sender->ID));
   insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // Initialize the protocol message buffer
@@ -124,6 +125,7 @@ void handle_content_response(host *host, node *sender, char *buffer, protocol_co
   }
 
   // Update forwarding table with the sender node
+  insert_in_forwarding_table(host, atoi(sender->ID), atoi(sender->ID));
   insert_in_forwarding_table(host, atoi(orig), atoi(sender->ID));
 
   // If the origin matches the current host ID, print the response

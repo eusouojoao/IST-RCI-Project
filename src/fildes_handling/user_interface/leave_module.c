@@ -82,9 +82,6 @@ void clear_host(host *host) {
   // Delete nodes list
   delete_nodes_list(host);
 
-  // Delete names list
-  delete_names_list(host);
-
   // Resets the forwarding table
   reset_forwarding_table(host);
 }
@@ -161,6 +158,9 @@ int exit_program(host *host, user_command flag) {
   if (host->ext != NULL) {
     clear_host(host);
   }
+
+  // Delete names list
+  delete_names_list(host);
 
   close(host->listen_fd);
   free(host->uip);

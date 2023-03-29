@@ -362,6 +362,5 @@ int join_network(char *buffer, host *host) {
   }
 
   free(received_nodeslist), free(received_reg_msg);
-  printf("Successfully connected node %s in net %s \n", ID, host->net);
   return 1;
 }

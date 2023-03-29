@@ -16,9 +16,9 @@
  * imediatelly recognized, the function tries to parse the "show" subcommand from the
  * buffer.
  *
- * @param host[in]: pointer to the host structure.
- * @param cmd[in]: command to execute (SHOW_TOPOLOGY, SHOW_NAMES, or SHOW_ROUTING).
- * @param buffer[in]: null-terminated string containing the "show" command and its
+ * @param host: pointer to the host structure.
+ * @param cmd: command to execute (SHOW_TOPOLOGY, SHOW_NAMES, or SHOW_ROUTING).
+ * @param buffer: null-terminated string containing the "show" command and its
  * arguments.
  */
 void show_wrapper(host *host, user_command cmd, char *buffer) {
@@ -68,7 +68,7 @@ void show_wrapper(host *host, user_command cmd, char *buffer) {
  * This function prints the ID and network of the host, as well as the IDs of its
  * internal, external, and backup neighbors.
  *
- * @param host Pointer to the host struct.
+ * @param host: pointer to the host struct.
  */
 void show_topology(host *host) {
   if (host->net == NULL) {
@@ -82,16 +82,16 @@ void show_topology(host *host) {
   printf("╠═══════════════════════════════════════╣\n");
   printf("║  Backup Node:                         ║\n");
   if (host->bck == NULL) {
-    printf("   %s\t%s\t%d\n", host->ID, host->uip->IP, host->uip->TCP);
+    printf("║  %s\t%s\t%d\n", host->ID, host->uip->IP, host->uip->TCP);
   } else {
-    printf("   %s\t%s\t%d\n", host->bck->ID, host->bck->IP, host->bck->TCP);
+    printf("║  %s\t%s\t%d\n", host->bck->ID, host->bck->IP, host->bck->TCP);
   }
 
   if (host->ext != NULL) { // If not the only node in the network
 
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  External Neighbor:                   ║\n");
-    printf("║                (None)                 ║\n");
+    printf("║  %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
     printf("╠═══════════════════════════════════════╣\n");
     printf("║  Internal Neighbors List:             ║\n");
 
@@ -118,7 +118,7 @@ void show_topology(host *host) {
 /**
  * @brief Prints the names of a host.
  *
- * @param host Pointer to the host struct.
+ * @param host: pointer to the host struct.
  */
 void show_names(host *host) {
   const names *names_ptr = host->names_list;
@@ -134,7 +134,7 @@ void show_names(host *host) {
   }
 
   while (names_ptr != NULL) {
-    printf("║  %-100s\n", names_ptr->name);
+    printf("║  %s\n", names_ptr->name);
     names_ptr = names_ptr->next;
   }
 
@@ -144,7 +144,7 @@ void show_names(host *host) {
 /**
  * @brief Prints the routing table the current host.
  *
- * @param host Pointer to the host struct.
+ * @param host: pointer to the host struct.
  */
 void show_routes(host *host) {
   if (host->net == NULL) {
