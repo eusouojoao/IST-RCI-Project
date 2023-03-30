@@ -326,48 +326,62 @@ int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
 }
 
 /**
- * @brief Clean inactive connections from the new_connections_list.
+ * @brief Decrement the 'time_to_live' of all new connections in the list
  *
- * This function iterates through the new_connections_list of the given host
- * and removes connections that have been inactive for more than TIMEOUT_SEC.
- * It also closes the file descriptor associated with the removed connections
- * and frees the memory occupied by the corresponding new_connection structure.
+ * This function iterates through the new_connections_list of a host and decrements
+ * the 'time_to_live' field of each new_connection object in the list.
+ * This helps track the time elapsed for each new connection.
  *
- * @param host: pointer to the host structure
+ * @param host: Pointer to the host structure containing the new_connections_list
  */
-static void clean_inactive_new_connections(host *host) {
-  new_connection **current = &host->new_connections_list;
+static void decrement_delta_T(host *host) {
+  // Initialize a pointer to the first new_connection object in the list
+  new_connection *current = host->new_connections_list;
 
-  while (*current != NULL) {
-    if ((*current)->time_to_live == 0) {
-      // Connection timeout exceeded
-      new_connection *to_delete = *current;
-      *current = to_delete->next;
+  // Iterate over all new connections in the list
+  while (current != NULL) {
+    // Decrement the time_to_live of the current new_connection object
+    current->time_to_live--;
 
-      // Close the file descriptor and free the resources
-      close(to_delete->new_fd);
-      free(to_delete->cb), free(to_delete);
-    } else {
-      // Move to the next connection
-      current = &((*current)->next);
-    }
+    // Move to the next new_connection object in the list
+    current = current->next;
   }
 }
 
 /**
- * @brief Decrements the time to live for each new connection in the host's new connections
- * list.
+ * @brief Remove and clean up new connections that have reached a timeout
  *
- * This function iterates through the new connections list in the host and decrements the
- * time_to_live for each connection.
+ * This function iterates through the new_connections_list of a host and checks if
+ * the 'time_to_live' field of each new_connection object has reached zero.
+ * If it has, the connection is considered inactive, and its resources are freed.
  *
- * @param host: pointer to the host structure containing the new connections list.
+ * @param host: Pointer to the host structure containing the new_connections_list
  */
-static void decrement_new_connection_timers(host *host) {
-  new_connection *current = host->new_connections_list;
-  while (current != NULL) {
-    current->time_to_live--;
-    current = current->next;
+static void clean_inactive_new_connections(host *host) {
+  // Initialize a double pointer to the first new_connection object in the list
+  new_connection **current = &host->new_connections_list;
+
+  // Iterate over all new connections in the list
+  while (*current != NULL) {
+    // Check if the time_to_live of the current new_connection object has reached zero
+    if ((*current)->time_to_live == 0) {
+      // Connection timeout has been exceeded
+
+      // Store the pointer to the new_connection object to delete
+      new_connection *to_delete = *current;
+
+      // Update the list to remove the to_delete object
+      *current = to_delete->next;
+
+      // Close the file descriptor and free the resources of the to_delete object
+      close(to_delete->new_fd);
+      free(to_delete->cb), free(to_delete);
+    } else {
+      // The current new_connection object is still active
+
+      // Move to the next new_connection object in the list
+      current = &((*current)->next);
+    }
   }
 }
 
@@ -381,7 +395,7 @@ static void decrement_new_connection_timers(host *host) {
  * @param host: pointer to the host structure containing the new connections list.
  */
 void handle_inactive_connections(host *host) {
-  decrement_new_connection_timers(host);
+  decrement_delta_T(host);
   clean_inactive_new_connections(host);
 }
 
