@@ -58,20 +58,23 @@ void update_external_node(host *host, int withdraw_fd) {
     return;
   }
 
+  anchor_status anchor = NO;
   free_node(host->ext);
   host->ext = NULL;
 
   if (host->bck == NULL) {
     promote_intr_to_ext(host);
+    anchor = YES;
   } else {
     promote_bck_to_ext(host);
     if (!get_a_new_backup(host)) {
       delete_node(host, host->ext->fd);
       return;
     }
+    anchor = NO;
   }
 
-  notify_internal_nodes_of_external_change(host);
+  notify_internal_nodes_of_external_change(host, anchor);
 }
 
 /**
@@ -118,7 +121,7 @@ int get_a_new_backup(host *host) {
  * @brief Notify internal nodes of changes to the external node.
  * @param host: pointer to the host structure
  */
-void notify_internal_nodes_of_external_change(host *host) {
+void notify_internal_nodes_of_external_change(host *host, anchor_status anchor) {
   if (host->ext == NULL) {
     return;
   }
@@ -131,7 +134,7 @@ void notify_internal_nodes_of_external_change(host *host) {
 
   // The promoted internal node (new external node), must also be notified
   // if the host is not an anchor node
-  if (host->bck == NULL) {
+  if (anchor == YES) {
     if (write_msg_TCP(host->ext->fd, msg_to_send, strlen(msg_to_send)) == -1) {
       system_error("write() failed");
     }

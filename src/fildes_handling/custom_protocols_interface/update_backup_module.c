@@ -29,6 +29,8 @@ void update_backup(host *host, char *buffer) {
     return;
   }
 
+  printf("neighbouring TCP connection\n %s\n", buffer); // APAGAR
+
   if (strcmp(host->ID, node_ID) != 0) {
     host->bck = create_new_node(node_ID, -1, node_IP, atoi(node_TCP));
     insert_in_forwarding_table(host, atoi(node_ID), atoi(node_ID));
