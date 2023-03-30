@@ -41,11 +41,14 @@
         break;                                                                                \
       }                                                                                       \
                                                                                               \
-      fputs("Retrying...", stdout);                                                           \
-                                                                                              \
       if (errno == ENETUNREACH || errno == EWOULDBLOCK || errno == EAGAIN) {                  \
+        fputs("[UDP] Retrying...", stdout);                                                   \
         /* Call the delay function, passing the current retry count as an argument */         \
-        delay(attempt);                                                                       \
+        if (attempt <= 5) {                                                                   \
+          delay(attempt);                                                                     \
+        } else {                                                                              \
+          sleep(10);                                                                          \
+        }                                                                                     \
         /* Increment the retry count */                                                       \
         attempt++;                                                                            \
       } else {                                                                                \

@@ -20,24 +20,31 @@ void clear_window() {
 
 /**
  * @brief Clears the names list of the host.
- *
  * @param host: pointer to the host structure
  */
-void clear_names(host *host) { delete_names_list(host); }
+void clear_names(host *host) {
+  if (host->names_list == NULL) {
+    user_error("Content must be created in order to clear the names list.");
+    return;
+  }
+
+  delete_names_list(host);
+  printf("Successfully deleted all content.\n");
+}
 
 /**
  * @brief Resets the forwarding table of the host.
- *
  * @param host: pointer to the host structure
  */
 void clear_routing(host *host) {
   if (host->net == NULL) {
-    user_error("Host must be registered in a network to clear the forwarding table.");
+    user_error("Host must be registered in a network in order to clear the forwarding table.");
     return;
   }
 
   reset_forwarding_table(host);
   insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
+  printf("Successfully cleared.\n");
 }
 
 /**

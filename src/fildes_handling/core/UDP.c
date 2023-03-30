@@ -14,7 +14,6 @@
 
 /**
  * @brief setsockopt() wrapper that sets timeout options
- *
  * @return 0 on success, -1 in the event of a failure
  **/
 static int set_timeouts(int fd) {
@@ -25,13 +24,13 @@ static int set_timeouts(int fd) {
 
   // Set the send timeout
   if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
-    perror("setsockopt SO_SNDTIMEO");
+    system_error("setsockopt() failed");
     return -1;
   }
 
   // Set the receive timeout
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-    perror("setsockopt SO_RCVTIMEO");
+    system_error("setsockopt() failed");
     return -1;
   }
 
@@ -40,12 +39,11 @@ static int set_timeouts(int fd) {
 
 /**
  * @brief Delays the execution of the program based on the given attempt
- *
- * @param attempt The current attempt number. If negative, the delay will be shorter
+ * @param attempt: the current attempt number (if negative, the delay will be shorter)
  */
 static void delay(int attempt) {
   // Calculate the absolute value of the attempt
-  unsigned int abs_attempt = (unsigned int)((attempt < 0) ? -attempt : attempt);
+  unsigned int abs_attempt = (unsigned int)((attempt < 0) ? (-attempt) : attempt);
   // Calculate the delay time based on the attempt
   double result = (1 << abs_attempt) * (attempt < 0 ? 0.5 : 1.0);
   result *= 0.2;         // Scale down exponential delay to (0.2 * 2^attempt) seconds
@@ -62,12 +60,11 @@ static void delay(int attempt) {
 
 /** @brief Sends a message over a UDP connection.
  *
- * This function sends the given message to the specified destination IP and
- * port using a given UDP socket file descriptor.
+ * This function sends the given message to the specified destination IP and port using a given
+ * UDP socket file descriptor.
  *
  * @param fd: socket file descriptor
- * @param addr: pointer to the sockaddr_in structure containing the destination IP and
- * port
+ * @param addr: pointer to the sockaddr_in structure containing the destination IP and port
  * @param msg: message to send
  *
  * @return The number of bytes sent, or -1 on error.
@@ -81,8 +78,8 @@ ssize_t send_msg_UDP(int fd, struct sockaddr_in *addr, char *msg) {
 
 /** @brief Receives a message over a UDP connection.
  *
- * This function reads a message from a UDP connection using a given socket
- * file descriptor and stores it in the provided buffer.
+ * This function reads a message from a UDP connection using a given socket file descriptor and
+ * stores it in the provided buffer.
  *
  * @param fd: socket file descriptor
  * @param addr: pointer to the sockaddr_in structure to store the sender's address
@@ -110,7 +107,7 @@ ssize_t recv_msg_UDP(int fd, struct sockaddr_in *addr, char *buffer, size_t buff
  * port
  * @param msg: message to send
  *
- * @return A pointer to the received message, or NULL on error.
+ * @return a pointer to the received message, or NULL on error.
  */
 char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
   char buffer[UDP_BUFFER_SIZE] = {'\0'};
@@ -138,18 +135,18 @@ char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
     return NULL;
   }
 
-  n = recv_msg_UDP(fd, &addr, buffer, sizeof(buffer));
+  n = recv_msg_UDP(fd, &addr, buffer, sizeof(buffer) - 1);
   if (n == -1) {
     system_error("recvfrom() failed");
     close(fd);
     return NULL;
   }
 
-  char *received_msg = calloc((size_t)n + 1, sizeof(char));
+  char *received_msg = calloc((size_t)(n + 1), sizeof(char));
   if (received_msg == NULL) {
     close(fd);
     system_error("calloc() failed");
-    exit(EXIT_FAILURE);
+    return NULL;
   }
 
   close(fd);

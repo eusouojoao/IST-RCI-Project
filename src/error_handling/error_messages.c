@@ -63,50 +63,42 @@ void system_error(char *msg) {
 /**
  * @brief  Displays a simple user input error message
  * @note   Print in the format fprintf
- * @param  *msg: pointer to the main error message
+ * @param  msg: pointer to the main error message
  */
 void user_error(char *msg) { fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg); }
 
+/* clang-format off */
+
 /**
  * @brief  Print help command to inform user of the commands of the program
- * @note
- * @retval None
  */
 void print_help(void) {
-  printf("╔══════════════════════════════════════════════════════════════════════════════"
-         "═════════════════╗\n");
-  printf("║                                    User Interface Commands                   "
-         "                 ║\n");
-  printf("╠══════════════════════════════════════════════════════════════════════════════"
-         "═════════════════╣\n");
-  printf("║ - join net id : [adds a node to the specify net]                             "
-         "                 ║\n");
-  printf("║ - djoin net id bootid bootIP bootTCP : [adds a node without communication "
-         "with the server]    ║\n");
-  printf("║ - create name : [creates a new content]                                      "
-         "                 ║\n");
-  printf("║ - delete name : [deletes a specific content]                                 "
-         "                 ║\n");
-  printf("║ - get dest name : [searches for a specific content]                          "
-         "                 ║\n");
-  printf("║ - show topology (st) : [shows ID and contact of neighbours and backup nodes] "
-         "                 ║\n");
-  printf("║ - show names (sn) : [shows all contents]                                     "
-         "                 ║\n");
-  printf("║ - show routing (sr) : [shows all known routes]                               "
-         "                 ║\n");
-  printf("║ - clear names (cn) : [deletes all contents]                                  "
-         "                 ║\n");
-  printf("║ - clear routing (cr) : [clears rote table]                                   "
-         "                 ║\n");
-  printf("║ - clear window (cw) : [clears terminal window]                               "
-         "                 ║\n");
-  printf("║ - leave : [node leaves net]                                                  "
-         "                 ║\n");
-  printf("║ - exit : [closes app]                                                             "
-         "            ║\n");
-  printf("║ - help : [shows User Interface Commands]                                          "
-         "            ║\n");
-  printf("╚══════════════════════════════════════════════════════════════════════════════"
-         "═════════════════╝\n");
+  printf("╔═══════════════════════════════════════════════════════════════════════════════════════════════╗\n");
+  printf("║                                    User Interface Commands                                    ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `join`: [attempts to connect the host to the specified network]                             ║\n");
+  printf("║    # args: 'NET ID'                                                                           ║\n");
+  printf("║ - `djoin`: [connects the host to a network without communication with the node server]        ║\n");
+  printf("║    # args: 'NET ID bootID bootIP bootTCP'                                                     ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `create`: [creates a new content]                                                           ║\n");
+  printf("║    # args: 'name' {alphanumeric name, '.' character is an expection}                          ║\n");
+  printf("║ - `delete`: [deletes a specific content]                                                      ║\n");
+  printf("║    # args: 'name' {alphanumeric name, '.' character is an expection}                          ║\n");
+  printf("║ - `get`: [searches for a specific content]                                                    ║\n");
+  printf("║    # args: 'dest name'                                                                        ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `show topology` (st): [shows the ID and contacts of all neighbour nodes and backup node]    ║\n");
+  printf("║ - `show names` (sn): [shows all contents]                                                     ║\n");
+  printf("║ - `show routing` (sr): [shows all known routes]                                               ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `clear names` (cn): [deletes all created content]                                           ║\n");
+  printf("║ - `clear routing` (cr): [clears the forwarding table]                                         ║\n");
+  printf("║ - `clear window` (cw) (CTRL+L): [clears the terminal window]                                  ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `leave`: [leave the current network]                                                        ║\n");
+  printf("║ - `exit`: [terminates the program]                                                            ║\n");
+  printf("╠═══════════════════════════════════════════════════════════════════════════════════════════════╣\n");
+  printf("║ - `help` (?): [prints the user manual]                                                        ║\n");
+  printf("╚═══════════════════════════════════════════════════════════════════════════════════════════════╝\n");
 }

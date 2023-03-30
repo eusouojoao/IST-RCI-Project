@@ -6,7 +6,6 @@
 #include "../../fildes_handling/core/UDP.h"
 #include "../custom_protocols_interface/delete_node_module.h"
 #include "leave_module.h"
-#include "user_commands.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +47,7 @@ static char *find_new_extern(host *host, int blacklist_ID) {
   // Allocate memory for the message to send
   char *msg_to_send = calloc(SIZE, sizeof(char));
   if (msg_to_send == NULL) {
+    system_error("calloc() failed");
     return NULL;
   }
 
@@ -117,6 +117,7 @@ static void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]
 
   // Extract IP and PORT from the matched pattern
   if (sscanf(str, "%*s %s %d", IP, &PORT) != 2) {
+    system_error("sscanf() failed");
     return;
   }
 
@@ -191,26 +192,26 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
   // Allocate memory for the host ID
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
-    perror("Failed to allocate memory for host ID");
+    system_error("malloc() failed");
     exit(1);
   }
 
   // Allocate memory for the host network
   host->net = (char *)malloc((NETSIZE + 1) * sizeof(char));
   if (host->net == NULL) {
-    perror("Failed to allocate memory for host network");
+    system_error("malloc() failed");
     exit(1);
   }
 
   // Copy the ID value to the host
   if (snprintf(host->ID, IDSIZE + 1, "%2s", ID) < IDSIZE) {
-    perror("Failed to copy ID to host");
+    system_error("snprintf() failed");
     exit(1);
   }
 
   // Copy the network value to the host
   if (snprintf(host->net, NETSIZE + 1, "%3s", net) < NETSIZE) {
-    perror("Failed to copy network to host");
+    system_error("snprintf() failed");
     exit(1);
   }
 
@@ -233,7 +234,7 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
  *
  * @return 1 if the operation was successful, 0 otherwise
  */
-int djoin_network(char *buffer, host *host, int flag) {
+int djoin_network(char *buffer, host *host, user_command flag) {
   if (host->ext != NULL) {
     return 0;
   }
@@ -271,11 +272,8 @@ int djoin_network(char *buffer, host *host, int flag) {
     host->node_list = host->ext = NULL;
 
     if (flag == DJOIN) {
-      fprintf(stderr, YELLOW "[NOTICE] " RESET);
-      fprintf(stderr,
-              "Unable to connect to the request node %s!\n"
-              "\tCouldn't register in the network (%s).\n",
-              node_ID, net);
+      fprintf(stderr, "Unable to connect to the requested node %s!\n", node_ID);
+      leave_network(host, DJOIN);
       return 0;
     }
 
