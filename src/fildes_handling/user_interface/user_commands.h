@@ -1,3 +1,11 @@
+/******************************************************************************
+ *
+ * File: user_commands.h
+ *
+ * Description: This header file contains the enumeration of all possible
+ *              user commands that can be entered in the system.
+ *
+ *****************************************************************************/
 #ifndef USER_COMMANDS_H
 #define USER_COMMANDS_H
 

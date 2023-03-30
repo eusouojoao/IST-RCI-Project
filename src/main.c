@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define DELTA_T 100000 // 100 ms
+
 void signal_setup(void) {
   // Set up the custom signal handler and enable SA_RESTART
   struct sigaction action;
@@ -45,6 +47,11 @@ int main(int argc, char *argv[]) {
   host->listen_fd = create_listen_socket(uip);
 
   // select() working variables
+  struct timeval timeout = {
+      // Small delta T timeout
+      .tv_sec = 0,
+      .tv_usec = DELTA_T, // 100 ms
+  };
   fd_set working_set; // Read file descriptors set
   int counter = 0;    // Number of descriptors that became ready
 
@@ -64,7 +71,7 @@ int main(int argc, char *argv[]) {
     update_working_set(host, &working_set);
 
     // Wait for input
-    if ((r = wait_for_ready_fildes(host, &working_set, &counter, NULL)) == -1) {
+    if ((r = wait_for_ready_fildes(host, &working_set, &counter, &timeout)) == -1) {
       // Exiting... fatal error
       break;
     }

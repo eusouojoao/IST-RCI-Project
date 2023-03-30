@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define TIMEOUT_SEC 300
+#define DELTA_T_MULTIPLIER 3000
 
 /**
  * @brief Create a new connection struct.
@@ -29,7 +29,7 @@ static new_connection *create_new_connection(int new_fd) {
   cb_init(connection->cb);
   connection->new_fd = new_fd;
   connection->next = NULL;
-  connection->last_activity = time(NULL);
+  connection->time_to_live = DELTA_T_MULTIPLIER;
 
   return connection;
 }
@@ -86,36 +86,6 @@ int remove_new_connection(host *host, int new_fd) {
   free(temp->cb), free(temp);
 
   return 1;
-}
-
-/**
- * @brief Clean inactive connections from the new_connections_list.
- *
- * This function iterates through the new_connections_list of the given host
- * and removes connections that have been inactive for more than TIMEOUT_SEC.
- * It also closes the file descriptor associated with the removed connections
- * and frees the memory occupied by the corresponding new_connection structure.
- *
- * @param host: pointer to the host structure
- */
-void clean_inactive_new_connections(host *host) {
-  new_connection **current = &host->new_connections_list;
-  time_t now = time(NULL);
-
-  while (*current != NULL) {
-    if (now - (*current)->last_activity > TIMEOUT_SEC) {
-      // Connection timeout exceeded
-      new_connection *to_delete = *current;
-      *current = to_delete->next;
-
-      // Close the file descriptor and free the resources
-      close(to_delete->new_fd);
-      free(to_delete->cb), free(to_delete);
-    } else {
-      // Move to the next connection
-      current = &((*current)->next);
-    }
-  }
 }
 
 /**

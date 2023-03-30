@@ -105,35 +105,44 @@ int get_maxfd(host *host) {
 /**
  * @brief Wait for file descriptors in a set to become ready for I/O.
  *
- * This function blocks until at least one of the file descriptors in the given set
- * becomes ready for I/O, or until the specified timeout expires. It uses the
- * select() system call to wait for events on the file descriptors.
+ * This function blocks until at least one of the file descriptors in the given set becomes
+ * ready for I/O, or until the specified timeout expires. It uses the select() system call to
+ * wait for events on the file descriptors.
  *
- * @param working_set: pointer to a file descriptor set to wait for events
- * on. On return, this set will contain only the descriptors that became ready during
- * the wait.
+ * @param working_set: pointer to a file descriptor set to wait for events on. On return, this
+ * set will contain only the descriptors that became ready during the wait.
  * @param host: pointer to a host representing the system to wait on.
  * @param timeout: pointer to a timeval struct specifying the maximum time to
  * wait for events. If this value is NULL, the function will block indefinitely.
  * @param counter[out]: pointer to an integer that will receive the number of
  * descriptors that became ready during the wait.
  *
- * @return 0 on success, -1 on failure.
+ * @return 1 on success, 0 if a timeout occurs and -1 on failure.
  */
 int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
                           struct timeval *timeout) {
 
   do {
+    // Local copy of the timeout
+    struct timeval local_timeout = {
+        .tv_sec = timeout->tv_sec,
+        .tv_usec = timeout->tv_usec,
+    };
+
     *counter = select(get_maxfd(host) + 1, working_set, (fd_set *)NULL, (fd_set *)NULL,
-                      (struct timeval *)timeout);
+                      (struct timeval *)&local_timeout);
   } while (*counter == -1 && errno == EINTR); // Ignore SIGQUIT
 
-  if (*counter <= 0) {
+  if (*counter == 0) {
+    return 0;
+  }
+
+  if (*counter < 0) {
     system_error("select() failed");
     return -1;
   }
 
-  return 0;
+  return 1;
 }
 
 /**
@@ -159,6 +168,10 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
  * during processing, or 0 if the application should exit.
  */
 int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) {
+  if (!(*counter)) {
+    handle_inactive_connections(host);
+  }
+
   while ((*counter)-- > 0) {
     // Handle keyboard input
     if (FD_ISSET(STDIN_FILENO, working_set)) {
@@ -189,16 +202,15 @@ int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) 
     }
   }
 
-  clean_inactive_new_connections(host);
   return 1;
 }
 
 /**
  * @brief Handles the stdin's file descriptor.
  *
- * This function reads data from the standard input (keyboard) into a buffer and
- * processes the data using the process_keyboard_input() function. In case of any
- * error during reading, the function handles the error appropriately.
+ * This function reads data from the standard input (keyboard) into a buffer and processes the
+ * data using the process_keyboard_input() function. In case of any error during reading, the
+ * function handles the error appropriately.
  *
  * @param host: pointer to the host structure
  * @param buffer: temporary buffer to read() from the file descriptor
@@ -308,6 +320,65 @@ int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
   }
 
   return 0;
+}
+
+/**
+ * @brief Clean inactive connections from the new_connections_list.
+ *
+ * This function iterates through the new_connections_list of the given host
+ * and removes connections that have been inactive for more than TIMEOUT_SEC.
+ * It also closes the file descriptor associated with the removed connections
+ * and frees the memory occupied by the corresponding new_connection structure.
+ *
+ * @param host: pointer to the host structure
+ */
+static void clean_inactive_new_connections(host *host) {
+  new_connection **current = &host->new_connections_list;
+
+  while (*current != NULL) {
+    if ((*current)->time_to_live == 0) {
+      // Connection timeout exceeded
+      new_connection *to_delete = *current;
+      *current = to_delete->next;
+
+      // Close the file descriptor and free the resources
+      close(to_delete->new_fd);
+      free(to_delete->cb), free(to_delete);
+    } else {
+      // Move to the next connection
+      current = &((*current)->next);
+    }
+  }
+}
+
+/**
+ * @brief Decrements the time to live for each new connection in the host's new connections
+ * list.
+ *
+ * This function iterates through the new connections list in the host and decrements the
+ * time_to_live for each connection.
+ *
+ * @param host: pointer to the host structure containing the new connections list.
+ */
+static void decrement_new_connection_timers(host *host) {
+  new_connection *current = host->new_connections_list;
+  while (current != NULL) {
+    current->time_to_live--;
+    current = current->next;
+  }
+}
+
+/**
+ * @brief Handles inactive connections in the host's new connections list.
+ *
+ * This function first calls decrement_new_connection_timers() to update the time_to_live for
+ * each new connection, and then calls clean_inactive_new_connections() to remove any expired
+ * connections from the list.
+ * @param host: pointer to the host structure containing the new connections list.
+ */
+void handle_inactive_connections(host *host) {
+  decrement_new_connection_timers(host);
+  clean_inactive_new_connections(host);
 }
 
 /**

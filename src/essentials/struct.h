@@ -14,7 +14,7 @@
 #define CBUFFER_SIZE 1024
 #endif // !CBUFFER_SIZE
 
-#include <time.h>
+#include <stddef.h>
 
 // Circular buffer structure
 typedef struct circular_buffer {
@@ -27,7 +27,7 @@ typedef struct circular_buffer {
 typedef struct new_connection {
   int new_fd;
   circular_buffer_t *cb;
-  time_t last_activity; // Time of the last activity
+  size_t time_to_live; // Time of the last activity
 
   struct new_connection *next;
 } new_connection;

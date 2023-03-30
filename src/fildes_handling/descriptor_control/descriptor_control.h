@@ -1,3 +1,11 @@
+/******************************************************************************
+ *
+ * File: descriptor_control.h
+ *
+ * Description: This header file contains the declarations of functions for
+ *              controlling and managing file descriptors in the system.
+ *
+ *****************************************************************************/
 #ifndef DESCRIPTOR_CONTROL_H
 #define DESCRIPTOR_CONTROL_H
 
@@ -14,6 +22,7 @@ int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer);
 int handle_keyboard_input(host *host, char *buffer);
 int handle_new_connection(host *host, char *buffer);
 int handle_queued_connections(host *host, fd_set *working_set, char *buffer);
+void handle_inactive_connections(host *host);
 int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer);
 
 #endif

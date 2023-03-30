@@ -1,3 +1,12 @@
+/******************************************************************************
+ *
+ * File: leave_module.h
+ *
+ * Description: This header file contains the declarations of functions for
+ *              handling the 'leave' and 'exit' user commands, as well as
+ *              cleaning up resources in the system.
+ *
+ *****************************************************************************/
 #ifndef LEAVE_MODULE_H
 #define LEAVE_MODULE_H
 
@@ -11,4 +20,4 @@ void clear_host(host *host);
 void leave_network(host *host, user_command flag);
 int exit_program(host *host, user_command flag);
 
-#endif // !LEAVE_MODULE_H
+#endif // LEAVE_MODULE_H

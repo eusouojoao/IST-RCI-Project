@@ -1,3 +1,12 @@
+/******************************************************************************
+ *
+ * File: utilities.h
+ *
+ * Description: This header file includes the necessary modules for handling
+ *              various socket-related tasks in the system.
+ *
+ *****************************************************************************/
+
 #ifndef SOCKET_UTILITIES_H
 #define SOCKET_UTILITIES_H
 
@@ -7,4 +16,4 @@
 #include "update_backup_module.h"
 #include "withdraw_module.h"
 
-#endif // !SOCKET_UTILITIES_H
+#endif // SOCKET_UTILITIES_H

@@ -1,5 +1,14 @@
-#ifndef UDP_UTILS_H
-#define UDP_UTILS_H
+/******************************************************************************
+ *
+ * File: UDP_utils.h
+ *
+ * Description: This header file contains the declarations of functions for
+ *              handling UDP sockets, such as sending and receiving messages,
+ *              and retrying with exponential backoff.
+ *
+ *****************************************************************************/
+#ifndef UDP_H
+#define UDP_H
 
 #include "../../essentials/struct.h"
 
@@ -61,4 +70,4 @@
 
 char *send_and_receive_msg_UDP(user_args *uip, char *msg);
 
-#endif // UDP_UTILS_H
+#endif // UDP_H

@@ -1,6 +1,13 @@
-
-#ifndef PROTOCOl_COMMANDS_H
-#define PROTOCOl_COMMANDS_H
+/******************************************************************************
+ *
+ * File: protocol_commands.h
+ *
+ * Description: This header file contains the enumeration of protocol commands
+ *              used in the system.
+ *
+ *****************************************************************************/
+#ifndef PROTOCOL_COMMANDS_H
+#define PROTOCOL_COMMANDS_H
 
 typedef enum protocol_command {
   EXTERN,

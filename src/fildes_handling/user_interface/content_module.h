@@ -1,3 +1,11 @@
+/******************************************************************************
+ *
+ * File: content_modules.h
+ *
+ * Description: This header file contains the declarations of functions for
+ *              managing names in the system.
+ *
+ *****************************************************************************/
 #ifndef CONTENT_MODULES_H
 #define CONTENT_MODULES_H
 
@@ -8,4 +16,4 @@ int insert_name(host *host, char *name);
 int delete_name(host *host, char *delname);
 void get_name(host *host, char *buffer);
 
-#endif // !CONTENT_MODULES_H
+#endif // CONTENT_MODULES_H

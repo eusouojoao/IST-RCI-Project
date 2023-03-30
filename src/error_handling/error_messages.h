@@ -1,5 +1,15 @@
-#ifndef error_handling_H
-#define error_handling_H
+/******************************************************************************
+ *
+ * File: error_handling.h
+ *
+ * Description: This header file contains the declarations of functions for
+ *              handling errors and displaying usage information. It includes
+ *              functions for displaying error messages, printing help
+ *              information, and defining color codes for console output.
+ *
+ *****************************************************************************/
+#ifndef ERROR_HANDLING_H
+#define ERROR_HANDLING_H
 
 #define RED "\x1B[31m"
 #define GREEN "\x1B[32m"
@@ -14,4 +24,4 @@ void system_error(char *msg);
 void user_error(char *msg);
 void print_usage();
 
-#endif // !error_handling_H
+#endif // ERROR_HANDLING_H
