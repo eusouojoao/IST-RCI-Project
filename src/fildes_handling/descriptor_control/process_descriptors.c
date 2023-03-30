@@ -1,13 +1,13 @@
 #include "process_descriptors.h"
-#include "../error_handling/error_checking.h"
-#include "../error_handling/error_messages.h"
-#include "../essentials/circular_buffer.h"
-#include "../essentials/host_handling.h"
-#include "../essentials/new_connections_list.h"
-#include "core/TCP.h"
-#include "custom_protocols_interface/utility.h"
-#include "user_interface/user_commands.h"
-#include "user_interface/utility.h"
+#include "../../error_handling/error_checking.h"
+#include "../../error_handling/error_messages.h"
+#include "../../essentials/circular_buffer.h"
+#include "../../essentials/host_handling.h"
+#include "../../essentials/new_connections_list.h"
+#include "../core/TCP.h"
+#include "../custom_protocols_interface/utility.h"
+#include "../user_interface/user_commands.h"
+#include "../user_interface/utility.h"
 
 #include <stdio.h>
 #include <stdlib.h>

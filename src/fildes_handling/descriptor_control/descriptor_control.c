@@ -1,9 +1,9 @@
 #include "descriptor_control.h"
-#include "../error_handling/error_messages.h"
-#include "../essentials/circular_buffer.h"
-#include "../essentials/new_connections_list.h"
-#include "core/TCP.h"
-#include "custom_protocols_interface/delete_node_module.h"
+#include "../../error_handling/error_messages.h"
+#include "../../essentials/circular_buffer.h"
+#include "../../essentials/new_connections_list.h"
+#include "../core/TCP.h"
+#include "../custom_protocols_interface/delete_node_module.h"
 #include "process_descriptors.h"
 
 #include <errno.h>

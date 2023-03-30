@@ -1,7 +1,7 @@
 #include "arguments_parser.h"
 #include "essentials/host_handling.h"
 #include "fildes_handling/core/TCP.h"
-#include "fildes_handling/descriptor_control.h"
+#include "fildes_handling/descriptor_control/descriptor_control.h"
 #include "misc/handle_terminal.h"
 #include "misc/prompts.h"
 
