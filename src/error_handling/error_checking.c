@@ -34,23 +34,7 @@ int number_of_command_arguments(char *str, char delim) {
  * @return 1 if the parameters are correct, 0 otherwise.
  */
 int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
-  if (strlen(node_ID) != 2) {
-    user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
-    return 0;
-  }
-
-  if (!(check_if_number(node_ID) && check_if_number(node_TCP)) ||
-      (check_IP_address(node_IP) != 1)) {
-    return 0;
-  }
-
-  int int_id = atoi(node_ID), int_tcp = atoi(node_TCP);
-  if ((int_id < 0 || int_id > 99)) {
-    user_input_error("Invalid ID", node_ID, "ID must be a number between 00 and 99");
-    return 0;
-  }
-  if ((int_tcp < 0 || int_tcp > MAXPORT)) {
-    user_input_error("Invalid TCP", node_TCP, "TCP must be a number between 0 and 65534");
+  if (!(check_id(node_ID) && check_PORT(node_TCP) && check_IP_address(node_IP))) {
     return 0;
   }
 
@@ -65,13 +49,13 @@ int check_node_parameters(char *node_ID, char *node_IP, char *node_TCP) {
  */
 int check_net(char *net) {
   if (strlen(net) != 3 || !check_if_number(net)) {
-    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
+    user_input_error("Invalid network", net, "net must be a number between 000 and 999");
     return 0;
   }
 
   int int_net = atoi(net);
   if (int_net < 0 || int_net > 999) {
-    user_input_error("Invalid net", net, "net must be a number between 000 and 999");
+    user_input_error("Invalid network", net, "net must be a number between 000 and 999");
     return 0;
   }
 
@@ -82,7 +66,7 @@ int check_net(char *net) {
  * @brief Checks if the ID parameter is in the correct format.
  *
  * @param id: the ID parameter
- * @return 1 if the ID parameter is invalid, 0 otherwise
+ * @return 1 if the ID parameter is valid, 0 otherwise
  */
 int check_id(char *id) {
   if (strlen(id) != 2 || !check_if_number(id)) {
@@ -104,7 +88,7 @@ int check_id(char *id) {
  *
  * @param net: the network parameter
  * @param id: the ID parameter
- *
+ * @return 1 if successful, 0 otherwise
  */
 int check_net_and_id(char *net, char *id) { return check_net(net) && check_id(id); }
 
@@ -117,7 +101,6 @@ int check_net_and_id(char *net, char *id) { return check_net(net) && check_id(id
 int check_if_number(char *src) {
   for (size_t i = 0; i < strlen(src); i++) {
     if (!isdigit(src[i])) {
-      user_input_error("Value not a number", src, "Inputs like ID, net, TCP must be numbers");
       return 0;
     }
   }
@@ -176,7 +159,7 @@ int check_name(char *name) {
   if (len <= 0 || len > 100) {
     user_input_error(
         "Invalid name", name,
-        "Name must be alphanumeric('.' is an exception) and at most 100 caracter long");
+        "Name must be alphanumeric('.' is an exception) and at most 100 caracter long.");
     return -1;
   }
 
@@ -184,7 +167,7 @@ int check_name(char *name) {
     if (!isalnum(name[i]) && name[i] != '.') {
       user_input_error("Invalid name", name,
                        "Name must be alphanumeric ('.' is an exception) and at most 100 "
-                       "caracter long");
+                       "caracter long.");
       return -1;
     }
   }

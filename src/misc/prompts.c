@@ -28,8 +28,9 @@ void print_header() {
     return;
   }
 
-  // If terminal width is less than 60, do nothing
+  // If terminal width is less than 60, don't print the header
   if (w.ws_col < 60) {
+    CLEAR_STREAM(STDOUT_FILENO);
     return;
   }
 
@@ -49,8 +50,7 @@ void print_header() {
 
 /**
  * @brief Toggle the user interface on or off
- *
- * @param toggle ON or OFF state
+ * @param toggle: ON or OFF state
  */
 void user_interface_toggle(int toggle) {
   struct winsize w;
