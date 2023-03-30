@@ -58,15 +58,14 @@ int main(int argc, char *argv[]) {
   // User interface engage
   print_header();
   user_interface_toggle(ON);
+  // Print prompt
+  prompt();
 
   // Working buffer
   char buffer[256] = {'\0'};
 
   int r = 0; // Stores the return values
   while (ON) {
-    // Print prompt
-    prompt();
-
     // Update the file descriptor's working set
     update_working_set(host, &working_set);
 

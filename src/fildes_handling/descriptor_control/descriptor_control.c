@@ -2,6 +2,7 @@
 #include "../../error_handling/error_messages.h"
 #include "../../essentials/circular_buffer.h"
 #include "../../essentials/new_connections_list.h"
+#include "../../misc/prompts.h"
 #include "../core/TCP.h"
 #include "../custom_protocols_interface/delete_node_module.h"
 #include "process_descriptors.h"
@@ -228,6 +229,8 @@ int handle_keyboard_input(host *host, char *buffer) {
 
   // Process standard input - keyboard
   int r = process_keyboard_input(host, buffer);
+  // Print prompt
+  prompt();
   return r;
 }
 
@@ -374,6 +377,7 @@ static void decrement_new_connection_timers(host *host) {
  * This function first calls decrement_new_connection_timers() to update the time_to_live for
  * each new connection, and then calls clean_inactive_new_connections() to remove any expired
  * connections from the list.
+ *
  * @param host: pointer to the host structure containing the new connections list.
  */
 void handle_inactive_connections(host *host) {

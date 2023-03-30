@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define DELTA_T_MULTIPLIER 3000
+#define DELTA_T_MULTIPLIER 100
 
 /**
  * @brief Create a new connection struct.
