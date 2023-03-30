@@ -73,11 +73,11 @@
     │       ├── user_commands.h        # User commands header
     │       └── utility.h              # Utility header for user interface
     │
-    └── misc                        # Directory containing miscellaneous files
-        ├── handle_terminal.c      # Terminal handling implementation
-        ├── handle_terminal.h      # Terminal handling header
-        ├── prompts.c              # Prompts implementation
-        └── prompts.h              # Prompts header
+    └── misc                           # Directory containing miscellaneous files
+        ├── handle_terminal.c          # Terminal handling implementation
+        ├── handle_terminal.h          # Terminal handling header
+        ├── prompts.c                  # Prompts implementation
+        └── prompts.h                  # Prompts header
 
 9 directories, 57 files
 ```
