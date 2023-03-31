@@ -142,6 +142,9 @@ static void check_uniqueness_of_ID(host *host, char *node_list, char (*ID)[SIZE]
 
     new_id++;
   }
+
+  // Make sure to update the ID in case it exceeds the limit
+  snprintf((*ID), SIZE, "%02d", new_id);
 }
 
 /**
@@ -331,6 +334,7 @@ int join_network(char *buffer, host *host) {
   if (atoi(ID) > MAXNODES) {
     fprintf(stderr, YELLOW "[NOTICE] " RESET);
     fprintf(stderr, "Network is full! Couldn't register in the network (%s).\n", net);
+    free(received_nodeslist);
     return 0;
   }
 
@@ -355,8 +359,10 @@ int join_network(char *buffer, host *host) {
     }
   } else {
     fprintf(stderr, YELLOW "[NOTICE] " RESET);
-    fprintf(stderr, "Unexpected server response. Couldn't register in the network (%s).\n",
-            net);
+    fprintf(stderr,
+            "Unexpected server response: " RED " %s " RESET
+            " Couldn't register in the network (%s).\n",
+            received_reg_msg, net);
     free(received_nodeslist), free(received_reg_msg);
     return 0;
   }
