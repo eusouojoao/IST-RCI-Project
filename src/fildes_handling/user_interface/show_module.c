@@ -34,7 +34,7 @@ static void show_topology(host *host) {
 
   if (host->ext != NULL) { // If not the only node in the network
 
-    printf("╠═══════════════════════════════════════╣\n");
+    printf("╠═══════════════════════════════════════╗\n");
     printf("║  External Neighbor:                   ║\n");
     printf("║  %s\t%s\t%d\n", host->ext->ID, host->ext->IP, host->ext->TCP);
     printf("╠═══════════════════════════════════════╣\n");

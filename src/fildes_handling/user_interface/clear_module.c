@@ -44,7 +44,7 @@ void clear_routing(host *host) {
 
   reset_forwarding_table(host);
   insert_in_forwarding_table(host, atoi(host->ID), atoi(host->ID));
-  printf("Successfully cleared.\n");
+  printf("Successfully cleared the forwarding table.\n");
 }
 
 /**
@@ -62,7 +62,7 @@ void clear_wrapper(host *host, user_command cmd, char *buffer) {
 
     // Attempt to parse a generic "clear" command from the buffer
     char subcmd[128] = {'\0'};
-    if (sscanf(buffer, "clear %s\n", subcmd) == 1) {
+    if (sscanf(buffer, "clear %127s\n", subcmd) == 1) {
       if (strcmp(subcmd, "window") == 0) {
         cmd = CLEAR_WINDOW;
       } else if (strcmp(subcmd, "names") == 0) {

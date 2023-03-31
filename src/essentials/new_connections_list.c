@@ -23,6 +23,7 @@ static new_connection *create_new_connection(int new_fd) {
   connection->cb = (circular_buffer_t *)malloc(sizeof(circular_buffer_t));
   if (connection->cb == NULL) {
     system_error("malloc() failed");
+    free(connection);
     return NULL;
   }
 

@@ -45,6 +45,10 @@ int main(int argc, char *argv[]) {
   // Initialize the host structure with the user supplied arguments
   host *host = init_host(uip);
   host->listen_fd = create_listen_socket(uip);
+  if (host->listen_fd == -1) {
+    free(uip);
+    exit(1);
+  }
 
   // select() working variables
   struct timeval timeout = {
@@ -58,8 +62,7 @@ int main(int argc, char *argv[]) {
   // User interface engage
   print_header();
   user_interface_toggle(ON);
-  // Print prompt
-  prompt();
+  prompt(); // Print prompt
 
   // Working buffer
   char buffer[256] = {'\0'};

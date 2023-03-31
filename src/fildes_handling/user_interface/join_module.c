@@ -309,7 +309,8 @@ int join_network(char *buffer, host *host) {
   char net[SIZE] = {'\0'}, ID[SIZE] = {'\0'};
 
   if (sscanf(buffer, "join %s %s\n", net, ID) != 2) {
-    system_error("sscanf() failed");
+    user_input_error("Invalid `join` call", buffer,
+                     "Type 'help' or '?' for more information.\n");
     return 0;
   }
 

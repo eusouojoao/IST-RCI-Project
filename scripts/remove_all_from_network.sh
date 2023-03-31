@@ -1,6 +1,6 @@
 #!/bin/bash
 
-net=064
+net=040
 server="193.136.138.142"
 port=59000
 
