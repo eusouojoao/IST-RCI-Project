@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define DELTA_T_MULTIPLIER 100
+#define DELTA_T_MULTIPLIER 3000
 
 /**
  * @brief Create a new connection struct.
@@ -43,7 +43,7 @@ static new_connection *create_new_connection(int new_fd) {
 void insert_new_connection(host *host, int new_fd, char *buffer) {
   new_connection *connection = create_new_connection(new_fd);
   if (connection == NULL) {
-    exit(1);
+    die_with_system_error(host, NULL);
   }
 
   size_t len = strlen(buffer);

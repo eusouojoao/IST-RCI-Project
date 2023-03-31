@@ -69,6 +69,6 @@
   } while (0)
 #endif // RETRY_MACRO
 
-char *send_and_receive_msg_UDP(user_args *uip, char *msg);
+char *send_and_receive_msg_UDP(host *host, char *msg);
 
 #endif // UDP_H

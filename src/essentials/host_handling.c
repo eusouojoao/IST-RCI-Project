@@ -22,6 +22,7 @@ host *init_host(user_args *uip) {
   host *new_host = (host *)malloc(sizeof(host));
   if (new_host == NULL) {
     system_error("malloc() failed");
+    free(uip);
     exit(1);
   }
 
@@ -50,27 +51,27 @@ host *init_host(user_args *uip) {
  * @param fd: file descriptor of the new node
  * @param IP: IP address of the new node
  * @param TCP: TCP port of the new node
- * @return pointer to the new node structure.
+ * @return pointer to the new node structure, NULL on failure.
  */
 node *create_new_node(char *ID, int fd, char *IP, int TCP) {
   // Allocate memory for new_node
   node *new_node = (node *)malloc(sizeof(node));
   if (new_node == NULL) {
     system_error("malloc() failed");
-    exit(1);
+    return NULL;
   }
 
   // Initialize fields of new_node
   if ((new_node->ID = strdup(ID)) == NULL) {
     system_error("strdup() failed");
     free(new_node);
-    exit(1);
+    return NULL;
   }
   if ((new_node->IP = strdup(IP)) == NULL) {
     system_error("strdup() failed");
     free(new_node->ID);
     free(new_node);
-    exit(1);
+    return NULL;
   }
 
   new_node->TCP = TCP;
@@ -78,9 +79,10 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
 
   new_node->cb = (circular_buffer_t *)malloc(sizeof(circular_buffer_t));
   if (new_node->cb == NULL) {
+    system_error("malloc() failed");
     free(new_node->ID), free(new_node->IP);
     free(new_node);
-    exit(1);
+    return NULL;
   }
   cb_init(new_node->cb);
 
@@ -102,6 +104,9 @@ node *create_new_node(char *ID, int fd, char *IP, int TCP) {
  */
 void insert_node(char *ID, int fd, char *IP, int TCP, host *host) {
   node *new_node = create_new_node(ID, fd, IP, TCP);
+  if (new_node == NULL) {
+    die_with_system_error(host, NULL);
+  }
 
   new_node->next = host->node_list;
   host->node_list = new_node;

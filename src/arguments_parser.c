@@ -79,8 +79,7 @@ user_args *arguments_parser(int argc, char *argv[]) {
   // Initialize the user_args structure
   user_args *uip = calloc(1, sizeof(user_args));
   if (uip == NULL) {
-    system_error("calloc() failed");
-    exit(1);
+    die_with_system_error(NULL, "calloc() failed");
   }
   init_uip(&uip);
 

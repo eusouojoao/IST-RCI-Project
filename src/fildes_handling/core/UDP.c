@@ -109,7 +109,7 @@ ssize_t recv_msg_UDP(int fd, struct sockaddr_in *addr, char *buffer, size_t buff
  *
  * @return a pointer to the received message, or NULL on error.
  */
-char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
+char *send_and_receive_msg_UDP(host *host, char *msg) {
   char buffer[UDP_BUFFER_SIZE] = {'\0'};
   ssize_t n = 0;
 
@@ -123,7 +123,7 @@ char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
   }
 
   struct sockaddr_in addr;
-  if (setup_sockaddr_in(&addr, uip->regIP, uip->regUDP) == -1) {
+  if (setup_sockaddr_in(&addr, host->uip->regIP, host->uip->regUDP) == -1) {
     close(fd);
     return NULL;
   }
@@ -145,8 +145,7 @@ char *send_and_receive_msg_UDP(user_args *uip, char *msg) {
   char *received_msg = calloc((size_t)(n + 1), sizeof(char));
   if (received_msg == NULL) {
     close(fd);
-    system_error("calloc() failed");
-    return NULL;
+    die_with_system_error(host, "calloc() failed");
   }
 
   close(fd);

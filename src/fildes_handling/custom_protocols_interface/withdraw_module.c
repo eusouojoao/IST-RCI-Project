@@ -30,7 +30,7 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
 
   char *withdraw_msg = remove_node_from_forwarding_table(host, atoi(ID));
   if (withdraw_msg == NULL) {
-    return;
+    die_with_system_error(host, "calloc() failed");
   }
 
   broadcast_protocol_message(host, sender->fd, withdraw_msg);
@@ -47,7 +47,6 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
   char *withdraw_message = calloc(SIZE, sizeof(char));
   if (withdraw_message == NULL) {
-    system_error("calloc() failed");
     return NULL;
   }
 

@@ -47,13 +47,12 @@ static char *find_new_extern(host *host, int blacklist_ID) {
   // Allocate memory for the message to send
   char *msg_to_send = calloc(SIZE, sizeof(char));
   if (msg_to_send == NULL) {
-    system_error("calloc() failed");
-    return NULL;
+    die_with_system_error(host, "calloc() failed");
   }
 
   // Prepare the message to request the list of nodes
   sprintf(msg_to_send, "NODES %s", host->net);
-  char *received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *received_nodeslist = send_and_receive_msg_UDP(host, msg_to_send);
   if (received_nodeslist == NULL) {
     free(msg_to_send);
     return NULL;
@@ -192,27 +191,23 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
   // Allocate memory for the host ID
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
-    system_error("malloc() failed");
-    return;
+    die_with_system_error(host, "malloc() failed");
   }
 
   // Allocate memory for the host network
   host->net = (char *)malloc((NETSIZE + 1) * sizeof(char));
   if (host->net == NULL) {
-    system_error("malloc() failed");
-    return;
+    die_with_system_error(host, "malloc() failed");
   }
 
   // Copy the ID value to the host
   if (snprintf(host->ID, IDSIZE + 1, "%2s", ID) < IDSIZE) {
-    system_error("snprintf() failed");
-    return;
+    die_with_system_error(host, "snprintf() failed");
   }
 
   // Copy the network value to the host
   if (snprintf(host->net, NETSIZE + 1, "%3s", net) < NETSIZE) {
-    system_error("snprintf() failed");
-    return;
+    die_with_system_error(host, "snprintf() failed");
   }
 
   // Initialize the forwarding table with the host ID
@@ -327,7 +322,7 @@ int join_network(char *buffer, host *host) {
 
   char msg_to_send[SIZE << 2] = {'\0'};
   sprintf(msg_to_send, "NODES %s", net);
-  char *received_nodeslist = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *received_nodeslist = send_and_receive_msg_UDP(host, msg_to_send);
   if (received_nodeslist == NULL) {
     return 0;
   }
@@ -341,7 +336,7 @@ int join_network(char *buffer, host *host) {
 
   memset(msg_to_send, 0, sizeof(msg_to_send));
   sprintf(msg_to_send, "REG %s %s %s %d", net, ID, host->uip->IP, host->uip->TCP);
-  char *received_reg_msg = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *received_reg_msg = send_and_receive_msg_UDP(host, msg_to_send);
   if (received_reg_msg == NULL) {
     free(received_nodeslist);
     return 0;

@@ -102,7 +102,7 @@ void leave_network(host *host, user_command flag) {
   // Send UNREG message to the node server
   char msg_to_send[SIZE];
   snprintf(msg_to_send, SIZE, "UNREG %s %s\n", host->net, host->ID);
-  char *msg_received = send_and_receive_msg_UDP(host->uip, msg_to_send);
+  char *msg_received = send_and_receive_msg_UDP(host, msg_to_send);
 
   // Check if message was successfully sent
   if (msg_received == NULL) {

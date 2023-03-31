@@ -11,6 +11,8 @@
 #ifndef ERROR_HANDLING_H
 #define ERROR_HANDLING_H
 
+#include "../essentials/struct.h"
+
 #define RED "\x1B[31m"
 #define GREEN "\x1B[32m"
 #define BLUE "\x1B[34m"
@@ -21,6 +23,7 @@ void usage(char *target);
 void print_help(void);
 void user_input_error(char *msg, char *input, char *detail);
 void system_error(char *msg);
+void die_with_system_error(host *host, char *msg);
 void user_error(char *msg);
 void print_usage();
 

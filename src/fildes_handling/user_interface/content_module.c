@@ -43,10 +43,9 @@ names *new_names(char *name, names *next) {
  * @return 1 on success, -1 if the name is too long, 0 if the name already exists in the list.
  */
 int insert_name(host *host, char *buffer) {
-  char *name = (char *)malloc(128 * sizeof(char));
-
+  char *name = (char *)calloc(128, sizeof(char));
   if (name == NULL) {
-    system_error("malloc() failed");
+    die_with_system_error(host, "calloc() failed");
     return -1;
   }
 
@@ -64,9 +63,7 @@ int insert_name(host *host, char *buffer) {
   // Check if name already exists in the list
   for (names *current = host->names_list; current != NULL; current = current->next) {
     if (strcmp(current->name, name) == 0) {
-      user_input_error("Invalid create", name,
-                       "Only unique names can be added. To check the names created use the "
-                       "command `show names` (sn).");
+      user_input_error("Invalid create", name, "Type 'help' or '?' for more information.");
       free(name);
       return 0; // Failure, name already exists in the list
     }
@@ -74,7 +71,11 @@ int insert_name(host *host, char *buffer) {
 
   // Insert new name at the beginning of the list
   host->names_list = new_names(name, host->names_list);
-  printf("Successfully created new content: `%s` \n", name);
+  if (host->names_list == NULL) {
+    die_with_system_error(host, NULL);
+  }
+
+  printf(YELLOW "[NOTICE]" RESET " Successfully created new content: `%s` \n", name);
   return 1; // Success, name was inserted
 }
 
@@ -103,7 +104,7 @@ int delete_name(host *host, char *buffer) {
       *p = (*p)->next;
       free(temp->name);
       free(temp);
-      printf("Successfully deleted content: `%s` \n", name_to_delete);
+      printf(YELLOW "[NOTICE]" RESET "Successfully deleted content: `%s` \n", name_to_delete);
       return 1; // Success, name deleted
     }
     p = &(*p)->next;
@@ -125,7 +126,7 @@ int delete_name(host *host, char *buffer) {
  */
 int parse_get_name_command(char *buffer, char *dest, char *name) {
   if (sscanf(buffer, "get %s %s\n", dest, name) != 2) {
-    user_input_error("Invalid command", buffer, "Type 'help' or '?' for more information.\n");
+    user_input_error("Invalid command", buffer, "Type 'help' or '?' for more information.");
     return 0;
   }
   return 1;

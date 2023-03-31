@@ -1,9 +1,12 @@
 #include "error_messages.h"
+#include "../fildes_handling/user_interface/leave_module.h"
 #include "../misc/prompts.h"
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /**
  * @brief Displays the usage instructions for the program.
@@ -59,6 +62,36 @@ void system_error(char *msg) {
   fputs(RED, stderr);
   fputs(strerror(errno), stderr);
   fputs(RESET "\n", stderr);
+}
+
+/**
+ * @brief Terminates the program after displaying a system error message.
+ *
+ * This function calls the system_error() function to display a system error
+ * message, including the error message associated with the current value of
+ * errno. After displaying the error message, it clears the host and exits
+ * the program with a non-zero status code.
+ *
+ * @param host: pointer to the host structure to be cleared
+ * @param msg: pointer to the main error message
+ */
+void die_with_system_error(host *host, char *msg) {
+  // Call the system_error() function to display the error message
+  if (msg != NULL) {
+    system_error(msg);
+  }
+
+  // Clear the host structure
+  if (host != NULL) {
+    clear_host(host), delete_names_list(host);
+    close(host->listen_fd);
+    free(host->uip);
+    free(host);
+  }
+
+  user_interface_toggle(OFF);
+  // Terminate the program with a non-zero status code
+  exit(1);
 }
 
 /**
