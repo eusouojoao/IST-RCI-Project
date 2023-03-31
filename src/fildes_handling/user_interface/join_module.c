@@ -193,26 +193,26 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
   host->ID = (char *)malloc((IDSIZE + 1) * sizeof(char));
   if (host->ID == NULL) {
     system_error("malloc() failed");
-    exit(1);
+    return;
   }
 
   // Allocate memory for the host network
   host->net = (char *)malloc((NETSIZE + 1) * sizeof(char));
   if (host->net == NULL) {
     system_error("malloc() failed");
-    exit(1);
+    return;
   }
 
   // Copy the ID value to the host
   if (snprintf(host->ID, IDSIZE + 1, "%2s", ID) < IDSIZE) {
     system_error("snprintf() failed");
-    exit(1);
+    return;
   }
 
   // Copy the network value to the host
   if (snprintf(host->net, NETSIZE + 1, "%3s", net) < NETSIZE) {
     system_error("snprintf() failed");
-    exit(1);
+    return;
   }
 
   // Initialize the forwarding table with the host ID
@@ -235,7 +235,8 @@ static void assign_host_ID_and_network(host *host, const char *ID, const char *n
  * @return 1 if the operation was successful, 0 otherwise
  */
 int djoin_network(char *buffer, host *host, user_command flag) {
-  if (host->ext != NULL) {
+  if (host->net != NULL) {
+    printf(YELLOW "[NOTICE]" RESET " Already registered in network %s.\n", host->net);
     return 0;
   }
 
@@ -279,8 +280,9 @@ int djoin_network(char *buffer, host *host, user_command flag) {
 
     char *new_djoin_msg = find_new_extern(host, atoi(node_ID));
     if (new_djoin_msg == NULL) {
-      fprintf(stderr, YELLOW "[NOTICE] " RESET);
-      fprintf(stderr, "Unable to connect to any node in the network (%s)!\n", net);
+      fprintf(stderr,
+              YELLOW "[NOTICE] " RESET " Unable to connect to any node in the network (%s)!\n",
+              net);
       return 1;
     }
 

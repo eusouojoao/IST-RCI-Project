@@ -142,9 +142,11 @@ int parse_get_name_command(char *buffer, char *dest, char *name) {
 int handle_destination_is_current_host(host *host, char *dest, char *name) {
   if (strcmp(host->ID, dest) == 0) {
     if (find_name(name, host)) {
-      printf("Name: `%s` found on node %s\n", name, dest);
+      printf(YELLOW "[CONTENT]" RESET " Name: `%s` " GREEN "found" RESET " on node %s\n", name,
+             dest);
     } else {
-      printf("Name: `%s` not found on node %s\n", name, dest);
+      printf(YELLOW "[NOCONTENT]" RESET " Name: `%s` " RED "not found" RESET " on node %s\n",
+             name, dest);
     }
     return 1;
   }

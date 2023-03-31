@@ -2,6 +2,7 @@
 #include "../../error_handling/error_checking.h"
 #include "../../error_handling/error_messages.h"
 #include "../../essentials/host_handling.h"
+#include "../../misc/prompts.h"
 #include "../core/TCP.h"
 #include "common.h"
 #include "protocol_commands.h"
@@ -136,11 +137,15 @@ void handle_content_response(host *host, node *sender, char *buffer, protocol_co
 
   // If the origin matches the current host ID, print the response
   if (strcmp(host->ID, dest) == 0) {
+    clear_stdout_line();
     if (cmd == CONTENT) {
-      printf("Name: `%s` found on node %s\n", name, orig);
+      printf(YELLOW "[CONTENT]" RESET " Name: `%s` " GREEN "found" RESET " on node %s\n", name,
+             orig);
     } else {
-      printf("Name: `%s` not found on node %s\n", name, orig);
+      printf(YELLOW "[NOCONTENT]" RESET " Name: `%s` " RED "not found" RESET " on node %s\n",
+             name, orig);
     }
+    prompt();
 
     return;
   }

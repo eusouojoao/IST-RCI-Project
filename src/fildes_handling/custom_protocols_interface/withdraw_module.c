@@ -41,13 +41,14 @@ void withdraw_wrapper(host *host, node *sender, char *buffer) {
  * @brief Remove a node from the host's forwarding table.
  * @param host: pointer to the host structure
  * @param eraseN: node ID to be removed from the forwarding table
- * @return a pointer to the WITHDRAW message to be broadcasted to other nodes.
+ * @return a pointer to the WITHDRAW message to be broadcasted to other nodes, NULL on a
+ * failure
  */
 char *remove_node_from_forwarding_table(host *host, int eraseN) {
   char *withdraw_message = calloc(SIZE, sizeof(char));
   if (withdraw_message == NULL) {
     system_error("calloc() failed");
-    exit(1);
+    return NULL;
   }
 
   snprintf(withdraw_message, SIZE, "WITHDRAW %02d\n", eraseN);

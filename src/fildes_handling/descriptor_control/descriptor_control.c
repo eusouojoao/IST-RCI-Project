@@ -88,7 +88,7 @@ static int max_fd_from_nodes(node *n) {
  * @param host: the host structure containing the list of nodes to search
  * @return the maximum file descriptor in the host's structure.
  */
-int get_maxfd(host *host) {
+static int get_maxfd(host *host) {
   int max_fd = host->listen_fd;
   int nc_max_fd = max_fd_from_new_connections(host->new_connections_list);
   int node_max_fd = max_fd_from_nodes(host->node_list);
@@ -147,66 +147,6 @@ int wait_for_ready_fildes(host *host, fd_set *working_set, int *counter,
 }
 
 /**
- * @brief Manages file descriptors for keyboard input, new connections, and neighbor
- * nodes in a distributed network.
- *
- * This function iterates through the file descriptors of interest and handles the following
- * cases:
- * 1. Keyboard input: processes user input using the handle_keyboard_input() function.
- * 2. New connections: processes new incoming connections using the handle_new_connection()
- * function.
- * 3. Neighbor nodes: processes messages from neighbor nodes using the handle_neighbour_nodes()
- * function.
- *
- * The function stops when the counter reaches zero or an error occurs during
- * processing.
- *
- * @param host: pointer to the host structure.
- * @param working_set: pointer to a file descriptor set containing the descriptors to monitor.
- * @param counter: pointer to the counter of file descriptors to process.
- *
- * @return 1 if the function processes all file descriptors successfully, -1 if an error occurs
- * during processing, or 0 if the application should exit.
- */
-int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) {
-  if (!(*counter)) {
-    handle_inactive_connections(host);
-  }
-
-  while ((*counter)-- > 0) {
-    // Handle keyboard input
-    if (FD_ISSET(STDIN_FILENO, working_set)) {
-      FD_CLR(STDIN_FILENO, working_set);
-      if (handle_keyboard_input(host, buffer) == 0) {
-        return 0;
-      }
-      continue;
-    }
-
-    // Handle new connections
-    if (FD_ISSET(host->listen_fd, working_set)) {
-      FD_CLR(host->listen_fd, working_set);
-      if (handle_new_connection(host, buffer) == -1) {
-        return -1;
-      }
-      continue;
-    }
-
-    // Handle queued new connections
-    if (handle_queued_connections(host, working_set, buffer)) {
-      continue;
-    }
-
-    // Handle communication with neighbour nodes
-    if (handle_neighbour_nodes(host, working_set, buffer) == -1) {
-      return -1;
-    }
-  }
-
-  return 1;
-}
-
-/**
  * @brief Handles the stdin's file descriptor.
  *
  * This function reads data from the standard input (keyboard) into a buffer and processes the
@@ -217,9 +157,10 @@ int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) 
  * @param buffer: temporary buffer to read() from the file descriptor
  *
  * @return the result of process_keyboard_input() if the function processes the keyboard input
- * successfully, -1 if an error occurs during reading data.
+ * successfully, 0 if the user is exiting the program, -1 if an error occurs during reading
+ * data.
  */
-int handle_keyboard_input(host *host, char *buffer) {
+static int handle_keyboard_input(host *host, char *buffer) {
   ssize_t bytes_read = read(STDIN_FILENO, buffer, SIZE - 1);
   if (bytes_read <= 0) {
     system_error("read() failed");
@@ -229,8 +170,10 @@ int handle_keyboard_input(host *host, char *buffer) {
 
   // Process standard input - keyboard
   int r = process_keyboard_input(host, buffer);
-  // Print prompt
-  prompt();
+  if (r != 0) {
+    // Print prompt
+    prompt();
+  }
   return r;
 }
 
@@ -249,7 +192,7 @@ int handle_keyboard_input(host *host, char *buffer) {
  * @return 1 if the function processes the new connection successfully, -1 if an error occurs
  * during accepting a connection or reading data.
  */
-int handle_new_connection(host *host, char *buffer) {
+static int handle_new_connection(host *host, char *buffer) {
   struct sockaddr in_addr;
   socklen_t in_addrlen = sizeof(in_addr);
 
@@ -291,7 +234,7 @@ int handle_new_connection(host *host, char *buffer) {
  *
  * @return 1 if the function processes the new connection successfully, -1 if an error occurs
  */
-int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
+static int handle_queued_connections(host *host, fd_set *working_set, char *buffer) {
   new_connection *temp = NULL;
   for (temp = host->new_connections_list; temp != NULL; temp = temp->next) {
     if (FD_ISSET(temp->new_fd, working_set)) {
@@ -394,7 +337,7 @@ static void clean_inactive_new_connections(host *host) {
  *
  * @param host: pointer to the host structure containing the new connections list.
  */
-void handle_inactive_connections(host *host) {
+static void handle_inactive_connections(host *host) {
   decrement_delta_T(host);
   clean_inactive_new_connections(host);
 }
@@ -413,7 +356,7 @@ void handle_inactive_connections(host *host) {
  *
  * @return 1 if the function processes all messages successfully, -1 if an error occurs
  */
-int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
+static int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
   for (node *temp = host->node_list; temp != NULL; temp = temp->next) {
     if (FD_ISSET(temp->fd, working_set)) {
       FD_CLR(temp->fd, working_set);
@@ -445,6 +388,66 @@ int handle_neighbour_nodes(host *host, fd_set *working_set, char *buffer) {
         process_neighbour_nodes(host, temp, read_buffer);
       }
       break;
+    }
+  }
+
+  return 1;
+}
+
+/**
+ * @brief Manages file descriptors for keyboard input, new connections, and neighbor
+ * nodes in a distributed network.
+ *
+ * This function iterates through the file descriptors of interest and handles the following
+ * cases:
+ * 1. Keyboard input: processes user input using the handle_keyboard_input() function.
+ * 2. New connections: processes new incoming connections using the handle_new_connection(),
+ *    handle_queued_connections() and handle_inactive_connections() functions.
+ * 3. Neighbor nodes: processes messages from neighbor nodes using the handle_neighbour_nodes()
+ *    function.
+ *
+ * The function stops when the counter reaches zero or an error occurs during
+ * processing.
+ *
+ * @param host: pointer to the host structure.
+ * @param working_set: pointer to a file descriptor set containing the descriptors to monitor.
+ * @param counter: pointer to the counter of file descriptors to process.
+ *
+ * @return 1 if the function processes all file descriptors successfully, -1 if an error occurs
+ * during processing, or 0 if the application should exit.
+ */
+int fildes_control(host *host, fd_set *working_set, int *counter, char *buffer) {
+  if (!(*counter)) {
+    handle_inactive_connections(host);
+  }
+
+  while ((*counter)-- > 0) {
+    // Handle keyboard input
+    if (FD_ISSET(STDIN_FILENO, working_set)) {
+      FD_CLR(STDIN_FILENO, working_set);
+      if (handle_keyboard_input(host, buffer) == 0) {
+        return 0;
+      }
+      continue;
+    }
+
+    // Handle new connections
+    if (FD_ISSET(host->listen_fd, working_set)) {
+      FD_CLR(host->listen_fd, working_set);
+      if (handle_new_connection(host, buffer) == -1) {
+        return -1;
+      }
+      continue;
+    }
+
+    // Handle queued new connections
+    if (handle_queued_connections(host, working_set, buffer)) {
+      continue;
+    }
+
+    // Handle communication with neighbour nodes
+    if (handle_neighbour_nodes(host, working_set, buffer) == -1) {
+      return -1;
     }
   }
 

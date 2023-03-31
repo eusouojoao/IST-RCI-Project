@@ -12,7 +12,6 @@
 
 #include "../../essentials/struct.h"
 
-void update_backup(host *host, char *buffer);
 void withdraw_wrapper(host *host, node *node, char *buffer);
 char *remove_node_from_forwarding_table(host *host, int eraseN);
 

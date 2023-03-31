@@ -51,7 +51,8 @@
       }                                                                                       \
                                                                                               \
       if (errno == ENETUNREACH || errno == EWOULDBLOCK || errno == EAGAIN) {                  \
-        fputs("[UDP] Retrying...", stdout);                                                   \
+        fputs("[UDP] Retrying...\n", stdout);                                                 \
+        fflush(stdout);                                                                       \
         /* Call the delay function, passing the current retry count as an argument */         \
         if (attempt <= 5) {                                                                   \
           delay(attempt);                                                                     \

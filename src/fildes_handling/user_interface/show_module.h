@@ -14,4 +14,4 @@
 
 void clear_wrapper(host *host, user_command cmd, char *buffer);
 
-#endif // !SHOW_MODULES_H
+#endif // SHOW_MODULES_H

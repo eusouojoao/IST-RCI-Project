@@ -96,14 +96,6 @@ int create_listen_socket(user_args *uip) {
     return -1;
   }
 
-  // Set socket options for address reuse
-  int optval = 1;
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-    system_error("setsockopt() failed");
-    close(fd);
-    return -1;
-  }
-
   // Initialize the socket address structure
   struct sockaddr_in addr;
   if (setup_sockaddr_in(&addr, uip->IP, uip->TCP) == -1) {

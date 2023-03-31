@@ -16,11 +16,13 @@
 
 #define SIZE 32
 
+// token_command_pair: maps a string token to its corresponding user_command enum
 typedef struct {
   char *token;
   user_command command;
 } token_command_pair;
 
+// token_protocol_pair: maps a string token to its corresponding protocol_command enum
 typedef struct {
   char *token;
   protocol_command protocol;
@@ -35,12 +37,12 @@ typedef struct {
 static user_command get_user_command(char *token) {
   // Static array of struct pairs that maps token strings to user commands
   static const token_command_pair command_lookup[] = {
-      {"join", JOIN},        {"djoin", DJOIN},     {"leave", LEAVE},
-      {"exit", EXIT},        {"create", CREATE},   {"delete", DELETE},
-      {"get", GET},          {"show", SHOW},       {"st", SHOW_TOPOLOGY},
-      {"sn", SHOW_NAMES},    {"sr", SHOW_ROUTING}, {"clear", CLEAR},
-      {"cr", CLEAR_ROUTING}, {"cn", CLEAR_NAMES},  {"cw", CLEAR_WINDOW},
-      {"help", HELP},        {"?", HELP}};
+      {"join", JOIN},        {"djoin", DJOIN},    {"leave", LEAVE},     {"exit", EXIT},
+      {"create", CREATE},    {"delete", DELETE},  {"get", GET},         {"show", SHOW},
+      {"st", SHOW_TOPOLOGY}, {"sn", SHOW_NAMES},  {"sr", SHOW_ROUTING}, {"clear", CLEAR},
+      {"cr", CLEAR_ROUTING}, {"cn", CLEAR_NAMES}, {"cw", CLEAR_WINDOW}, {"help", HELP},
+      {"?", HELP},
+  };
 
   size_t number_of_elements = sizeof(command_lookup) / sizeof(token_command_pair);
 

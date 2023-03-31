@@ -1,4 +1,5 @@
 #include "error_messages.h"
+#include "../misc/prompts.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -70,7 +71,7 @@ void user_error(char *msg) { fprintf(stderr, RED "(!) Error:" RESET " %s\n", msg
 /* clang-format off */
 
 /**
- * @brief  Print help command to inform user of the commands of the program
+ * @brief Print help command to inform user of the commands of the program
  */
 void print_help(void) {
   printf("╔═══════════════════════════════════════════════════════════════════════════════════════════════╗\n");

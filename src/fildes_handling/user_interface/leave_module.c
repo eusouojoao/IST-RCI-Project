@@ -141,6 +141,8 @@ void leave_network(host *host, user_command flag) {
  * @param host: a pointer to a host structure that represents the current host in
  * the network
  * @param flag: indicates which join command connected the host to the network
+ *
+ * @return 0 to indicate the termination of the program
  */
 int exit_program(host *host, user_command flag) {
   // Leave the network before exiting the program
