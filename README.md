@@ -4,7 +4,6 @@
 
 ```plaintext
 .
-├── RCI.zip                            # Zipped source code
 ├── Makefile                           # Makefile for building the project
 ├── README.md                          # Project documentation
 ├── create_network.sh                  # Shell script to create a network
