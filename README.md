@@ -41,6 +41,12 @@ This project, "Transferência de Conteúdos em Redes Arbóreas" (Content Transfe
     │   │   ├── UDP.c                  # UDP implementation
     │   │   └── UDP.h                  # UDP header
     │   │
+    │   ├── descriptor_control         # Directory containing descriptor control related files
+    │   │   ├── descriptor_control.c   # Descriptor control implementation
+    │   │   ├── descriptor_control.h   # Descriptor control header
+    │   │   ├── process_descriptors.c  # Process descriptors implementation
+    │   │   └── process_descriptors.h  # Process descriptors header
+    │   │
     │   ├── custom_protocols           # Custom protocols implementation
     │   │   ├── common.c               # Common custom protocols functions
     │   │   ├── common.h               # Common custom protocols header
@@ -54,12 +60,6 @@ This project, "Transferência de Conteúdos em Redes Arbóreas" (Content Transfe
     │   │   ├── utility.h              # Utility header for custom protocols
     │   │   ├── withdraw_module.c      # Withdraw module implementation
     │   │   └── withdraw_module.h      # Withdraw module header
-    │   │
-    │   ├── descriptor_control         # Directory containing descriptor control related files
-    │   │   ├── descriptor_control.c   # Descriptor control implementation
-    │   │   ├── descriptor_control.h   # Descriptor control header
-    │   │   ├── process_descriptors.c  # Process descriptors implementation
-    │   │   └── process_descriptors.h  # Process descriptors header
     │   │
     │   └── user_interface             # User interface components
     │       ├── clear_module.c         # Clear module implementation
