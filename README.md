@@ -8,9 +8,9 @@ This project, "Transferência de Conteúdos em Redes Arbóreas" (Content Transfe
 ```plaintext
 .
 ├── Makefile                           # Makefile for building the project
-├── README.md                          # Project documentation
 ├── create_network.sh                  # Shell script to create a network
 ├── remove_all_from_network.sh         # Shell script to remove all nodes from the network
+├── README.md                          # Project documentation
 │
 └── `src`                              # Source code directory
     ├── main.c                         # Main function of the project
