@@ -1,6 +1,6 @@
 # Transferência de Conteúdos em Redes Arbóreas
 
-This project, "Transferência de Conteúdos em Redes Arbóreas" (Content Transfer in Tree Networks), aims to implement a distributed system for content sharing among nodes in a tree-structured network. The system allows users to create, search, retrieve, and delete content within the network.
+This project, ["Transferência de Conteúdos em Redes Arbóreas"](ConteudosArvore-1.pdf) (Content Transfer in Tree Networks), aims to implement a distributed system for content sharing among nodes in a tree-structured network. The system allows users to create, search, retrieve, and delete content within the network.
 
 
 ## Project Overview
@@ -8,6 +8,7 @@ This project, "Transferência de Conteúdos em Redes Arbóreas" (Content Transfe
 ```plaintext
 .
 ├── Makefile                           # Makefile for building the project
+├── ConteudosArvore-1.pdf              # Project's guidelines
 │
 ├── `scripts`
 │   ├── create_network.sh              # Shell script to create a network
